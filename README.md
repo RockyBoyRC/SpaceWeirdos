@@ -1,6 +1,8 @@
 # Space Weirdos
 
-TypeScript/React/Express application with property-based testing.
+Tool for building Space Weirdo's warbands
+
+TypeScript/React/Express application with property-based testing and spec-driven development.
 
 ## Technology Stack
 
