@@ -1,0 +1,66 @@
+[
+  {
+    "id": "unarmed",
+    "name": "Unarmed",
+    "type": "close",
+    "baseCost": 0,
+    "maxActions": 3,
+    "notes": "-1DT to Power rolls"
+  },
+  {
+    "id": "claws-teeth",
+    "name": "Claws & Teeth",
+    "type": "close",
+    "baseCost": 2,
+    "maxActions": 3,
+    "notes": ""
+  },
+  {
+    "id": "horrible-claws-teeth",
+    "name": "Horrible Claws & Teeth",
+    "type": "close",
+    "baseCost": 3,
+    "maxActions": 3,
+    "notes": "+1 to Under Attack rolls"
+  },
+  {
+    "id": "melee-weapon",
+    "name": "Melee Weapon",
+    "type": "close",
+    "baseCost": 1,
+    "maxActions": 2,
+    "notes": ""
+  },
+  {
+    "id": "powered-weapon",
+    "name": "Powered Weapon",
+    "type": "close",
+    "baseCost": 2,
+    "maxActions": 2,
+    "notes": "Reroll Power rolls of 1"
+  },
+  {
+    "id": "large-melee-weapon",
+    "name": "Large Melee Weapon",
+    "type": "close",
+    "baseCost": 1,
+    "maxActions": 1,
+    "notes": "+1 to Under Attack rolls"
+  },
+  {
+    "id": "large-powered-weapon",
+    "name": "Large Powered Weapon",
+    "type": "close",
+    "baseCost": 3,
+    "maxActions": 1,
+    "notes": "Reroll Power rolls of 1, +1 to Under Attack rolls"
+  },
+  {
+    "id": "whip-tail",
+    "name": "Whip/Tail",
+    "type": "close",
+    "baseCost": 2,
+    "maxActions": 2,
+    "notes": "Can target enemies up to 1 stick away"
+  }
+]

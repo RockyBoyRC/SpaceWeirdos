@@ -1,0 +1,44 @@
+[
+  {
+    "id": "cyborgs",
+    "name": "Cyborgs",
+    "description": "Cyborg Equipment - All members of the Warband can purchase 1 additional equipment option.",
+    "rule": "All members of the Warband can purchase 1 additional equipment option."
+  },
+  {
+    "id": "fanatics",
+    "name": "Fanatics",
+    "description": "Roll Willpower with +1DT for all rolls except Psychic Powers.",
+    "rule": "None"
+  },
+  {
+    "id": "living-weapons",
+    "name": "Living Weapons",
+    "description": "Unarmed attacks do not have -1DT to Prowess rolls.",
+    "rule": "None"
+  },
+  {
+    "id": "heavily-armed",
+    "name": "Heavily Armed",
+    "description": "Heavily Armed - All Ranged weapons are 1 less Points Cost.",
+    "rule": "All Ranged weapons are 1 less Points Cost."
+  },
+  {
+    "id": "mutants",
+    "name": "Mutants",
+    "description": "Mutant - Speed, Claws & Teeth, Horrible Claws & Teeth, and Whip/Tail cost 1 less Points Cost.",
+    "rule": "Speed, Claws & Teeth, Horrible Claws & Teeth, and Whip/Tail cost 1 less Points Cost."
+  },
+  {
+    "id": "soldiers",
+    "name": "Soldiers",
+    "description": "Soldier - Grenades, Heavy Armor, and Medkits may be selected at 0 Points Cost.",
+    "rule": "Grenades, Heavy Armor, and Medkits may be selected at 0 Points Cost."
+  },
+  {
+    "id": "undead",
+    "name": "Undead",
+    "description": "Undead - A second staggered condition does not take weirdos in this Warband out of action.",
+    "rule": "None"
+  }
+]

@@ -1,0 +1,145 @@
+# Building a Space Weirdos Warband #
+
+## Warband Building Rules ##
+
+A warband of Space Weirdos consists of a Leader and troopers. 
+
+Each warband has a Name, an Ability, Max Point Cost, and a Total Point Cost.
+
+Warband total point values can be either up to 75 or up to 125 points.
+
+
+## Space Weirdo Building Rules ##
+
+Each trooper in the warband has a Name, Total Point Cost, Attributes, Weapons, Equipment, Psychic Powers, and Notes.
+
+The leader has all the elements of a trooper and also has a leader trait.
+
+One weirdo in the warband may cost up to 25 points. This is usually the Leader, but does not need to be. 
+
+Each trooper may cost up to 20 points.
+
+
+### Attributes ###
+
+Each warband member has 5 attributes - Speed, Defense, Firepower, Prowess, and Willpower.
+
+Each attribute has three properties - Name, Level, and Points Cost. Attribute properties are in the tables below.
+
+Speed
+Level | Points Cost
+1 | 0
+2 | 1
+3 | 3
+
+Defense
+Level | Points Cost
+2d6 | 2
+2d8 | 4
+2d10 | 8
+
+Firepower
+Level | Points Cost
+None | 0
+2d8 | 2
+2d10 | 4
+
+Prowess
+Level | Points Cost
+2d6 | 2
+2d8 | 4
+2d10 | 6
+
+Willpower
+Level | Points Cost
+2d6 | 2
+2d8 | 4
+2d10 | 6
+
+
+### Weapons ###
+
+All weirdos must purchase at least one close combat weapon from the table below.
+
+Name | Max Fight Actions | Notes | Points Cost
+Unarmed | 3 | -1DT to Prw rolls | 0
+Claws & Teeth | 3 | - | 2
+Horrible Claws & Teeth | 3 | +1 to Under Attack rolls | 3
+Melee Weapon | 2 | - | 1
+Powered Weapon | 2 | Reroll Prw rolls of 1 | 2
+Large Melee Weapon | 1 | +1 to Under Attack rolls | 1
+Large Powered Weapon | 1 | Reroll Prw rolls of 1, +1 to Under Attack rolls | 3 
+Whip/Tail | 2 | Can target enemies up to 1 stick away | 2
+
+
+If a weirdo has a Firepower score, at least one ranged weapon must be selected from the below list.
+
+Name | Max Shoot Actions | Notes | Points Cost
+Auto Pistol | 3 | -1DT range > 1 stick | 0
+Heavy Pistol | 2 | +1 to Under Fire rolls, -1DT past 1 stick | 1
+Energy Pistol | 3 | Reroll FP rolls of 1, -1DT range > 1 stick | 2
+Auto Rifle | 3 | Aim1 | 1
+Heavy Rifle | 2 | Aim1,+1 to Under Fire rolls | 2
+Sniper Rifle | 1 | Aim2, cannot target enemies < 1 stick away, reroll FP rolls of 1, +1 to Under Fire rolls | 3
+Shotgun | 2 | Range ≤ 1 stick: +1 to Under Fire rolls Range > 1 stick: -1DT, reroll FP rolls of 1 | 2
+Energy Rifle | 2 | Aim1, reroll FP rolls of 1 | 2
+Flamer | 1 | Cone AoE | 2
+Rocket Launcher | 1 | Aim2, Cannot target enemies < 1 stick away, Blast AoE | 3
+Auto-cannon | 3 | Reroll FP rolls of 1 or 2 | 3
+
+### Equipment ###
+
+Each leader may select 2 equipment items. Troopers may only select 1 equipment item. 
+
+Item | Type | Effect | Points Cost
+Cybernetics | Passive | +1 to Prw rolls | 1
+Grenade | Action | Once per game, Targets point up to 1 stick from attacker, Blast AOE, 2d10 FP , +1 to Under Fire rolls | 1
+Heavy Armor | Passive | +1 to Def rolls | 1
+Jump Pack | Passive | The weirdo can ignore terrain and other weirdos when taking Move actions | 1
+Medkit | Action | Once per game, 1 weirdo touching this weirdo becomes ready | 1
+Psychic Focus | Passive | +1 to Will rolls | 1
+Stealth Suit | Passive | If this weirdo’s base touches a piece of terrain, enemy weirdos do not have LoS unless they are within 1 stick of the stealthy weirdo | 2
+Targeting Reticule | Passive | +1 to FP rolls | 1
+
+
+### Psychic Powers ### 
+
+Any number of Psychic Powers may be purchased for each weirdo.
+
+Power | Type | Effect | Points Cost
+Fear | Attack | Each enemy weirdo within 1 stick who loses its opposed Will roll must move 1 stick away from the psychic. | 1
+Healing | Effect | 1 weirdo within 1 stick of this weirdo and in LoS becomes ready. | 1
+Meat Puppet | Effect | Return 1 OoA weirdo to the table and place within 1 stick of the psychic. The returned weirdo’s Spd is reduced by 1 (min 1), and rolls with -1DT for all rolls. A
+weirdo can only be returned to the table once. | 2
+Mind Control | Attack | Targeted enemy takes one action of the psychic’s choice. | 2
+Mind Stab | Attack | Target 1 enemy weirdo within 1 stick. Roll on Under Fire table +3. | 3
+Prescience | Effect | Choose any weirdo on the table to either gain +1DT or -1DT for all their actions this round. | 1
+Telekinesis | Either | Effect: move 1 obstacle or ally up to 1 stick. Attack: move an enemy 1 stick. | 1
+Teleport | Effect | Place the psychic anywhere on the board. | 1
+
+### Leader Traits ###
+
+Optionally choose one of the following traits for the leader. 
+
+Trait | Notes
+Bounty Hunter | Once per round, when a weirdo from your warband is touching a down or staggered enemy, it can take a Use Item action to make the enemy weirdo out of action.
+Healer | During the Initiative Phase, one of your weirdos within one stick of your leader may make a free Stand or Recover action with +1DT.
+Majestic | Any time one of your warband has to make a Willpower roll, that weirdo may use the Leader’s Willpower instead.
+Monstrous | Non-Leader weirdos must win a Willpower roll vs. your leader to move into contact.
+Political Officer | During the Initiative Phase, before rolling, take one of your Warband within LOS of your leader out of action to make all other weirdos in the Warband ready, remove the broken condition from your warband, and gain +1DT to this Initiative roll.
+Sorcerer | Psychic Powers actions cost 1 action instead of 2, but may still only use 1 per turn.
+Tactician | +1DT to Initiative rolls.
+
+### Warband Ability ###
+
+Choose one of the following abilities for the Warband. The effect applies to all weirdos in the Warband. If the trait has a Rule, it will modify the associated warband building rule.
+
+Trait | Notes | Rule
+Cyborgs | Cyborg Equipment | All members of the Warband can purchase 1 additional equipment option.
+Fanatics | Roll Willpower with +1DT for all rolls except Psychic Powers. | None
+Living Weapons | Unarmed attacks do not have -1DT to Prowess rolls. | None
+Heavily Armed | Heavily Armed | All Ranged weapons are 1 less Points Cost.
+Mutants | Mutant | Speed, Claws & Teeth, Horrible Claws & Teeth, and Whip/Tail cost 1 less Points Cost.
+Soldiers | Soldier | Grenades, Heavy Armor, and Medkits may be selected at 0 Points Cost.
+Undead | Undead a second staggered condition does not take weirdos in this Warband out of action. | None
+

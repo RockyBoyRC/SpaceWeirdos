@@ -1,0 +1,58 @@
+[
+  {
+    "id": "fear",
+    "name": "Fear",
+    "type": "Attack",
+    "cost": 1,
+    "effect": "Each enemy weirdo within 1 stick who loses its opposed Will roll must move 1 stick away from the psychic."
+  },
+  {
+    "id": "healing",
+    "name": "Healing",
+    "type": "Effect",
+    "cost": 1,
+    "effect": "1 weirdo within 1 stick of this weirdo and in LoS becomes ready."
+  },
+  {
+    "id": "meat-puppet",
+    "name": "Meat Puppet",
+    "type": "Effect",
+    "cost": 2,
+    "effect": "Return 1 Out of Action weirdo to the table and place within 1 stick of the psychic. The returned weirdo's Speed is reduced by 1 (min 1), and rolls with -1DT for all rolls. A weirdo can only be returned to the table once."
+  },
+  {
+    "id": "mind-control",
+    "name": "Mind Control",
+    "type": "Attack",
+    "cost": 2,
+    "effect": "Targeted enemy takes one action of the psychic's choice."
+  },
+  {
+    "id": "mind-stab",
+    "name": "Mind Stab",
+    "type": "Attack",
+    "cost": 3,
+    "effect": "Target 1 enemy weirdo within 1 stick. Roll on Under Fire table +3."
+  },
+  {
+    "id": "prescience",
+    "name": "Prescience",
+    "type": "Effect",
+    "cost": 1,
+    "effect": "Choose any weirdo on the table to either gain +1DT or -1DT for all their actions this round."
+  },
+  {
+    "id": "telekinesis",
+    "name": "Telekinesis",
+    "type": "Either",
+    "cost": 1,
+    "effect": "Effect: move 1 obstacle or ally up to 1 stick. Attack: move an enemy 1 stick."
+  },
+  {
+    "id": "teleport",
+    "name": "Teleport",
+    "type": "Effect",
+    "cost": 1,
+    "effect": "Place the psychic anywhere on the board."
+  }
+]

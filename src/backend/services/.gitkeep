@@ -1,0 +1,6 @@
+# Services directory
+# This directory will contain business logic services:
+# - CostEngine
+# - ValidationService
+# - WarbandService
+# - DataRepository

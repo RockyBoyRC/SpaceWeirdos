@@ -1,56 +1,79 @@
-import express from 'express';
-import { readFile, writeFile } from 'fs/promises';
-import { join } from 'path';
+import express, { Request, Response, NextFunction } from 'express';
+import { DataRepository } from './services/DataRepository';
+import { createWarbandRouter } from './routes/warbandRoutes';
+import path from 'path';
 
 const app = express();
 const PORT = 3001;
 
+// Middleware
 app.use(express.json());
 
-// In-memory database
-let database: Record<string, unknown> = {};
+// CORS middleware for frontend communication
+app.use((_req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
 
-// Load initial data from JSON file
-async function loadData() {
-  try {
-    const dataPath = join(process.cwd(), 'data', 'config.json');
-    const data = await readFile(dataPath, 'utf-8');
-    database = JSON.parse(data);
-    console.log('Data loaded successfully');
-  } catch (error) {
-    console.log('No initial data found, starting with empty database');
-  }
-}
+// Initialize data repository
+const dataRepository = new DataRepository(
+  path.join(process.cwd(), 'data', 'warbands.json'),
+  true
+);
 
-// Save data to JSON file
-async function saveData() {
-  try {
-    const dataPath = join(process.cwd(), 'data', 'config.json');
-    await writeFile(dataPath, JSON.stringify(database, null, 2));
-    console.log('Data saved successfully');
-  } catch (error) {
-    console.error('Error saving data:', error);
-  }
-}
-
-// API Routes
+// Health check endpoint
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.get('/api/data', (_req, res) => {
-  res.json(database);
+// Mount warband routes
+const warbandRouter = createWarbandRouter(dataRepository);
+app.use('/api', warbandRouter);
+
+// Error handling middleware
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    details: err.message
+  });
 });
 
-app.post('/api/data', async (req, res) => {
-  database = { ...database, ...req.body };
-  await saveData();
-  res.json({ success: true, data: database });
+// 404 handler
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({
+    error: 'Not found',
+    details: 'The requested resource does not exist'
+  });
 });
 
 // Start server
-loadData().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Backend server running on http://localhost:${PORT}`);
-  });
-});
+async function startServer() {
+  try {
+    // Load data from file on startup
+    await dataRepository.loadFromFile();
+    console.log('Warband data loaded successfully');
+
+    app.listen(PORT, () => {
+      console.log(`Backend server running on http://localhost:${PORT}`);
+      console.log('API endpoints available at:');
+      console.log('  POST   /api/warbands');
+      console.log('  GET    /api/warbands');
+      console.log('  GET    /api/warbands/:id');
+      console.log('  PUT    /api/warbands/:id');
+      console.log('  DELETE /api/warbands/:id');
+      console.log('  POST   /api/warbands/:id/weirdos');
+      console.log('  PUT    /api/warbands/:id/weirdos/:weirdoId');
+      console.log('  DELETE /api/warbands/:id/weirdos/:weirdoId');
+      console.log('  POST   /api/calculate-cost');
+      console.log('  POST   /api/validate');
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

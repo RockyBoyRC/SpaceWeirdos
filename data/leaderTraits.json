@@ -1,0 +1,37 @@
+[
+  {
+    "id": "bounty-hunter",
+    "name": "Bounty Hunter",
+    "description": "Once per round, when a weirdo from your warband is touching a down or staggered enemy, it can take a Use Item action to make the enemy weirdo out of action."
+  },
+  {
+    "id": "healer",
+    "name": "Healer",
+    "description": "During the Initiative Phase, one of your weirdos within one stick of your leader may make a free Stand or Recover action with +1DT."
+  },
+  {
+    "id": "majestic",
+    "name": "Majestic",
+    "description": "Any time one of your warband has to make a Willpower roll, that weirdo may use the Leader's Willpower instead."
+  },
+  {
+    "id": "monstrous",
+    "name": "Monstrous",
+    "description": "Non-Leader weirdos must win a Willpower roll vs. your leader to move into contact."
+  },
+  {
+    "id": "political-officer",
+    "name": "Political Officer",
+    "description": "During the Initiative Phase, before rolling, take one of your Warband within Line of Sight of your leader out of action to make all other weirdos in the Warband ready, remove the broken condition from your warband, and gain +1DT to this Initiative roll."
+  },
+  {
+    "id": "sorcerer",
+    "name": "Sorcerer",
+    "description": "Psychic Powers actions cost 1 action instead of 2, but may still only use 1 per turn."
+  },
+  {
+    "id": "tactician",
+    "name": "Tactician",
+    "description": "+1DT to Initiative rolls."
+  }
+]

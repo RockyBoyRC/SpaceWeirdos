@@ -1,0 +1,284 @@
+.warband-list {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.warband-list h1 {
+  margin-bottom: 1.5rem;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-size: 2.5rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #fff;
+  font-size: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading .spinner {
+  border-left-color: #fff;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.error {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  color: #c33;
+  box-shadow: 0 4px 12px rgba(204, 51, 51, 0.15);
+  animation: slideIn 0.3s ease-out;
+}
+
+.error button {
+  margin-top: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  background-color: #c33;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.error button:hover {
+  background-color: #a22;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.error button:active {
+  transform: translateY(0);
+}
+
+.create-button {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  transition: all 0.2s ease;
+}
+
+.create-button:hover {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+}
+
+.create-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.create-button:focus {
+  outline: 3px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.warband-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.warband-card {
+  border: none;
+  border-radius: 12px;
+  padding: 1.75rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  animation: slideIn 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.warband-card:nth-child(1) { animation-delay: 0.05s; }
+.warband-card:nth-child(2) { animation-delay: 0.1s; }
+.warband-card:nth-child(3) { animation-delay: 0.15s; }
+.warband-card:nth-child(4) { animation-delay: 0.2s; }
+.warband-card:nth-child(5) { animation-delay: 0.25s; }
+.warband-card:nth-child(6) { animation-delay: 0.3s; }
+
+.warband-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.warband-card:focus-within {
+  outline: 3px solid #2196F3;
+  outline-offset: 2px;
+}
+
+.warband-header {
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 0.75rem;
+}
+
+.warband-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.warband-ability {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.warband-stats {
+  margin: 1rem 0;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.stat:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.stat-value {
+  color: #333;
+  font-weight: 600;
+}
+
+.warband-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.load-button,
+.delete-button {
+  flex: 1;
+  padding: 0.875rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.load-button::before,
+.delete-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.load-button:active::before,
+.delete-button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.load-button {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+.load-button:hover {
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+}
+
+.delete-button {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+}
+
+.delete-button:hover {
+  background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+.load-button:active,
+.delete-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .warband-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .warband-card {
+    padding: 1.25rem;
+  }
+  
+  .warband-actions {
+    flex-direction: column;
+  }
+  
+  .load-button,
+  .delete-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .warband-list {
+    padding: 1rem;
+  }
+  
+  .warband-list h1 {
+    font-size: 1.75rem;
+  }
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "id": "cybernetics",
+    "name": "Cybernetics",
+    "type": "Passive",
+    "baseCost": 1,
+    "effect": "+1 to Power rolls"
+  },
+  {
+    "id": "grenade",
+    "name": "Grenade",
+    "type": "Action",
+    "baseCost": 1,
+    "effect": "Once per game, Targets point up to 1 stick from attacker, Blast AOE, 2d10 FP, +1 to Under Fire rolls"
+  },
+  {
+    "id": "heavy-armor",
+    "name": "Heavy Armor",
+    "type": "Passive",
+    "baseCost": 1,
+    "effect": "+1 to Defense rolls"
+  },
+  {
+    "id": "jump-pack",
+    "name": "Jump Pack",
+    "type": "Passive",
+    "baseCost": 1,
+    "effect": "The weirdo can ignore terrain and other weirdos when taking Move actions"
+  },
+  {
+    "id": "medkit",
+    "name": "Medkit",
+    "type": "Action",
+    "baseCost": 1,
+    "effect": "Once per game, 1 weirdo touching this weirdo becomes ready"
+  },
+  {
+    "id": "psychic-focus",
+    "name": "Psychic Focus",
+    "type": "Passive",
+    "baseCost": 1,
+    "effect": "+1 to Will rolls"
+  },
+  {
+    "id": "stealth-suit",
+    "name": "Stealth Suit",
+    "type": "Passive",
+    "baseCost": 2,
+    "effect": "If this weirdo's base touches a piece of terrain, enemy weirdos do not have Line of Sight unless they are within 1 stick of the stealthy weirdo"
+  },
+  {
+    "id": "targeting-reticule",
+    "name": "Targeting Reticule",
+    "type": "Passive",
+    "baseCost": 1,
+    "effect": "+1 to Fire Power rolls"
+  }
+]

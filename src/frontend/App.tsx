@@ -1,27 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { WarbandList } from './components/WarbandList';
+import { WarbandEditor } from './components/WarbandEditor';
+
+type View = 'list' | 'editor';
 
 function App() {
-  const [data, setData] = useState<Record<string, unknown>>({});
-  const [status, setStatus] = useState<string>('Loading...');
+  const [currentView, setCurrentView] = useState<View>('list');
+  const [selectedWarbandId, setSelectedWarbandId] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    fetch('/api/health')
-      .then((res) => res.json())
-      .then((data) => setStatus(data.status))
-      .catch(() => setStatus('error'));
+  const handleCreateWarband = () => {
+    setSelectedWarbandId(undefined);
+    setCurrentView('editor');
+  };
 
-    fetch('/api/data')
-      .then((res) => res.json())
-      .then((data) => setData(data))
-      .catch(console.error);
-  }, []);
+  const handleLoadWarband = (id: string) => {
+    setSelectedWarbandId(id);
+    setCurrentView('editor');
+  };
+
+  const handleBackToList = () => {
+    setSelectedWarbandId(undefined);
+    setCurrentView('list');
+  };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Space Weirdos</h1>
-      <p>Backend Status: {status}</p>
-      <h2>Data:</h2>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+    <div className="app">
+      {currentView === 'list' ? (
+        <WarbandList 
+          onCreateWarband={handleCreateWarband}
+          onLoadWarband={handleLoadWarband}
+        />
+      ) : (
+        <WarbandEditor 
+          warbandId={selectedWarbandId}
+          onBack={handleBackToList}
+        />
+      )}
     </div>
   );
 }

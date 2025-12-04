@@ -1,0 +1,90 @@
+[
+  {
+    "id": "auto-pistol",
+    "name": "Auto Pistol",
+    "type": "ranged",
+    "baseCost": 0,
+    "maxActions": 3,
+    "notes": "-1DT range > 1 stick"
+  },
+  {
+    "id": "heavy-pistol",
+    "name": "Heavy Pistol",
+    "type": "ranged",
+    "baseCost": 1,
+    "maxActions": 2,
+    "notes": "+1 to Under Fire rolls, -1DT past 1 stick"
+  },
+  {
+    "id": "energy-pistol",
+    "name": "Energy Pistol",
+    "type": "ranged",
+    "baseCost": 2,
+    "maxActions": 3,
+    "notes": "Reroll FP rolls of 1, -1DT range > 1 stick"
+  },
+  {
+    "id": "auto-rifle",
+    "name": "Auto Rifle",
+    "type": "ranged",
+    "baseCost": 1,
+    "maxActions": 3,
+    "notes": "Aim1"
+  },
+  {
+    "id": "heavy-rifle",
+    "name": "Heavy Rifle",
+    "type": "ranged",
+    "baseCost": 2,
+    "maxActions": 2,
+    "notes": "Aim1, +1 to Under Fire rolls"
+  },
+  {
+    "id": "sniper-rifle",
+    "name": "Sniper Rifle",
+    "type": "ranged",
+    "baseCost": 3,
+    "maxActions": 1,
+    "notes": "Aim2, cannot target enemies < 1 stick away, reroll FP rolls of 1, +1 to Under Fire rolls"
+  },
+  {
+    "id": "shotgun",
+    "name": "Shotgun",
+    "type": "ranged",
+    "baseCost": 2,
+    "maxActions": 2,
+    "notes": "Range ≤ 1 stick: +1 to Under Fire rolls Range > 1 stick: -1DT, reroll FP rolls of 1"
+  },
+  {
+    "id": "energy-rifle",
+    "name": "Energy Rifle",
+    "type": "ranged",
+    "baseCost": 2,
+    "maxActions": 2,
+    "notes": "Aim1, reroll FP rolls of 1"
+  },
+  {
+    "id": "flamer",
+    "name": "Flamer",
+    "type": "ranged",
+    "baseCost": 2,
+    "maxActions": 1,
+    "notes": "Cone AoE"
+  },
+  {
+    "id": "rocket-launcher",
+    "name": "Rocket Launcher",
+    "type": "ranged",
+    "baseCost": 3,
+    "maxActions": 1,
+    "notes": "Aim2, Cannot target enemies < 1 stick away, Blast AoE"
+  },
+  {
+    "id": "auto-cannon",
+    "name": "Auto-cannon",
+    "type": "ranged",
+    "baseCost": 3,
+    "maxActions": 3,
+    "notes": "Reroll FP rolls of 1 or 2"
+  }
+]
