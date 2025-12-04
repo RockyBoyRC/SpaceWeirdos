@@ -1,3 +1,7 @@
+---
+inclusion: manual
+---
+
 # Deployment Options for Space Weirdos Warband Builder
 
 This document provides deployment instructions for interactive testing of the Space Weirdos Warband Builder application.
