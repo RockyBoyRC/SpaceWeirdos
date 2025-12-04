@@ -2,9 +2,13 @@ import express, { Request, Response, NextFunction } from 'express';
 import { DataRepository } from './services/DataRepository';
 import { createWarbandRouter } from './routes/warbandRoutes';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(express.json());
@@ -31,6 +35,17 @@ app.get('/api/health', (_req, res) => {
 // Mount warband routes
 const warbandRouter = createWarbandRouter(dataRepository);
 app.use('/api', warbandRouter);
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '..', 'frontend');
+  app.use(express.static(frontendPath));
+  
+  // Serve index.html for all non-API routes (SPA support)
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
