@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { PsychicPower } from '../../backend/models/types';
+import { PsychicPower, WarbandAbility } from '../../backend/models/types';
+import { calculatePsychicPowerCost } from '../utils/costCalculations';
 import './PsychicPowerSelector.css';
 
 /**
@@ -9,18 +10,20 @@ import './PsychicPowerSelector.css';
  * Displays name, cost, and effect for each power.
  * No limit on selections.
  * 
- * Requirements: 5.5, 12.4
+ * Requirements: 5.5, 12.4, 1.6, 2.3
  */
 
 interface PsychicPowerSelectorProps {
   selectedPowers: PsychicPower[];
   availablePowers: PsychicPower[];
+  warbandAbility: WarbandAbility | null;
   onChange: (powers: PsychicPower[]) => void;
 }
 
 const PsychicPowerSelectorComponent = ({
   selectedPowers,
   availablePowers,
+  warbandAbility,
   onChange
 }: PsychicPowerSelectorProps) => {
   const handleToggle = (power: PsychicPower) => {
@@ -33,6 +36,13 @@ const PsychicPowerSelectorComponent = ({
       // Add power
       onChange([...selectedPowers, power]);
     }
+  };
+
+  const formatCostDisplay = (power: PsychicPower): string => {
+    // Apply warband ability modifiers to display accurate costs
+    // Currently no abilities modify psychic power costs, but pattern is established
+    const modifiedCost = calculatePsychicPowerCost(power, warbandAbility);
+    return `${modifiedCost} pts`;
   };
 
   return (
@@ -62,9 +72,9 @@ const PsychicPowerSelectorComponent = ({
                     <span className="psychic-power-selector__name">{power.name}</span>
                     <span 
                       className="psychic-power-selector__cost"
-                      aria-label={`Cost: ${power.cost} points`}
+                      aria-label={`Cost: ${formatCostDisplay(power)}`}
                     >
-                      {power.cost} pts
+                      {formatCostDisplay(power)}
                     </span>
                   </div>
                   <div 

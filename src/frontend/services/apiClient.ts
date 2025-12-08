@@ -148,6 +148,7 @@ export const apiClient = {
     name: string;
     pointLimit: 75 | 125;
     ability: WarbandAbility | null;
+    weirdos?: Weirdo[];
   }): Promise<Warband> {
     return fetchWithRetry<CreateWarbandResponse>('/warbands', {
       method: 'POST',

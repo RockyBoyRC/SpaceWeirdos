@@ -48,7 +48,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="leader"
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -71,7 +71,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="leader"
           warbandAbility="Cyborgs"
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -94,7 +94,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="trooper"
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -118,7 +118,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="trooper"
           warbandAbility="Cyborgs"
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -142,7 +142,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="leader"
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -159,7 +159,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="leader"
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -173,7 +173,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="leader"
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -192,7 +192,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="leader"
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -205,9 +205,11 @@ describe('EquipmentSelector Component', () => {
       expect(screen.getByText('Once per game, 1 weirdo touching this weirdo becomes ready')).toBeInTheDocument();
     });
 
-    it('should show modified cost when Soldiers ability applies', () => {
+    it('should show modified costs based on warband ability', () => {
       const mockOnChange = vi.fn();
 
+      // With Soldiers ability, selector shows modified costs (0 pts for free equipment)
+      // This matches the backend cost calculations
       render(
         <EquipmentSelector
           selectedEquipment={[]}
@@ -215,12 +217,13 @@ describe('EquipmentSelector Component', () => {
           weirdoType="leader"
           warbandAbility="Soldiers"
           onChange={mockOnChange}
-          costEngine={costEngine}
         />
       );
 
-      // Soldiers ability makes equipment cost 0
-      expect(screen.getAllByText('0 pts (was 1 pts)')).toHaveLength(3); // All three equipment have modified cost
+      // Equipment shows modified cost (0 pts for Soldiers ability)
+      // Requirements: 1.2, 1.4, 2.2
+      expect(screen.getAllByText('0 pts')).toHaveLength(3);
+      expect(screen.queryByText('1 pts')).not.toBeInTheDocument();
     });
   });
 
@@ -235,7 +238,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="leader"
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -256,7 +259,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="leader"
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -278,7 +281,7 @@ describe('EquipmentSelector Component', () => {
           weirdoType="trooper"
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -291,3 +294,6 @@ describe('EquipmentSelector Component', () => {
     });
   });
 });
+
+
+

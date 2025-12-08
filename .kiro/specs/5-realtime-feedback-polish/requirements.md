@@ -83,6 +83,19 @@ This spec focuses on the UX enhancements that make the application feel responsi
 
 ### Requirement 6
 
+**User Story:** As a player, I want the system to automatically select "unarmed" when I have no close combat weapon, so that I don't have to manually fix this common validation error.
+
+#### Acceptance Criteria
+
+1. WHEN a weirdo has no close combat weapons selected THEN the Warband Builder SHALL automatically select the "unarmed" weapon
+2. WHEN the "unarmed" weapon is automatically selected THEN the Warband Builder SHALL update the weirdo's weapon list immediately
+3. WHEN the "unarmed" weapon is automatically selected THEN the Warband Builder SHALL recalculate the weirdo's total cost
+4. WHEN a user manually deselects all close combat weapons THEN the Warband Builder SHALL automatically select "unarmed" to prevent validation errors
+5. WHEN a user selects another close combat weapon while "unarmed" is selected THEN the Warband Builder SHALL allow both weapons to remain selected
+6. WHEN the automatic selection occurs THEN the Warband Builder SHALL not display a validation error for missing close combat weapon
+
+### Requirement 7
+
 **User Story:** As a developer, I want all frontend-backend communication to use API calls, so that the frontend and backend remain properly decoupled and maintainable.
 
 #### Acceptance Criteria

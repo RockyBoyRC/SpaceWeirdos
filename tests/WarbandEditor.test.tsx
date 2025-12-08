@@ -101,19 +101,16 @@ describe('Warband Editor Components', () => {
         )
       );
 
-      // Verify all three sections are present
+      // Verify two main sections are present (modal is separate)
       expect(screen.getByText('Warband Properties')).toBeInTheDocument();
       expect(screen.getByText('Weirdos')).toBeInTheDocument();
-      expect(screen.getByText('Weirdo Editor')).toBeInTheDocument();
 
       // Verify sections have proper CSS classes
       const propertiesSection = screen.getByText('Warband Properties').closest('section');
       const weirdosSection = screen.getByText('Weirdos').closest('section');
-      const editorSection = screen.getByText('Weirdo Editor').closest('section');
 
       expect(propertiesSection).toHaveClass('warband-editor__properties');
       expect(weirdosSection).toHaveClass('warband-editor__weirdos-list');
-      expect(editorSection).toHaveClass('warband-editor__weirdo-editor');
     });
 
     /**
@@ -253,7 +250,7 @@ describe('Warband Editor Components', () => {
      * Requirements: 5.2, 6.1
      */
     it('should call validation API before attempting to save', async () => {
-      const validateSpy = vi.spyOn(apiClient.apiClient, 'validate').mockResolvedValue({
+      const validateSpy = vi.spyOn(apiClient.apiClient, 'validateWarband').mockResolvedValue({
         valid: true,
         errors: []
       });
@@ -314,7 +311,7 @@ describe('Warband Editor Components', () => {
      */
     it('should prevent save API call when validation fails', async () => {
       // Mock validation to fail
-      const validateSpy = vi.spyOn(apiClient.apiClient, 'validate').mockResolvedValue({
+      const validateSpy = vi.spyOn(apiClient.apiClient, 'validateWarband').mockResolvedValue({
         valid: false,
         errors: [{
           field: 'warband.name',
@@ -432,7 +429,8 @@ describe('Warband Editor Components', () => {
       expect(createSpy).toHaveBeenCalledWith({
         name: 'Test Warband',
         pointLimit: 75,
-        ability: null
+        ability: null,
+        weirdos: []
       });
     });
 

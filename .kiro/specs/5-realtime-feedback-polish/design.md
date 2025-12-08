@@ -97,6 +97,10 @@ interface ValidationErrorDisplayProps {
 *For any* weirdo with validation errors, the weirdo card should have error styling applied, and hovering should display a tooltip containing all validation error messages.
 **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7**
 
+**Property 6: Automatic unarmed selection prevents validation errors**
+*For any* weirdo with no close combat weapons selected, the system should automatically select "unarmed" to prevent the "close combat weapon required" validation error.
+**Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.6**
+
 ## Testing Strategy
 
 - Unit tests for cost displays and indicators
@@ -147,6 +151,32 @@ POST /api/cost/calculate
 ```
 
 ## Implementation Notes
+
+### Automatic Unarmed Selection
+
+The system should automatically select "unarmed" when a weirdo has no close combat weapons to prevent validation errors:
+
+**Implementation Strategy:**
+- Monitor the close combat weapons array in the weirdo state
+- When the array becomes empty (length === 0), automatically add "unarmed" weapon
+- Trigger this check when:
+  - A weirdo is first created
+  - A user deselects the last close combat weapon
+  - The weapon selector component updates
+- Use a useEffect hook or similar mechanism to watch for empty weapon arrays
+- Ensure the automatic selection triggers cost recalculation
+- Do not prevent users from manually deselecting "unarmed" if they have other weapons
+
+**Edge Cases:**
+- If "unarmed" is the only weapon and user tries to deselect it, keep it selected
+- If user selects another weapon while "unarmed" is selected, allow both
+- If user deselects all weapons including "unarmed", re-add "unarmed" automatically
+
+**Benefits:**
+- Prevents common validation error
+- Improves user experience by reducing manual fixes
+- Maintains game rule compliance (every weirdo must have at least one close combat weapon)
+- Zero cost for "unarmed" means no unintended point increases
 
 ### API Communication
 

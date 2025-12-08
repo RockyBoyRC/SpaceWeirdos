@@ -1,7 +1,6 @@
 import { useState, useEffect, memo } from 'react';
 import { Warband, WarbandSummary } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
-import { CostEngine } from '../../backend/services/CostEngine';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 import './WarbandList.css';
 
@@ -10,8 +9,9 @@ import './WarbandList.css';
  * 
  * Displays all saved warbands with summary information.
  * Provides controls for creating new warbands and loading existing ones.
+ * Uses API-calculated costs from warband objects.
  * 
- * Requirements: 7.1, 7.7, 7.8
+ * Requirements: 7.1, 7.7, 7.8, 9.2, 9.6
  */
 
 interface WarbandListProps {
@@ -20,9 +20,6 @@ interface WarbandListProps {
   onDeleteSuccess: () => void;
   onDeleteError: (error: Error) => void;
 }
-
-// Create cost engine instance for calculating warband costs
-const costEngine = new CostEngine();
 
 export function WarbandList({ 
   onCreateWarband, 
@@ -167,7 +164,8 @@ export function WarbandList({
       
       <div className="warband-grid" role="list" aria-label="Saved warbands">
         {warbands.map((warband) => {
-          const totalCost = costEngine.calculateWarbandCost(warband);
+          // Use totalCost from warband object (calculated by API)
+          const totalCost = warband.totalCost;
           const weirdoCount = warband.weirdos.length;
           const summary = {
             id: warband.id,

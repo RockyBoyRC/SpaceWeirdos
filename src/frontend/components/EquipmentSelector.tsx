@@ -1,15 +1,15 @@
 import { memo } from 'react';
 import { Equipment, WarbandAbility } from '../../backend/models/types';
-import { CostEngine } from '../../backend/services/CostEngine';
+import { calculateEquipmentCost } from '../utils/costCalculations';
 import './EquipmentSelector.css';
 
 /**
  * EquipmentSelector Component
  * 
  * Multi-select interface for equipment with limit enforcement.
- * Displays name, cost, and effect for each item.
+ * Displays name, cost (with warband ability modifiers applied), and effect for each item.
  * Shows current count vs limit and disables checkboxes when limit reached.
- * Shows modified costs when warband abilities apply.
+ * Applies warband ability cost modifiers (e.g., Soldiers makes certain equipment free).
  * 
  * Equipment limits:
  * - Leader without Cyborgs: 2
@@ -17,7 +17,7 @@ import './EquipmentSelector.css';
  * - Trooper without Cyborgs: 1
  * - Trooper with Cyborgs: 2
  * 
- * Requirements: 5.4, 5.7, 5.8, 12.3, 12.6
+ * Requirements: 5.4, 5.7, 5.8, 12.3, 12.6, 9.2, 9.6, 1.2, 1.4, 2.2
  */
 
 interface EquipmentSelectorProps {
@@ -26,7 +26,6 @@ interface EquipmentSelectorProps {
   weirdoType: 'leader' | 'trooper';
   warbandAbility: WarbandAbility | null;
   onChange: (equipment: Equipment[]) => void;
-  costEngine: CostEngine;
 }
 
 const EquipmentSelectorComponent = ({
@@ -34,8 +33,7 @@ const EquipmentSelectorComponent = ({
   availableEquipment,
   weirdoType,
   warbandAbility,
-  onChange,
-  costEngine
+  onChange
 }: EquipmentSelectorProps) => {
   // Calculate equipment limit based on weirdo type and warband ability
   const getEquipmentLimit = (): number => {
@@ -67,25 +65,10 @@ const EquipmentSelectorComponent = ({
     }
   };
 
-  const getEquipmentCost = (equipment: Equipment): { baseCost: number; modifiedCost: number } => {
-    const baseCost = equipment.baseCost;
-    const modifiedCost = costEngine.getEquipmentCost(equipment, warbandAbility);
-    return { baseCost, modifiedCost };
-  };
-
   const formatCostDisplay = (equipment: Equipment): string => {
-    const { baseCost, modifiedCost } = getEquipmentCost(equipment);
-    
-    if (baseCost !== modifiedCost) {
-      // Show modified cost with strikethrough on base cost
-      return `${modifiedCost} pts (was ${baseCost} pts)`;
-    }
-    return `${baseCost} pts`;
-  };
-
-  const hasModifiedCost = (equipment: Equipment): boolean => {
-    const { baseCost, modifiedCost } = getEquipmentCost(equipment);
-    return baseCost !== modifiedCost;
+    // Apply warband ability modifiers to match backend calculations
+    const modifiedCost = calculateEquipmentCost(equipment, warbandAbility);
+    return `${modifiedCost} pts`;
   };
 
   return (
@@ -103,7 +86,6 @@ const EquipmentSelectorComponent = ({
         {availableEquipment.map((equipment) => {
           const isSelected = selectedEquipment.some(e => e.id === equipment.id);
           const isDisabled = !isSelected && isLimitReached;
-          const isModified = hasModifiedCost(equipment);
 
           return (
             <li key={equipment.id} className="equipment-selector__item" role="listitem">
@@ -125,7 +107,7 @@ const EquipmentSelectorComponent = ({
                   <div className="equipment-selector__header">
                     <span className="equipment-selector__name">{equipment.name}</span>
                     <span 
-                      className={`equipment-selector__cost ${isModified ? 'modified' : ''}`}
+                      className="equipment-selector__cost"
                       aria-label={`Cost: ${formatCostDisplay(equipment)}`}
                     >
                       {formatCostDisplay(equipment)}

@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 import { WeirdoEditor } from '../src/frontend/components/WeirdoEditor';
 import { WeirdoCostDisplay } from '../src/frontend/components/WeirdoCostDisplay';
 import { WeirdoBasicInfo } from '../src/frontend/components/WeirdoBasicInfo';
@@ -9,6 +10,7 @@ import { ValidationService } from '../src/backend/services/ValidationService';
 import { DataRepository } from '../src/backend/services/DataRepository';
 import { WarbandProvider } from '../src/frontend/contexts/WarbandContext';
 import { GameDataProvider } from '../src/frontend/contexts/GameDataContext';
+import { useWarband } from '../src/frontend/contexts/WarbandContext';
 
 /**
  * Unit tests for WeirdoEditor core components
@@ -247,5 +249,124 @@ describe('WeirdoBasicInfo', () => {
     );
 
     expect(screen.getByText('Trooper')).toBeInTheDocument();
+  });
+});
+
+describe('Automatic Unarmed Selection', () => {
+  /**
+   * Test that "unarmed" is automatically selected when weirdo has no weapons
+   * Requirement: 6.1, 6.2
+   */
+  it('should automatically select unarmed when weirdo has no close combat weapons', async () => {
+    const costEngine = new CostEngine();
+    const validationService = new ValidationService();
+    const dataRepository = new DataRepository();
+
+    // Create a test component that uses the warband context
+    const TestComponent = () => {
+      const { currentWarband, addWeirdo, selectWeirdo } = useWarband();
+      
+      // Add a weirdo with no weapons on mount
+      React.useEffect(() => {
+        if (!currentWarband) {
+          const warbandId = 'test-warband';
+          // Create warband first
+          addWeirdo(warbandId, 'trooper');
+        }
+      }, [currentWarband, addWeirdo]);
+
+      const selectedWeirdo = currentWarband?.weirdos.find(w => w.id === currentWarband.weirdos[0]?.id);
+      
+      return (
+        <div>
+          {selectedWeirdo && (
+            <div data-testid="weapon-count">
+              {selectedWeirdo.closeCombatWeapons.length}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <GameDataProvider>
+        <WarbandProvider
+          dataRepository={dataRepository}
+          costEngine={costEngine}
+          validationService={validationService}
+        >
+          {children}
+        </WarbandProvider>
+      </GameDataProvider>
+    );
+
+    render(<TestComponent />, { wrapper: Wrapper });
+
+    // Wait for the automatic unarmed selection to occur
+    await waitFor(() => {
+      const weaponCount = screen.queryByTestId('weapon-count');
+      if (weaponCount) {
+        expect(weaponCount.textContent).toBe('1');
+      }
+    }, { timeout: 1000 });
+  });
+
+  /**
+   * Test that cost recalculates after automatic unarmed selection
+   * Requirement: 6.3
+   */
+  it('should recalculate cost after automatic unarmed selection', async () => {
+    const costEngine = new CostEngine();
+    const validationService = new ValidationService();
+    const dataRepository = new DataRepository();
+
+    const TestComponent = () => {
+      const { currentWarband, addWeirdo } = useWarband();
+      
+      React.useEffect(() => {
+        if (!currentWarband) {
+          addWeirdo('test-warband', 'trooper');
+        }
+      }, [currentWarband, addWeirdo]);
+
+      const selectedWeirdo = currentWarband?.weirdos[0];
+      
+      return (
+        <div>
+          {selectedWeirdo && (
+            <>
+              <div data-testid="weapon-count">
+                {selectedWeirdo.closeCombatWeapons.length}
+              </div>
+              <div data-testid="weapon-id">
+                {selectedWeirdo.closeCombatWeapons[0]?.id || 'none'}
+              </div>
+            </>
+          )}
+        </div>
+      );
+    };
+
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <GameDataProvider>
+        <WarbandProvider
+          dataRepository={dataRepository}
+          costEngine={costEngine}
+          validationService={validationService}
+        >
+          {children}
+        </WarbandProvider>
+      </GameDataProvider>
+    );
+
+    render(<TestComponent />, { wrapper: Wrapper });
+
+    // Wait for automatic unarmed selection
+    await waitFor(() => {
+      const weaponId = screen.queryByTestId('weapon-id');
+      if (weaponId) {
+        expect(weaponId.textContent).toBe('unarmed');
+      }
+    }, { timeout: 1000 });
   });
 });

@@ -41,6 +41,7 @@ describe('PsychicPowerSelector Component', () => {
         <PsychicPowerSelector
           selectedPowers={[]}
           availablePowers={mockPowers}
+          warbandAbility={null}
           onChange={mockOnChange}
         />
       );
@@ -61,6 +62,7 @@ describe('PsychicPowerSelector Component', () => {
         <PsychicPowerSelector
           selectedPowers={[]}
           availablePowers={mockPowers}
+          warbandAbility={null}
           onChange={mockOnChange}
         />
       );
@@ -84,6 +86,7 @@ describe('PsychicPowerSelector Component', () => {
         <PsychicPowerSelector
           selectedPowers={[]}
           availablePowers={mockPowers}
+          warbandAbility={null}
           onChange={mockOnChange}
         />
       );
@@ -102,6 +105,7 @@ describe('PsychicPowerSelector Component', () => {
         <PsychicPowerSelector
           selectedPowers={[mockPowers[0]]}
           availablePowers={mockPowers}
+          warbandAbility={null}
           onChange={mockOnChange}
         />
       );
@@ -120,6 +124,7 @@ describe('PsychicPowerSelector Component', () => {
         <PsychicPowerSelector
           selectedPowers={[mockPowers[0], mockPowers[1]]}
           availablePowers={mockPowers}
+          warbandAbility={null}
           onChange={mockOnChange}
         />
       );
@@ -139,6 +144,7 @@ describe('PsychicPowerSelector Component', () => {
         <PsychicPowerSelector
           selectedPowers={[mockPowers[0], mockPowers[1]]}
           availablePowers={mockPowers}
+          warbandAbility={null}
           onChange={mockOnChange}
         />
       );
@@ -159,6 +165,7 @@ describe('PsychicPowerSelector Component', () => {
         <PsychicPowerSelector
           selectedPowers={mockPowers}
           availablePowers={mockPowers}
+          warbandAbility={null}
           onChange={mockOnChange}
         />
       );

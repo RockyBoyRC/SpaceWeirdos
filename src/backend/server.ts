@@ -86,8 +86,16 @@ async function startServer() {
       console.log('  POST   /api/warbands/:id/weirdos');
       console.log('  PUT    /api/warbands/:id/weirdos/:weirdoId');
       console.log('  DELETE /api/warbands/:id/weirdos/:weirdoId');
+      console.log('  GET    /api/game-data/attributes');
+      console.log('  GET    /api/game-data/weapons/close');
+      console.log('  GET    /api/game-data/weapons/ranged');
+      console.log('  GET    /api/game-data/equipment');
+      console.log('  GET    /api/game-data/psychic-powers');
+      console.log('  GET    /api/game-data/leader-traits');
       console.log('  GET    /api/game-data/warband-abilities');
+      console.log('  POST   /api/cost/calculate');
       console.log('  POST   /api/validation/warband');
+      console.log('  POST   /api/validation/weirdo');
       console.log('  POST   /api/calculate-cost');
       console.log('  POST   /api/validate');
     });

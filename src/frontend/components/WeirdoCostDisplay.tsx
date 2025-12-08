@@ -1,63 +1,79 @@
-import { useState, useMemo, memo } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Weirdo, WarbandAbility } from '../../backend/models/types';
-import { CostEngine } from '../../backend/services/CostEngine';
+import { apiClient } from '../services/apiClient';
 import './WeirdoCostDisplay.css';
 
 /**
  * WeirdoCostDisplay Component
  * 
  * Shows individual weirdo cost with sticky positioning at top of weirdo editor.
- * Provides expandable cost breakdown showing component costs.
+ * Provides expandable cost breakdown fetched from API.
  * Displays warning indicators when approaching limits (within 10 points).
  * Displays error indicators when exceeding limits.
  * Uses design system tokens for consistent styling.
  * Animates breakdown expand/collapse with smooth transitions.
  * Memoized for performance optimization.
  * 
- * Requirements: 1.1, 1.3, 2.1, 2.2, 2.5, 2.6, 3.1, 3.3, 3.5, 3.6, 5.1-5.5
+ * Requirements: 1.1, 1.3, 2.1, 2.2, 2.5, 2.6, 3.1, 3.3, 3.5, 3.6, 5.1-5.5, 9.2, 9.6
  */
 
 interface WeirdoCostDisplayProps {
   weirdo: Weirdo;
   warbandAbility: WarbandAbility | null;
-  costEngine: CostEngine;
 }
 
 const WeirdoCostDisplayComponent = ({
   weirdo,
   warbandAbility,
-  costEngine,
 }: WeirdoCostDisplayProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [costBreakdown, setCostBreakdown] = useState<{
+    attributeCost: number;
+    weaponCost: number;
+    equipmentCost: number;
+    psychicPowerCost: number;
+  } | null>(null);
 
-  // Memoize total cost calculation (Requirements 1.1, 1.3, 1.4)
-  const totalCost = useMemo(
-    () => weirdo.totalCost ?? costEngine.calculateWeirdoCost(weirdo, warbandAbility),
-    [weirdo, warbandAbility, costEngine]
-  );
+  // Use the cached total cost from the weirdo object (calculated by API via WarbandContext)
+  // Fallback to 0 if totalCost is undefined (shouldn't happen but provides safety)
+  const totalCost = weirdo.totalCost ?? 0;
 
-  // Memoize individual component costs for breakdown (Requirements 1.4, 5.2, 5.3)
-  const costBreakdown = useMemo(() => {
-    const attributeCost = 
-      costEngine.getAttributeCost('speed', weirdo.attributes.speed, warbandAbility) +
-      costEngine.getAttributeCost('defense', weirdo.attributes.defense, warbandAbility) +
-      costEngine.getAttributeCost('firepower', weirdo.attributes.firepower, warbandAbility) +
-      costEngine.getAttributeCost('prowess', weirdo.attributes.prowess, warbandAbility) +
-      costEngine.getAttributeCost('willpower', weirdo.attributes.willpower, warbandAbility);
-    
-    const weaponCost = [...weirdo.closeCombatWeapons, ...weirdo.rangedWeapons]
-      .reduce((sum, weapon) => sum + costEngine.getWeaponCost(weapon, warbandAbility), 0);
-    
-    const equipmentCost = weirdo.equipment
-      .reduce((sum, equip) => sum + costEngine.getEquipmentCost(equip, warbandAbility), 0);
-    
-    const psychicPowerCost = weirdo.psychicPowers
-      .reduce((sum, power) => sum + power.cost, 0);
-    
-    return { attributeCost, weaponCost, equipmentCost, psychicPowerCost };
-  }, [weirdo, warbandAbility, costEngine]);
-  
-  const { attributeCost, weaponCost, equipmentCost, psychicPowerCost } = costBreakdown;
+  // Fetch cost breakdown from API when expanded (Requirements 9.2, 9.6)
+  useEffect(() => {
+    if (isExpanded && !costBreakdown) {
+      const fetchBreakdown = async () => {
+        try {
+          const response = await apiClient.calculateCostRealTime({
+            weirdoType: weirdo.type,
+            attributes: weirdo.attributes,
+            weapons: {
+              close: weirdo.closeCombatWeapons.map(w => w.name),
+              ranged: weirdo.rangedWeapons.map(w => w.name),
+            },
+            equipment: weirdo.equipment.map(e => e.name),
+            psychicPowers: weirdo.psychicPowers.map(p => p.name),
+            warbandAbility: warbandAbility,
+          });
+          
+          setCostBreakdown({
+            attributeCost: response.data.breakdown.attributes,
+            weaponCost: response.data.breakdown.weapons,
+            equipmentCost: response.data.breakdown.equipment,
+            psychicPowerCost: response.data.breakdown.psychicPowers,
+          });
+        } catch (error) {
+          console.error('Error fetching cost breakdown:', error);
+        }
+      };
+      
+      fetchBreakdown();
+    }
+  }, [isExpanded, costBreakdown, weirdo, warbandAbility]);
+
+  // Reset breakdown when weirdo changes
+  useEffect(() => {
+    setCostBreakdown(null);
+  }, [weirdo.id, weirdo.attributes, weirdo.closeCombatWeapons, weirdo.rangedWeapons, weirdo.equipment, weirdo.psychicPowers, warbandAbility]);
 
   // Determine warning/error state (Requirements 2.1, 2.2)
   // Leaders have 25 point limit, troopers have 20 point limit
@@ -119,29 +135,37 @@ const WeirdoCostDisplayComponent = ({
         </button>
       </div>
 
-      {/* Expandable cost breakdown (Requirements 5.1, 5.2, 5.3, 5.4, 5.5) */}
+      {/* Expandable cost breakdown (Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 9.2) */}
       {isExpanded && (
         <div className="weirdo-cost-display__breakdown">
-          <div className="weirdo-cost-display__breakdown-item">
-            <span>Attributes:</span>
-            <span>{attributeCost} pts</span>
-          </div>
-          <div className="weirdo-cost-display__breakdown-item">
-            <span>Weapons:</span>
-            <span>{weaponCost} pts</span>
-          </div>
-          <div className="weirdo-cost-display__breakdown-item">
-            <span>Equipment:</span>
-            <span>{equipmentCost} pts</span>
-          </div>
-          <div className="weirdo-cost-display__breakdown-item">
-            <span>Psychic Powers:</span>
-            <span>{psychicPowerCost} pts</span>
-          </div>
-          <div className="weirdo-cost-display__breakdown-item weirdo-cost-display__breakdown-item--total">
-            <span>Total:</span>
-            <span>{totalCost} pts</span>
-          </div>
+          {costBreakdown ? (
+            <>
+              <div className="weirdo-cost-display__breakdown-item">
+                <span>Attributes:</span>
+                <span>{costBreakdown.attributeCost} pts</span>
+              </div>
+              <div className="weirdo-cost-display__breakdown-item">
+                <span>Weapons:</span>
+                <span>{costBreakdown.weaponCost} pts</span>
+              </div>
+              <div className="weirdo-cost-display__breakdown-item">
+                <span>Equipment:</span>
+                <span>{costBreakdown.equipmentCost} pts</span>
+              </div>
+              <div className="weirdo-cost-display__breakdown-item">
+                <span>Psychic Powers:</span>
+                <span>{costBreakdown.psychicPowerCost} pts</span>
+              </div>
+              <div className="weirdo-cost-display__breakdown-item weirdo-cost-display__breakdown-item--total">
+                <span>Total:</span>
+                <span>{totalCost} pts</span>
+              </div>
+            </>
+          ) : (
+            <div className="weirdo-cost-display__breakdown-item">
+              <span>Loading breakdown...</span>
+            </div>
+          )}
         </div>
       )}
     </div>

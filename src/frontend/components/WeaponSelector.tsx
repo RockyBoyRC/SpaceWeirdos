@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Weapon, WarbandAbility } from '../../backend/models/types';
-import { CostEngine } from '../../backend/services/CostEngine';
+import { calculateWeaponCost } from '../utils/costCalculations';
 import './WeaponSelector.css';
 
 /**
@@ -8,10 +8,11 @@ import './WeaponSelector.css';
  * 
  * Multi-select interface for weapons with cost and notes display.
  * Supports both close combat and ranged weapons.
- * Shows modified costs when warband abilities apply.
+ * Shows base costs for each weapon.
+ * Total cost (including warband ability modifications) is calculated by the API.
  * Can be disabled (e.g., ranged weapons when Firepower is None).
  * 
- * Requirements: 5.3, 5.7, 5.8, 12.2, 12.7
+ * Requirements: 5.3, 5.7, 5.8, 12.2, 12.7, 9.2, 9.6
  */
 
 interface WeaponSelectorProps {
@@ -21,7 +22,6 @@ interface WeaponSelectorProps {
   warbandAbility: WarbandAbility | null;
   onChange: (weapons: Weapon[]) => void;
   disabled?: boolean;
-  costEngine: CostEngine;
 }
 
 const WeaponSelectorComponent = ({
@@ -30,8 +30,7 @@ const WeaponSelectorComponent = ({
   availableWeapons,
   warbandAbility,
   onChange,
-  disabled = false,
-  costEngine
+  disabled = false
 }: WeaponSelectorProps) => {
   const handleToggle = (weapon: Weapon) => {
     // Don't allow changes when disabled
@@ -50,25 +49,10 @@ const WeaponSelectorComponent = ({
     }
   };
 
-  const getWeaponCost = (weapon: Weapon): { baseCost: number; modifiedCost: number } => {
-    const baseCost = weapon.baseCost;
-    const modifiedCost = costEngine.getWeaponCost(weapon, warbandAbility);
-    return { baseCost, modifiedCost };
-  };
-
   const formatCostDisplay = (weapon: Weapon): string => {
-    const { baseCost, modifiedCost } = getWeaponCost(weapon);
-    
-    if (baseCost !== modifiedCost) {
-      // Show modified cost with strikethrough on base cost
-      return `${modifiedCost} pts (was ${baseCost} pts)`;
-    }
-    return `${baseCost} pts`;
-  };
-
-  const hasModifiedCost = (weapon: Weapon): boolean => {
-    const { baseCost, modifiedCost } = getWeaponCost(weapon);
-    return baseCost !== modifiedCost;
+    // Apply warband ability modifiers to display accurate costs
+    const modifiedCost = calculateWeaponCost(weapon, warbandAbility);
+    return `${modifiedCost} pts`;
   };
 
   const title = type === 'close-combat' ? 'Close Combat Weapons' : 'Ranged Weapons';
@@ -85,7 +69,6 @@ const WeaponSelectorComponent = ({
       <ul className="weapon-selector__list" role="list">
         {availableWeapons.map((weapon) => {
           const isSelected = selectedWeapons.some(w => w.id === weapon.id);
-          const isModified = hasModifiedCost(weapon);
 
           return (
             <li key={weapon.id} className="weapon-selector__item" role="listitem">
@@ -106,7 +89,7 @@ const WeaponSelectorComponent = ({
                   <div className="weapon-selector__header">
                     <span className="weapon-selector__name">{weapon.name}</span>
                     <span 
-                      className={`weapon-selector__cost ${isModified ? 'modified' : ''}`}
+                      className="weapon-selector__cost"
                       aria-label={`Cost: ${formatCostDisplay(weapon)}`}
                     >
                       {formatCostDisplay(weapon)}

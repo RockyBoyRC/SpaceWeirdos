@@ -70,7 +70,7 @@ describe('WeaponSelector Component', () => {
           availableWeapons={mockCloseCombatWeapons}
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -99,7 +99,7 @@ describe('WeaponSelector Component', () => {
           availableWeapons={mockCloseCombatWeapons}
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -120,7 +120,7 @@ describe('WeaponSelector Component', () => {
           availableWeapons={mockCloseCombatWeapons}
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -143,7 +143,7 @@ describe('WeaponSelector Component', () => {
           availableWeapons={mockRangedWeapons}
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -166,7 +166,7 @@ describe('WeaponSelector Component', () => {
           warbandAbility={null}
           onChange={mockOnChange}
           disabled={true}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -191,7 +191,7 @@ describe('WeaponSelector Component', () => {
           warbandAbility={null}
           onChange={mockOnChange}
           disabled={true}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -204,10 +204,12 @@ describe('WeaponSelector Component', () => {
     });
   });
 
-  describe('Modified Cost Indication', () => {
-    it('should show modified cost for Mutants ability on Claws & Teeth', () => {
+  describe('Cost Display', () => {
+    it('should show modified costs with warband ability modifiers', () => {
       const mockOnChange = vi.fn();
 
+      // With Mutants ability, selector shows modified costs
+      // Mutants reduces specific close combat weapon costs by 1
       render(
         <WeaponSelector
           type="close-combat"
@@ -215,15 +217,16 @@ describe('WeaponSelector Component', () => {
           availableWeapons={mockCloseCombatWeapons}
           warbandAbility={'Mutants' as WarbandAbility}
           onChange={mockOnChange}
-          costEngine={costEngine}
         />
       );
 
-      // Claws & Teeth should show modified cost (1 pt instead of 2 pts - Mutants reduces by 1)
-      expect(screen.getByText(/1 pts \(was 2 pts\)/)).toBeInTheDocument();
+      // Claws & Teeth shows modified cost (1 pt) with Mutants ability
+      // Mutants reduces Claws & Teeth from 2 pts to 1 pt
+      const clawsTeethElement = screen.getByText('Claws & Teeth').closest('.weapon-selector__item');
+      expect(clawsTeethElement).toHaveTextContent('1 pts');
     });
 
-    it('should show modified cost for Heavily Armed ability on ranged weapons', () => {
+    it('should show modified costs for ranged weapons with Heavily Armed ability', () => {
       const mockOnChange = vi.fn();
 
       render(
@@ -233,12 +236,13 @@ describe('WeaponSelector Component', () => {
           availableWeapons={mockRangedWeapons}
           warbandAbility={'Heavily Armed' as WarbandAbility}
           onChange={mockOnChange}
-          costEngine={costEngine}
         />
       );
 
-      // Auto Rifle should show modified cost (0 pts instead of 1 pt)
-      expect(screen.getByText(/0 pts \(was 1 pts\)/)).toBeInTheDocument();
+      // Auto Rifle shows modified cost (0 pts) with Heavily Armed ability
+      // Heavily Armed reduces Auto Rifle from 1 pt to 0 pts
+      const autoRifleElement = screen.getByText('Auto Rifle').closest('.weapon-selector__item');
+      expect(autoRifleElement).toHaveTextContent('0 pts');
     });
 
     it('should not show modified cost when no ability applies', () => {
@@ -251,7 +255,7 @@ describe('WeaponSelector Component', () => {
           availableWeapons={mockCloseCombatWeapons}
           warbandAbility={null}
           onChange={mockOnChange}
-          costEngine={costEngine}
+         
         />
       );
 
@@ -320,7 +324,7 @@ describe('Property-Based Tests: Ranged Weapon Disabling', () => {
               warbandAbility={warbandAbility}
               onChange={mockOnChange}
               disabled={isDisabled}
-              costEngine={costEngine}
+             
             />
           );
 
@@ -369,3 +373,6 @@ describe('Property-Based Tests: Ranged Weapon Disabling', () => {
     );
   });
 });
+
+
+
