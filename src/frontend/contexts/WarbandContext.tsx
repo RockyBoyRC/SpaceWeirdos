@@ -120,7 +120,7 @@ export function WarbandProvider({
               ...weirdo,
               totalCost: response.data.totalCost,
             };
-          } catch (error) {
+          } catch (error: unknown) {
             console.error(`Error calculating cost for weirdo ${weirdo.id}:`, error);
             // Fallback to existing cost on error
             return weirdo;
@@ -139,7 +139,7 @@ export function WarbandProvider({
         };
         
         setCurrentWarband(updatedWarband);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error in debounced cost update:', error);
         // Keep existing warband state on error
       }
@@ -224,9 +224,9 @@ export function WarbandProvider({
       setCurrentWarband(loadedWarband);
       setSelectedWeirdoId(null);
       setValidationErrors(new Map());
-    } catch (err) {
-      console.error('Error loading warband:', err);
-      throw err;
+    } catch (error: unknown) {
+      console.error('Error loading warband:', error);
+      throw error;
     }
   };
 
@@ -298,7 +298,7 @@ export function WarbandProvider({
       });
       
       newWeirdo.totalCost = response.data.totalCost;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error calculating initial weirdo cost:', error);
       // Default to 0 if API fails; will be recalculated on next update
       newWeirdo.totalCost = 0;
@@ -446,9 +446,9 @@ export function WarbandProvider({
       
       // Clear validation errors on successful save
       setValidationErrors(new Map());
-    } catch (err) {
-      console.error('Error saving warband:', err);
-      throw err;
+    } catch (error: unknown) {
+      console.error('Error saving warband:', error);
+      throw error;
     }
   };
 
@@ -466,9 +466,9 @@ export function WarbandProvider({
         setSelectedWeirdoId(null);
         setValidationErrors(new Map());
       }
-    } catch (err) {
-      console.error('Error deleting warband:', err);
-      throw err;
+    } catch (error: unknown) {
+      console.error('Error deleting warband:', error);
+      throw error;
     }
   };
 
@@ -526,8 +526,8 @@ export function WarbandProvider({
       setValidationErrors(newErrors);
       
       return result;
-    } catch (err) {
-      console.error('Error validating warband:', err);
+    } catch (error: unknown) {
+      console.error('Error validating warband:', error);
       return { valid: false, errors: [] };
     }
   };
@@ -559,8 +559,8 @@ export function WarbandProvider({
       setValidationErrors(newErrors);
       
       return result;
-    } catch (err) {
-      console.error('Error validating weirdo:', err);
+    } catch (error: unknown) {
+      console.error('Error validating weirdo:', error);
       return { valid: false, errors: [] };
     }
   };

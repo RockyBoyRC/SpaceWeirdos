@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { DataRepository } from './services/DataRepository';
-import { createWarbandRouter } from './routes/warbandRoutes';
-import { isError } from './utils/typeGuards';
+import { DataRepository } from './services/DataRepository.js';
+import { createWarbandRouter } from './routes/warbandRoutes.js';
+import { isError } from './utils/typeGuards.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -103,7 +103,7 @@ async function startServer() {
     if (isError(error)) {
       console.error('Failed to start server:', error.message);
     } else {
-      console.error('Failed to start server:', error);
+      console.error('Failed to start server:', String(error));
     }
     process.exit(1);
   }

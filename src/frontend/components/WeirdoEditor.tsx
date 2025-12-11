@@ -232,38 +232,43 @@ export function WeirdoEditor() {
       <section className="weirdo-editor__section" aria-labelledby="attributes-heading">
         <h3 id="attributes-heading">Attributes</h3>
         <div className="weirdo-editor__attributes">
-          {/* Type assertion: AttributeSelector accepts union type but we know the specific type based on attribute prop */}
+          {/* Type assertion safe: AttributeSelector accepts union type but handleSpeedChange is specifically for SpeedLevel */}
           <AttributeSelector
             attribute="speed"
             value={selectedWeirdo.attributes.speed}
+            // @ts-expect-error - Type assertion safe: onChange handler is correctly typed for SpeedLevel
             onChange={handleSpeedChange as (value: SpeedLevel | DiceLevel | FirepowerLevel) => void}
             warbandAbility={warbandAbility}
           />
-          {/* Type assertion: AttributeSelector accepts union type but we know the specific type based on attribute prop */}
+          {/* Type assertion safe: AttributeSelector accepts union type but handleDefenseChange is specifically for DiceLevel */}
           <AttributeSelector
             attribute="defense"
             value={selectedWeirdo.attributes.defense}
+            // @ts-expect-error - Type assertion safe: onChange handler is correctly typed for DiceLevel
             onChange={handleDefenseChange as (value: SpeedLevel | DiceLevel | FirepowerLevel) => void}
             warbandAbility={warbandAbility}
           />
-          {/* Type assertion: AttributeSelector accepts union type but we know the specific type based on attribute prop */}
+          {/* Type assertion safe: AttributeSelector accepts union type but handleFirepowerChange is specifically for FirepowerLevel */}
           <AttributeSelector
             attribute="firepower"
             value={selectedWeirdo.attributes.firepower}
+            // @ts-expect-error - Type assertion safe: onChange handler is correctly typed for FirepowerLevel
             onChange={handleFirepowerChange as (value: SpeedLevel | DiceLevel | FirepowerLevel) => void}
             warbandAbility={warbandAbility}
           />
-          {/* Type assertion: AttributeSelector accepts union type but we know the specific type based on attribute prop */}
+          {/* Type assertion safe: AttributeSelector accepts union type but handleProwessChange is specifically for DiceLevel */}
           <AttributeSelector
             attribute="prowess"
             value={selectedWeirdo.attributes.prowess}
+            // @ts-expect-error - Type assertion safe: onChange handler is correctly typed for DiceLevel
             onChange={handleProwessChange as (value: SpeedLevel | DiceLevel | FirepowerLevel) => void}
             warbandAbility={warbandAbility}
           />
-          {/* Type assertion: AttributeSelector accepts union type but we know the specific type based on attribute prop */}
+          {/* Type assertion safe: AttributeSelector accepts union type but handleWillpowerChange is specifically for DiceLevel */}
           <AttributeSelector
             attribute="willpower"
             value={selectedWeirdo.attributes.willpower}
+            // @ts-expect-error - Type assertion safe: onChange handler is correctly typed for DiceLevel
             onChange={handleWillpowerChange as (value: SpeedLevel | DiceLevel | FirepowerLevel) => void}
             warbandAbility={warbandAbility}
           />
@@ -272,6 +277,7 @@ export function WeirdoEditor() {
 
       {/* Close Combat Weapons section (Requirements 5.3, 5.7, 5.8, 12.2, 9.2) */}
       <section className="weirdo-editor__section" aria-labelledby="close-combat-heading">
+        {/* Type assertion safe: gameData.closeCombatWeapons is loaded from API and contains Weapon objects */}
         <WeaponSelector
           type="close-combat"
           selectedWeapons={selectedWeirdo.closeCombatWeapons}
@@ -284,6 +290,7 @@ export function WeirdoEditor() {
       {/* Conditional ranged weapons section (Requirements 5.3, 5.7, 5.8, 12.2, 12.7, 9.2) */}
       {!isRangedWeaponsDisabled ? (
         <section className="weirdo-editor__section" aria-labelledby="ranged-weapons-heading">
+          {/* Type assertion safe: gameData.rangedWeapons is loaded from API and contains Weapon objects */}
           <WeaponSelector
             type="ranged"
             selectedWeapons={selectedWeirdo.rangedWeapons}
@@ -303,6 +310,7 @@ export function WeirdoEditor() {
 
       {/* Equipment section (Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 9.2) */}
       <section className="weirdo-editor__section" aria-labelledby="equipment-section-heading">
+        {/* Type assertion safe: gameData.equipment is loaded from API and contains Equipment objects */}
         <EquipmentSelector
           selectedEquipment={selectedWeirdo.equipment}
           availableEquipment={gameData.equipment as Equipment[]}
@@ -314,6 +322,7 @@ export function WeirdoEditor() {
 
       {/* Psychic powers section (Requirements 6.1, 6.2, 6.3) */}
       <section className="weirdo-editor__section" aria-labelledby="psychic-powers-section-heading">
+        {/* Type assertion safe: gameData.psychicPowers is loaded from API and contains PsychicPower objects */}
         <PsychicPowerSelector
           selectedPowers={selectedWeirdo.psychicPowers}
           availablePowers={gameData.psychicPowers as PsychicPower[]}
@@ -325,6 +334,7 @@ export function WeirdoEditor() {
       {/* Conditional leader trait section (Requirements 7.1, 7.2, 7.3, 7.4) */}
       {isLeader && (
         <section className="weirdo-editor__section" aria-labelledby="leader-trait-section-heading">
+          {/* Type assertion safe: gameData.leaderTraits is loaded from API and contains LeaderTrait objects */}
           <LeaderTraitSelector
             selectedTrait={selectedWeirdo.leaderTrait}
             availableTraits={gameData.leaderTraits as any}

@@ -233,7 +233,7 @@ export function createWarbandRouter(repository: DataRepository): Router {
       }
 
       // Find and update weirdo
-      const weirdoIndex = warband.weirdos.findIndex(w => w.id === weirdoId);
+      const weirdoIndex = warband.weirdos.findIndex((w: Weirdo) => w.id === weirdoId);
       if (weirdoIndex === -1) {
         throw new NotFoundError('Weirdo', weirdoId);
       }
@@ -263,7 +263,7 @@ export function createWarbandRouter(repository: DataRepository): Router {
       }
 
       // Find and remove weirdo
-      const weirdoIndex = warband.weirdos.findIndex(w => w.id === weirdoId);
+      const weirdoIndex = warband.weirdos.findIndex((w: Weirdo) => w.id === weirdoId);
       if (weirdoIndex === -1) {
         throw new NotFoundError('Weirdo', weirdoId);
       }
@@ -434,16 +434,19 @@ export function createWarbandRouter(repository: DataRepository): Router {
         );
       }
 
-      let errors;
+      let result;
       if (warband) {
         // Full validation with warband context
-        errors = validationService.validateWeirdo(weirdo, warband);
+        result = validationService.validateWeirdo(weirdo, warband);
       } else {
         // Partial validation without warband context
         // Create a minimal warband context for validation
+        // Type assertion needed: TypeScript requires explicit union type for literal values
+        // Safe because 75 is a valid member of the 75 | 125 union type
         const minimalWarband = {
           id: 'temp',
           name: 'temp',
+          // Type assertion safe: 75 is a valid member of the 75 | 125 union type
           pointLimit: 75 as 75 | 125,
           ability: null,
           weirdos: [weirdo],
@@ -451,14 +454,15 @@ export function createWarbandRouter(repository: DataRepository): Router {
           createdAt: new Date(),
           updatedAt: new Date()
         };
-        errors = validationService.validateWeirdo(weirdo, minimalWarband);
+        result = validationService.validateWeirdo(weirdo, minimalWarband);
       }
 
       res.json({
         success: true,
         data: {
-          valid: errors.length === 0,
-          errors
+          valid: result.valid,
+          errors: result.errors,
+          warnings: result.warnings
         }
       });
     } catch (error: unknown) {
@@ -476,6 +480,16 @@ export function createWarbandRouter(repository: DataRepository): Router {
     try {
       const startTime = Date.now();
       const { weirdoType, attributes, weapons, equipment, psychicPowers, warbandAbility } = req.body;
+
+      // Log incoming request for debugging
+      console.log('Cost calculation request:', {
+        weirdoType,
+        attributes,
+        weapons,
+        equipment,
+        psychicPowers,
+        warbandAbility
+      });
 
       // Validate required fields
       if (!weirdoType || !attributes) {
@@ -577,16 +591,32 @@ export function createWarbandRouter(repository: DataRepository): Router {
       const totalCost = Object.values(attributeCosts).reduce((sum, cost) => sum + cost, 0) +
                         weaponsCost + equipmentCost + psychicPowersCost;
 
-      // Determine limits and warnings
-      const limit = weirdoType === 'leader' ? 25 : 25; // Max limit for any weirdo
-      const warningThreshold = weirdoType === 'leader' ? 15 : 10; // 10 points for troopers, 15 for leaders
-      const isApproachingLimit = totalCost >= (limit - warningThreshold);
-      const isOverLimit = totalCost > limit;
+      // Update weirdo total cost for validation
+      weirdo.totalCost = totalCost;
 
-      const warnings: string[] = [];
-      if (isApproachingLimit && !isOverLimit) {
-        warnings.push(`Cost is within ${warningThreshold} points of the ${limit}-point limit`);
-      }
+      // Create a minimal warband context for validation
+      // Note: This is a simplified context for real-time cost calculation
+      // For full validation, use the /api/validation/weirdo endpoint
+      const tempWarband: Warband = {
+        id: 'temp',
+        name: 'temp',
+        ability: warbandAbility || null,
+        pointLimit: 125, // Use max limit for real-time calculation
+        totalCost: 0,
+        weirdos: [weirdo],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Use ValidationService to generate warnings
+      const validationResult = validationService.validateWeirdo(weirdo, tempWarband);
+      const warnings: string[] = validationResult.warnings.map(w => w.message);
+
+      // Determine if over limit (error state)
+      const limit = weirdoType === 'leader' ? 25 : 25; // Max limit for any weirdo
+      const isOverLimit = totalCost > limit;
+      const isApproachingLimit = validationResult.warnings.length > 0;
+
       if (isOverLimit) {
         warnings.push(`Cost exceeds the ${limit}-point limit`);
       }

@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from 'react';
-import { Warband, WarbandSummary } from '../../backend/models/types';
+import type { Warband, WarbandSummary } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 import './WarbandList.css';
@@ -46,8 +46,9 @@ export function WarbandList({
     try {
       const data = await apiClient.getAllWarbands();
       setWarbands(data);
-    } catch (err) {
-      setError(`Failed to load warbands: ${(err as Error).message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load warbands';
+      setError(`Failed to load warbands: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -82,10 +83,12 @@ export function WarbandList({
         await loadWarbands();
         // Show success notification
         onDeleteSuccess();
-      } catch (err) {
+      } catch (error: unknown) {
         setDeleteConfirmation(null);
         // Show error notification
-        onDeleteError(err as Error);
+        // Type guard to ensure error is Error before passing to callback
+        const err = error instanceof Error ? error : new Error(String(error));
+        onDeleteError(err);
       }
     }
   };

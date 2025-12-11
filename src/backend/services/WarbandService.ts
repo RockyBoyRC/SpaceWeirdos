@@ -1,8 +1,8 @@
-import { Warband, ValidationResult, WarbandAbility } from '../models/types';
-import { DataRepository } from './DataRepository';
-import { CostEngine } from './CostEngine';
-import { ValidationService } from './ValidationService';
-import { NotFoundError } from '../errors/AppError';
+import { Warband, ValidationResult, WarbandAbility, Weirdo } from '../models/types.js';
+import { DataRepository } from './DataRepository.js';
+import { CostEngine } from './CostEngine.js';
+import { ValidationService } from './ValidationService.js';
+import { NotFoundError } from '../errors/AppError.js';
 
 /**
  * Warband Service
@@ -131,7 +131,7 @@ export class WarbandService {
    */
   recalculateAllCosts(warband: Warband): Warband {
     // Recalculate costs for all weirdos
-    const updatedWeirdos = warband.weirdos.map(weirdo => ({
+    const updatedWeirdos = warband.weirdos.map((weirdo: Weirdo) => ({
       ...weirdo,
       totalCost: this.costEngine.calculateWeirdoCost(weirdo, warband.ability)
     }));

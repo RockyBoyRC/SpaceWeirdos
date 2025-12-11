@@ -1,8 +1,17 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { EquipmentSelector } from '../src/frontend/components/EquipmentSelector';
 import { CostEngine } from '../src/backend/services/CostEngine';
 import { Equipment } from '../src/backend/models/types';
+import * as apiClient from '../src/frontend/services/apiClient';
+import { itemCostCache } from '../src/frontend/hooks/useItemCost';
+
+// Mock the API client
+vi.mock('../src/frontend/services/apiClient', () => ({
+  apiClient: {
+    calculateCostRealTime: vi.fn(),
+  },
+}));
 
 /**
  * Unit tests for EquipmentSelector component
@@ -11,6 +20,29 @@ import { Equipment } from '../src/backend/models/types';
 
 describe('EquipmentSelector Component', () => {
   const costEngine = new CostEngine();
+
+  beforeEach(() => {
+    // Reset mocks before each test
+    vi.clearAllMocks();
+    itemCostCache.clear();
+    
+    // Setup default mock response for API calls
+    vi.mocked(apiClient.apiClient.calculateCostRealTime).mockResolvedValue({
+      success: true,
+      data: {
+        totalCost: 0,
+        breakdown: {
+          attributes: 0,
+          weapons: 0,
+          equipment: 0,
+          psychicPowers: 0,
+        },
+        warnings: [],
+        isApproachingLimit: false,
+        isOverLimit: false,
+      },
+    });
+  });
 
   const mockEquipment: Equipment[] = [
     {
@@ -182,8 +214,34 @@ describe('EquipmentSelector Component', () => {
   });
 
   describe('Equipment Display', () => {
-    it('should display name, cost, and effect for each equipment', () => {
+    it('should display name, cost, and effect for each equipment', async () => {
       const mockOnChange = vi.fn();
+
+      // Clear and reset the mock for this specific test
+      vi.mocked(apiClient.apiClient.calculateCostRealTime).mockReset();
+      
+      // Mock API responses for each equipment item
+      // useItemCost calls the API with the equipment in the equipment array
+      vi.mocked(apiClient.apiClient.calculateCostRealTime).mockImplementation(async (params) => {
+        // Each equipment item has baseCost of 1
+        const equipmentCost = params.equipment && params.equipment.length > 0 ? 1 : 0;
+        
+        return {
+          success: true,
+          data: {
+            totalCost: equipmentCost,
+            breakdown: {
+              attributes: 0,
+              weapons: 0,
+              equipment: equipmentCost,
+              psychicPowers: 0,
+            },
+            warnings: [],
+            isApproachingLimit: false,
+            isOverLimit: false,
+          },
+        };
+      });
 
       render(
         <EquipmentSelector
@@ -198,7 +256,12 @@ describe('EquipmentSelector Component', () => {
 
       // Check all equipment are rendered with costs and effects
       expect(screen.getByText('Heavy Armor')).toBeInTheDocument();
-      expect(screen.getAllByText('1 pts')).toHaveLength(3); // All three equipment have 1 pt cost
+      
+      // Wait for costs to load from API
+      await waitFor(() => {
+        expect(screen.getAllByText('1 pts')).toHaveLength(3); // All three equipment have 1 pt cost
+      });
+      
       expect(screen.getByText('+1 to Defense rolls')).toBeInTheDocument();
 
       expect(screen.getByText('Medkit')).toBeInTheDocument();

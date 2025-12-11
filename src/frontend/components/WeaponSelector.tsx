@@ -24,6 +24,90 @@ interface WeaponSelectorProps {
   disabled?: boolean;
 }
 
+/**
+ * WeaponItem Component
+ * 
+ * Individual weapon item that uses useItemCost hook for API-based cost calculation
+ */
+interface WeaponItemProps {
+  weapon: Weapon;
+  type: 'close-combat' | 'ranged';
+  isSelected: boolean;
+  warbandAbility: WarbandAbility | null;
+  onToggle: (weapon: Weapon) => void;
+  disabled: boolean;
+}
+
+const WeaponItem = memo(({
+  weapon,
+  type,
+  isSelected,
+  warbandAbility,
+  onToggle,
+  disabled
+}: WeaponItemProps) => {
+  // Use the useItemCost hook to get cost from API
+  const weaponType = type === 'close-combat' ? 'close' : 'ranged';
+  const { cost, isLoading, error } = useItemCost({
+    itemType: 'weapon',
+    itemName: weapon.name,
+    warbandAbility,
+    weaponType,
+  });
+
+  const formatCostDisplay = (): string => {
+    if (isLoading) {
+      return '... pts';
+    }
+    if (error) {
+      return '? pts';
+    }
+    return `${cost} pts`;
+  };
+
+  return (
+    <li className="weapon-selector__item" role="listitem">
+      <label 
+        className={`weapon-selector__label ${disabled ? 'disabled' : ''}`}
+        htmlFor={`weapon-${weapon.id}`}
+      >
+        <input
+          type="checkbox"
+          id={`weapon-${weapon.id}`}
+          checked={isSelected}
+          onChange={() => onToggle(weapon)}
+          disabled={disabled}
+          className="weapon-selector__checkbox checkbox"
+          aria-describedby={weapon.notes ? `weapon-notes-${weapon.id}` : undefined}
+        />
+        <div className="weapon-selector__content">
+          <div className="weapon-selector__header">
+            <span className="weapon-selector__name">{weapon.name}</span>
+            <span 
+              className="weapon-selector__cost"
+              aria-label={`Cost: ${formatCostDisplay()}`}
+              data-loading={isLoading}
+              data-error={error !== null}
+            >
+              {formatCostDisplay()}
+            </span>
+          </div>
+          {weapon.notes && (
+            <div 
+              className="weapon-selector__notes" 
+              id={`weapon-notes-${weapon.id}`}
+            >
+              {weapon.notes}
+            </div>
+          )}
+        </div>
+      </label>
+    </li>
+  );
+});
+
+WeaponItem.displayName = 'WeaponItem';
+
 const WeaponSelectorComponent = ({
   type,
   selectedWeapons,

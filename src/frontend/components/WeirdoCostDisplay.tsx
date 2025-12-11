@@ -75,14 +75,15 @@ const WeirdoCostDisplayComponent = ({
     setCostBreakdown(null);
   }, [weirdo.id, weirdo.attributes, weirdo.closeCombatWeapons, weirdo.rangedWeapons, weirdo.equipment, weirdo.psychicPowers, warbandAbility]);
 
-  // Determine warning/error state (Requirements 2.1, 2.2)
+  // Determine warning/error state (Requirements 2.1, 2.2, 2.10)
+  // Use backend ValidationService warnings (within 3 points of applicable limit)
   // Leaders have 25 point limit, troopers have 20 point limit
   const weirdoLimit = weirdo.type === 'leader' ? 25 : 20;
   const remaining = weirdoLimit - totalCost;
-  const isApproachingLimit = remaining <= 10 && remaining > 0;
+  const isApproachingLimit = costResult.isApproachingLimit; // From backend warnings
   const isOverLimit = remaining < 0;
 
-  // Build CSS classes based on state (Requirements 2.5, 2.6)
+  // Build CSS classes based on state
   const displayClasses = [
     'weirdo-cost-display',
     isApproachingLimit && 'weirdo-cost-display--warning',

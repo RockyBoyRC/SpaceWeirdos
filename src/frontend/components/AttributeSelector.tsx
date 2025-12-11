@@ -32,9 +32,13 @@ export interface AttributeSelectorProps {
 // These are safe because the values match the exact types defined in the type system
 const ATTRIBUTE_LEVELS = {
   speed: [1, 2, 3] as SpeedLevel[],
+  // Type assertion safe: array contains only valid DiceLevel values
   defense: ['2d6', '2d8', '2d10'] as DiceLevel[],
+  // Type assertion safe: array contains only valid FirepowerLevel values
   firepower: ['None', '2d8', '2d10'] as FirepowerLevel[],
+  // Type assertion safe: array contains only valid DiceLevel values
   prowess: ['2d6', '2d8', '2d10'] as DiceLevel[],
+  // Type assertion safe: array contains only valid DiceLevel values
   willpower: ['2d6', '2d8', '2d10'] as DiceLevel[]
 };
 
@@ -82,11 +86,14 @@ const AttributeSelectorComponent = ({
 
   const handleChange = (newValue: string) => {
     // Parse the value back to the appropriate type
+    // Type assertions safe: newValue comes from ATTRIBUTE_LEVELS which contains only valid values
     if (attribute === 'speed') {
       onChange(parseInt(newValue) as SpeedLevel);
     } else if (attribute === 'firepower') {
+      // Type assertion safe: newValue is from ATTRIBUTE_LEVELS.firepower which contains only valid FirepowerLevel values
       onChange(newValue as FirepowerLevel);
     } else {
+      // Type assertion safe: newValue is from ATTRIBUTE_LEVELS which contains only valid DiceLevel values
       onChange(newValue as DiceLevel);
     }
   };

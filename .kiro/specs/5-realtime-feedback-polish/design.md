@@ -82,8 +82,8 @@ interface ValidationErrorDisplayProps {
 **Validates: Requirements 1.1, 1.2, 1.3, 1.4**
 
 **Property 2: Cost warning indicators appear correctly**
-*For any* weirdo or warband, when the cost approaches the limit, a warning indicator should be displayed; when the cost exceeds the limit, an error indicator should be displayed.
-**Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5, 2.6**
+*For any* weirdo, when the cost is within 3 points of the applicable limit (18-20 for 20-point limit, 23-25 for 25-point limit), a warning indicator should be displayed; when the cost exceeds the limit, an error indicator should be displayed. For any warband, when the cost is within 15 points of the point limit, a warning indicator should be displayed; when the cost exceeds the limit, an error indicator should be displayed.
+**Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10**
 
 **Property 3: Modified costs are visually indicated**
 *For any* weapon or equipment with a warband ability modifier applied, the display should show both the base cost and modified cost with strikethrough styling on the base cost.
@@ -143,11 +143,15 @@ POST /api/cost/calculate
       equipment: number,
       psychicPowers: number
     },
-    warnings: string[],
-    isApproachingLimit: boolean,
+    warnings: string[], // Includes warnings from backend ValidationService
+    isApproachingLimit: boolean, // Derived from backend validation warnings
     isOverLimit: boolean
   }
 }
+
+// Note: The backend ValidationService (from game rules spec) generates warnings
+// when weirdo cost is within 3 points of applicable limit. The frontend should
+// use these warnings to set isApproachingLimit flag.
 ```
 
 ## Implementation Notes
@@ -182,17 +186,29 @@ The system should automatically select "unarmed" when a weirdo has no close comb
 
 - **Frontend**: Use `apiClient` for all HTTP requests
 - **Frontend**: NEVER directly import CostEngine or ValidationService
-- **Frontend**: Debounce API calls to 100ms to reduce network traffic
+- **Frontend**: Use `useCostCalculation` hook for all cost calculations (provides caching and debouncing)
+- **Frontend**: Use `useItemCost` hook for individual item cost display in selectors
+- **Frontend**: Debounce API calls to 300ms to reduce network traffic
+- **Frontend**: Cache identical cost calculations for 5 seconds (LRU cache, 100 entries max)
+- **Frontend**: Invalidate cache when warband ability changes
+- **Frontend**: Display last known cost value while API requests are in flight
 - **Backend**: Optimize cost calculation endpoints for < 100ms response time
 - **Backend**: Return cost breakdowns and warning indicators
 
+**Note**: See `.kiro/specs/frontend-backend-api-separation/` for detailed design of the caching and API communication layer.
+
 ### Performance Optimization
-- Debounce cost calculation API calls to 100ms
+- Debounce cost calculation API calls to 300ms (via `useCostCalculation` hook)
+- Cache identical cost calculations for 5 seconds (LRU cache, 100 entries)
+- Invalidate cache when warband ability changes
 - Use React.memo for expensive components
 - Memoize computed values (costs, validation results)
 - Use CSS containment for sticky elements
 - Cache validation results when weirdo hasn't changed
-- Batch multiple cost calculations when possible
+- Batch multiple item cost calculations when possible (via `useItemCost` hook)
+- Display optimistic updates (last known values) while API requests are in flight
+
+**Implementation**: The `useCostCalculation` and `useItemCost` hooks (defined in `.kiro/specs/frontend-backend-api-separation/`) handle all caching, debouncing, and optimistic updates automatically.
 
 ### CSS Strategy
 ```css

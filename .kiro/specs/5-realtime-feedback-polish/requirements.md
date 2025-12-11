@@ -14,6 +14,7 @@ This spec focuses on the UX enhancements that make the application feel responsi
 - **Cost Badge**: Component displaying base and modified costs
 - **Validation Tooltip**: Contextual error information displayed on hover
 - **Cost Breakdown**: Detailed breakdown of cost components
+- **Applicable Limit**: The point cost limit that applies to a specific weirdo (20 points for most weirdos, 25 points for the one allowed premium weirdo)
 
 ## Requirements
 
@@ -35,12 +36,16 @@ This spec focuses on the UX enhancements that make the application feel responsi
 
 #### Acceptance Criteria
 
-1. WHEN a weirdo cost is within 10 points of their limit (20 for troopers, 25 for leaders) THEN the Warband Builder SHALL display a warning indicator
-2. WHEN a weirdo cost exceeds their limit THEN the Warband Builder SHALL display an error indicator
-3. WHEN the warband cost is within 15 points of the point limit THEN the Warband Builder SHALL display a warning indicator
-4. WHEN the warband cost exceeds the point limit THEN the Warband Builder SHALL display an error indicator
-5. WHEN warning indicators are displayed THEN the Warband Builder SHALL use orange/yellow color
-6. WHEN error indicators are displayed THEN the Warband Builder SHALL use red color
+1. WHEN a weirdo cost is within 3 points of their applicable limit THEN the Warband Builder SHALL display a warning indicator
+2. WHEN a weirdo has no 25-point weirdo in the warband AND cost is between 18 and 20 points THEN the Warband Builder SHALL display a warning for approaching the 20-point limit
+3. WHEN a weirdo has no 25-point weirdo in the warband AND cost is between 23 and 25 points THEN the Warband Builder SHALL display a warning for approaching the 25-point limit
+4. WHEN a weirdo has a 25-point weirdo in the warband AND cost is between 18 and 20 points THEN the Warband Builder SHALL display a warning for approaching the 20-point limit
+5. WHEN a weirdo cost exceeds their applicable limit THEN the Warband Builder SHALL display an error indicator
+6. WHEN the warband cost is within 15 points of the point limit THEN the Warband Builder SHALL display a warning indicator
+7. WHEN the warband cost exceeds the point limit THEN the Warband Builder SHALL display an error indicator
+8. WHEN warning indicators are displayed THEN the Warband Builder SHALL use orange/yellow color
+9. WHEN error indicators are displayed THEN the Warband Builder SHALL use red color
+10. WHEN displaying weirdo cost warnings THEN the Warband Builder SHALL use the backend ValidationService warnings from the game rules API
 
 ### Requirement 3
 

@@ -28,6 +28,85 @@ interface EquipmentSelectorProps {
   onChange: (equipment: Equipment[]) => void;
 }
 
+/**
+ * EquipmentItem Component
+ * 
+ * Individual equipment item that uses useItemCost hook for API-based cost calculation
+ */
+interface EquipmentItemProps {
+  equipment: Equipment;
+  isSelected: boolean;
+  warbandAbility: WarbandAbility | null;
+  onToggle: (equipment: Equipment) => void;
+  disabled: boolean;
+}
+
+const EquipmentItem = memo(({
+  equipment,
+  isSelected,
+  warbandAbility,
+  onToggle,
+  disabled
+}: EquipmentItemProps) => {
+  // Use the useItemCost hook to get cost from API
+  const { cost, isLoading, error } = useItemCost({
+    itemType: 'equipment',
+    itemName: equipment.name,
+    warbandAbility,
+  });
+
+  const formatCostDisplay = (): string => {
+    if (isLoading) {
+      return '... pts';
+    }
+    if (error) {
+      return '? pts';
+    }
+    return `${cost} pts`;
+  };
+
+  return (
+    <li className="equipment-selector__item" role="listitem">
+      <label 
+        className={`equipment-selector__label ${disabled ? 'disabled' : ''}`}
+        htmlFor={`equipment-${equipment.id}`}
+      >
+        <input
+          type="checkbox"
+          id={`equipment-${equipment.id}`}
+          checked={isSelected}
+          onChange={() => onToggle(equipment)}
+          disabled={disabled}
+          className="equipment-selector__checkbox checkbox"
+          aria-describedby={`equipment-effect-${equipment.id}`}
+          aria-label={`${equipment.name}, ${formatCostDisplay()}`}
+        />
+        <div className="equipment-selector__content">
+          <div className="equipment-selector__header">
+            <span className="equipment-selector__name">{equipment.name}</span>
+            <span 
+              className="equipment-selector__cost"
+              aria-label={`Cost: ${formatCostDisplay()}`}
+              data-loading={isLoading}
+              data-error={error !== null}
+            >
+              {formatCostDisplay()}
+            </span>
+          </div>
+          <div 
+            className="equipment-selector__effect" 
+            id={`equipment-effect-${equipment.id}`}
+          >
+            {equipment.effect}
+          </div>
+        </div>
+      </label>
+    </li>
+  );
+});
+
+EquipmentItem.displayName = 'EquipmentItem';
+
 const EquipmentSelectorComponent = ({
   selectedEquipment,
   availableEquipment,

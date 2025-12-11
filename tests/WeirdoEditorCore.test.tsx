@@ -88,7 +88,28 @@ describe('WeirdoEditor', () => {
 });
 
 describe('WeirdoCostDisplay', () => {
-  const costEngine = new CostEngine();
+  beforeEach(() => {
+    // Reset mocks before each test
+    vi.clearAllMocks();
+    
+    // Setup default mock response
+    vi.mocked(apiClient.apiClient.calculateCostRealTime).mockResolvedValue({
+      success: true,
+      data: {
+        totalCost: 10,
+        breakdown: {
+          attributes: 4,
+          weapons: 2,
+          equipment: 2,
+          psychicPowers: 2,
+        },
+        warnings: [],
+        isApproachingLimit: false,
+        isOverLimit: false,
+        calculationTime: 5,
+      },
+    });
+  });
 
   /**
    * Test cost display shows correct values
@@ -101,11 +122,10 @@ describe('WeirdoCostDisplay', () => {
       <WeirdoCostDisplay
         weirdo={mockWeirdo}
         warbandAbility={null}
-        costEngine={costEngine}
       />
     );
 
-    // Cost is calculated by CostEngine, not from totalCost field
+    // Cost is calculated by API, not from totalCost field
     // Check for the cost value span specifically
     const costValue = container.querySelector('.weirdo-cost-display__value');
     expect(costValue).toBeInTheDocument();
@@ -116,7 +136,7 @@ describe('WeirdoCostDisplay', () => {
    * Test warning indicator when approaching limit
    * Requirement: 3.4
    */
-  it('should show warning indicator when approaching limit', () => {
+  it('should show warning indicator when approaching limit', async () => {
     const mockWeirdo = createMockWeirdo('trooper', 15);
     // Set attributes to make cost approach limit (within 10 points of 20, so 11-20)
     // Need to get cost between 11 and 20
@@ -125,23 +145,44 @@ describe('WeirdoCostDisplay', () => {
     mockWeirdo.attributes.prowess = '2d10'; // 2pts
     mockWeirdo.attributes.willpower = '2d10'; // 2pts
     // Total should be around 12 points (within warning range)
+    mockWeirdo.totalCost = 12;
+    
+    // Mock API to return approaching limit
+    vi.mocked(apiClient.apiClient.calculateCostRealTime).mockResolvedValue({
+      success: true,
+      data: {
+        totalCost: 12,
+        breakdown: {
+          attributes: 8,
+          weapons: 2,
+          equipment: 2,
+          psychicPowers: 0,
+        },
+        warnings: [],
+        isApproachingLimit: true,
+        isOverLimit: false,
+        calculationTime: 5,
+      },
+    });
     
     render(
       <WeirdoCostDisplay
         weirdo={mockWeirdo}
         warbandAbility={null}
-        costEngine={costEngine}
       />
     );
 
-    expect(screen.getByText(/Approaching Limit/i)).toBeInTheDocument();
+    // Wait for the cost calculation to complete
+    await waitFor(() => {
+      expect(screen.getByText(/Approaching Limit/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
   /**
    * Test error indicator when exceeding limit
    * Requirement: 3.4
    */
-  it('should show error indicator when exceeding limit', () => {
+  it('should show error indicator when exceeding limit', async () => {
     const mockWeirdo = createMockWeirdo('trooper', 25);
     // Set attributes to make cost exceed limit
     mockWeirdo.attributes.speed = 3;
@@ -149,16 +190,37 @@ describe('WeirdoCostDisplay', () => {
     mockWeirdo.attributes.firepower = '2d10';
     mockWeirdo.attributes.prowess = '2d10';
     mockWeirdo.attributes.willpower = '2d10';
+    mockWeirdo.totalCost = 25;
+    
+    // Mock API to return over limit
+    vi.mocked(apiClient.apiClient.calculateCostRealTime).mockResolvedValue({
+      success: true,
+      data: {
+        totalCost: 25,
+        breakdown: {
+          attributes: 15,
+          weapons: 4,
+          equipment: 4,
+          psychicPowers: 2,
+        },
+        warnings: [],
+        isApproachingLimit: false,
+        isOverLimit: true,
+        calculationTime: 5,
+      },
+    });
     
     render(
       <WeirdoCostDisplay
         weirdo={mockWeirdo}
         warbandAbility={null}
-        costEngine={costEngine}
       />
     );
 
-    expect(screen.getByText(/Over Limit/i)).toBeInTheDocument();
+    // Wait for the cost calculation to complete
+    await waitFor(() => {
+      expect(screen.getByText(/Over Limit/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
   /**
@@ -172,11 +234,10 @@ describe('WeirdoCostDisplay', () => {
       <WeirdoCostDisplay
         weirdo={mockWeirdo}
         warbandAbility={null}
-        costEngine={costEngine}
       />
     );
 
-    // Cost is calculated by CostEngine
+    // Cost is calculated by API
     // Check for the cost value span specifically
     const costValue = container.querySelector('.weirdo-cost-display__value');
     expect(costValue).toBeInTheDocument();
@@ -194,7 +255,6 @@ describe('WeirdoCostDisplay', () => {
       <WeirdoCostDisplay
         weirdo={mockWeirdo}
         warbandAbility={null}
-        costEngine={costEngine}
       />
     );
 

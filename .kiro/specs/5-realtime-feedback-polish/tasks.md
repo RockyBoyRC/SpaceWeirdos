@@ -191,6 +191,22 @@
   - **Property 2: Cost warning indicators appear correctly**
   - **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5, 2.6**
 
+- [x] 6.4 Update weirdo warning logic to use backend ValidationService
+  - Remove frontend calculation of isApproachingLimit (within 10 points)
+  - Use warnings from backend ValidationService API response
+  - Backend generates warnings when cost is within 3 points of applicable limit
+  - Update WeirdoCostDisplay to use backend warnings
+  - Update WarbandCostDisplay to continue using 15-point threshold for warband total
+  - Remove hardcoded 10-point threshold from frontend code
+  - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.10_
+
+- [ ]* 6.5 Write unit tests for updated warning logic
+  - Test warnings come from backend API response
+  - Test 3-point threshold (18-20, 23-25) via backend
+  - Test frontend correctly displays backend warnings
+  - Test warband warnings still use 15-point threshold
+  - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.10_
+
 - [x] 7. Refactor validation to use API
 
 
