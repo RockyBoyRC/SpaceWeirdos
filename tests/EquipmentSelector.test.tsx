@@ -268,33 +268,8 @@ describe('EquipmentSelector Component', () => {
       expect(screen.getByText('Once per game, 1 weirdo touching this weirdo becomes ready')).toBeInTheDocument();
     });
 
-    it('should show modified costs based on warband ability', async () => {
+    it('should show modified costs based on warband ability', () => {
       const mockOnChange = vi.fn();
-
-      // Clear and reset the mock for this specific test
-      vi.mocked(apiClient.apiClient.calculateCostRealTime).mockReset();
-      
-      // Mock API responses with Soldiers ability (equipment is free)
-      vi.mocked(apiClient.apiClient.calculateCostRealTime).mockImplementation(async (params) => {
-        // With Soldiers ability, equipment costs 0
-        const equipmentCost = params.warbandAbility === 'Soldiers' ? 0 : 1;
-        
-        return {
-          success: true,
-          data: {
-            totalCost: equipmentCost,
-            breakdown: {
-              attributes: 0,
-              weapons: 0,
-              equipment: equipmentCost,
-              psychicPowers: 0,
-            },
-            warnings: [],
-            isApproachingLimit: false,
-            isOverLimit: false,
-          },
-        };
-      });
 
       // With Soldiers ability, selector shows modified costs (0 pts for free equipment)
       // This matches the backend cost calculations
@@ -308,12 +283,9 @@ describe('EquipmentSelector Component', () => {
         />
       );
 
-      // Wait for costs to load from API
       // Equipment shows modified cost (0 pts for Soldiers ability)
       // Requirements: 1.2, 1.4, 2.2
-      await waitFor(() => {
-        expect(screen.getAllByText('0 pts')).toHaveLength(3);
-      });
+      expect(screen.getAllByText('0 pts')).toHaveLength(3);
       expect(screen.queryByText('1 pts')).not.toBeInTheDocument();
     });
   });
@@ -388,109 +360,3 @@ describe('EquipmentSelector Component', () => {
 
 
 
-
-/**
- * Property-Based Tests for Equipment Selector API Usage
- * 
- * **Feature: 6-frontend-backend-api-separation, Property 12: Selector components use API for cost display**
- * **Validates: Requirements 5.2**
- */
-describe('Property-Based Tests: Equipment Selector API Usage', () => {
-  const testConfig = { numRuns: 50 };
-
-  /**
-   * Property 12: Selector components use API for cost display
-   * 
-   * For any equipment selector with equipment and warband ability, the component should:
-   * 1. Use the useItemCost hook (which calls the API) for each equipment item
-   * 2. Display costs returned from the API
-   * 3. Handle loading states appropriately
-   * 4. Not use local cost calculation functions
-   * 
-   * This test verifies that the EquipmentSelector component retrieves costs from the
-   * backend API with warband ability context, rather than calculating costs locally.
-   * 
-   * **Feature: 6-frontend-backend-api-separation, Property 12: Selector components use API for cost display**
-   * **Validates: Requirements 5.2**
-   */
-  it('Property 12: EquipmentSelector uses API for cost display', async () => {
-    const fc = await import('fast-check');
-    const { WarbandAbility } = await import('../src/backend/models/types');
-
-    fc.assert(
-      fc.property(
-        // Generate weirdo type
-        fc.constantFrom('leader' as const, 'trooper' as const),
-        // Generate random equipment (1-3 items to keep test fast)
-        fc.array(
-          fc.record({
-            id: fc.string({ minLength: 1, maxLength: 20 }),
-            name: fc.string({ minLength: 1, maxLength: 30 }),
-            type: fc.constantFrom('Passive' as const, 'Action' as const),
-            baseCost: fc.integer({ min: 0, max: 5 }),
-            effect: fc.string({ minLength: 1, maxLength: 50 })
-          }),
-          { minLength: 1, maxLength: 3 }
-        ),
-        // Generate optional warband ability
-        fc.option(
-          fc.constantFrom<WarbandAbility>(
-            'Cyborgs', 'Fanatics', 'Living Weapons', 
-            'Heavily Armed', 'Mutants', 'Soldiers', 'Undead'
-          ),
-          { nil: null }
-        ),
-
-        (weirdoType, equipment, warbandAbility) => {
-          const mockOnChange = vi.fn();
-
-          const { container, unmount } = render(
-            <EquipmentSelector
-              selectedEquipment={[]}
-              availableEquipment={equipment}
-              weirdoType={weirdoType}
-              warbandAbility={warbandAbility}
-              onChange={mockOnChange}
-            />
-          );
-
-          try {
-            // Property 1: Each equipment item should have a cost display element
-            const costElements = container.querySelectorAll('.equipment-selector__cost');
-            expect(costElements.length).toBe(equipment.length);
-
-            // Property 2: Cost elements should have data attributes for loading/error states
-            // These attributes are set by the useItemCost hook
-            costElements.forEach(costElement => {
-              expect(costElement).toHaveAttribute('data-loading');
-              expect(costElement).toHaveAttribute('data-error');
-            });
-
-            // Property 3: Cost display should show either:
-            // - A numeric cost with "pts" (when loaded)
-            // - "... pts" (when loading)
-            // - "? pts" (when error)
-            costElements.forEach(costElement => {
-              const costText = costElement.textContent || '';
-              const isValidCostFormat = 
-                /^\d+ pts$/.test(costText) ||  // Numeric cost
-                costText === '... pts' ||       // Loading
-                costText === '? pts';           // Error
-              
-              expect(isValidCostFormat).toBe(true);
-            });
-
-            // Property 4: The component should render all equipment items
-            expect(container.querySelectorAll('.equipment-selector__item').length).toBe(equipment.length);
-
-            return true;
-          } finally {
-            // Clean up after each iteration
-            unmount();
-          }
-        }
-      ),
-      testConfig
-    );
-  });
-});

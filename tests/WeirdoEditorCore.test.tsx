@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { WeirdoEditor } from '../src/frontend/components/WeirdoEditor';
@@ -11,14 +11,6 @@ import { DataRepository } from '../src/backend/services/DataRepository';
 import { WarbandProvider } from '../src/frontend/contexts/WarbandContext';
 import { GameDataProvider } from '../src/frontend/contexts/GameDataContext';
 import { useWarband } from '../src/frontend/contexts/WarbandContext';
-import * as apiClient from '../src/frontend/services/apiClient';
-
-// Mock the API client
-vi.mock('../src/frontend/services/apiClient', () => ({
-  apiClient: {
-    calculateCostRealTime: vi.fn(),
-  },
-}));
 
 /**
  * Unit tests for WeirdoEditor core components

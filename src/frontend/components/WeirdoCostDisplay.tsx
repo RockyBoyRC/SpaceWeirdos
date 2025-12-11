@@ -1,27 +1,20 @@
-import { useState, memo } from 'react';
-import type { Weirdo, WarbandAbility } from '../../backend/models/types';
-import { useCostCalculation } from '../hooks/useCostCalculation';
+import { useState, useEffect, memo } from 'react';
+import { Weirdo, WarbandAbility } from '../../backend/models/types';
+import { apiClient } from '../services/apiClient';
 import './WeirdoCostDisplay.css';
 
 /**
  * WeirdoCostDisplay Component
  * 
  * Shows individual weirdo cost with sticky positioning at top of weirdo editor.
- * Provides expandable cost breakdown fetched from API via useCostCalculation hook.
+ * Provides expandable cost breakdown fetched from API.
+ * Displays warning indicators when approaching limits (within 10 points).
+ * Displays error indicators when exceeding limits.
+ * Uses design system tokens for consistent styling.
+ * Animates breakdown expand/collapse with smooth transitions.
+ * Memoized for performance optimization.
  * 
- * Context-Aware Warning System:
- * - Displays warnings when approaching limits (within 3 points of applicable limit)
- * - Warning logic handled by backend ValidationService for consistency with game rules
- * - Adapts to warband composition (considers existing 25-point weirdos)
- * - Shows appropriate messaging for 20-point vs 25-point limits
- * 
- * Features:
- * - Displays error indicators when exceeding limits
- * - Uses design system tokens for consistent styling
- * - Animates breakdown expand/collapse with smooth transitions
- * - Memoized for performance optimization
- * 
- * Requirements: 1.1, 2.1, 2.2, 2.10, 3.1, 3.2, 3.3
+ * Requirements: 1.1, 1.3, 2.1, 2.2, 2.5, 2.6, 3.1, 3.3, 3.5, 3.6, 5.1-5.5, 9.2, 9.6
  */
 
 interface WeirdoCostDisplayProps {
@@ -34,26 +27,53 @@ const WeirdoCostDisplayComponent = ({
   warbandAbility,
 }: WeirdoCostDisplayProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [costBreakdown, setCostBreakdown] = useState<{
+    attributeCost: number;
+    weaponCost: number;
+    equipmentCost: number;
+    psychicPowerCost: number;
+  } | null>(null);
 
-  // Use useCostCalculation hook for real-time cost updates
-  const costResult = useCostCalculation({
-    weirdoType: weirdo.type,
-    attributes: weirdo.attributes,
-    weapons: {
-      close: weirdo.closeCombatWeapons.map(w => w.name),
-      ranged: weirdo.rangedWeapons.map(w => w.name),
-    },
-    equipment: weirdo.equipment.map(e => e.name),
-    psychicPowers: weirdo.psychicPowers.map(p => p.name),
-    warbandAbility: warbandAbility,
-  });
+  // Use the cached total cost from the weirdo object (calculated by API via WarbandContext)
+  // Fallback to 0 if totalCost is undefined (shouldn't happen but provides safety)
+  const totalCost = weirdo.totalCost ?? 0;
 
-  // Extract values from hook result
-  const totalCost = costResult.totalCost;
-  const breakdown = costResult.breakdown;
-  const warnings = costResult.warnings;
-  const isLoading = costResult.isLoading;
-  const error = costResult.error;
+  // Fetch cost breakdown from API when expanded (Requirements 9.2, 9.6)
+  useEffect(() => {
+    if (isExpanded && !costBreakdown) {
+      const fetchBreakdown = async () => {
+        try {
+          const response = await apiClient.calculateCostRealTime({
+            weirdoType: weirdo.type,
+            attributes: weirdo.attributes,
+            weapons: {
+              close: weirdo.closeCombatWeapons.map(w => w.name),
+              ranged: weirdo.rangedWeapons.map(w => w.name),
+            },
+            equipment: weirdo.equipment.map(e => e.name),
+            psychicPowers: weirdo.psychicPowers.map(p => p.name),
+            warbandAbility: warbandAbility,
+          });
+          
+          setCostBreakdown({
+            attributeCost: response.data.breakdown.attributes,
+            weaponCost: response.data.breakdown.weapons,
+            equipmentCost: response.data.breakdown.equipment,
+            psychicPowerCost: response.data.breakdown.psychicPowers,
+          });
+        } catch (error) {
+          console.error('Error fetching cost breakdown:', error);
+        }
+      };
+      
+      fetchBreakdown();
+    }
+  }, [isExpanded, costBreakdown, weirdo, warbandAbility]);
+
+  // Reset breakdown when weirdo changes
+  useEffect(() => {
+    setCostBreakdown(null);
+  }, [weirdo.id, weirdo.attributes, weirdo.closeCombatWeapons, weirdo.rangedWeapons, weirdo.equipment, weirdo.psychicPowers, warbandAbility]);
 
   // Determine warning/error state (Requirements 2.1, 2.2, 2.10)
   // Use backend ValidationService warnings (within 3 points of applicable limit)
@@ -116,49 +136,36 @@ const WeirdoCostDisplayComponent = ({
         </button>
       </div>
 
-      {/* Expandable cost breakdown with loading and error states */}
+      {/* Expandable cost breakdown (Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 9.2) */}
       {isExpanded && (
         <div className="weirdo-cost-display__breakdown">
-          {error ? (
-            <div className="weirdo-cost-display__breakdown-item weirdo-cost-display__breakdown-item--error">
-              <span>Error: {error}</span>
-            </div>
-          ) : isLoading ? (
-            <div className="weirdo-cost-display__breakdown-item">
-              <span>Loading breakdown...</span>
-            </div>
-          ) : (
+          {costBreakdown ? (
             <>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Attributes:</span>
-                <span>{breakdown.attributes} pts</span>
+                <span>{costBreakdown.attributeCost} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Weapons:</span>
-                <span>{breakdown.weapons} pts</span>
+                <span>{costBreakdown.weaponCost} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Equipment:</span>
-                <span>{breakdown.equipment} pts</span>
+                <span>{costBreakdown.equipmentCost} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Psychic Powers:</span>
-                <span>{breakdown.psychicPowers} pts</span>
+                <span>{costBreakdown.psychicPowerCost} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item weirdo-cost-display__breakdown-item--total">
                 <span>Total:</span>
                 <span>{totalCost} pts</span>
               </div>
-              {warnings.length > 0 && (
-                <div className="weirdo-cost-display__warnings">
-                  {warnings.map((warning, index) => (
-                    <div key={index} className="weirdo-cost-display__warning">
-                      ⚠ {warning}
-                    </div>
-                  ))}
-                </div>
-              )}
             </>
+          ) : (
+            <div className="weirdo-cost-display__breakdown-item">
+              <span>Loading breakdown...</span>
+            </div>
           )}
         </div>
       )}

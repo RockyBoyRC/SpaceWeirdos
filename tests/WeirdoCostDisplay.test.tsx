@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { WeirdoCostDisplay } from '../src/frontend/components/WeirdoCostDisplay';
@@ -14,42 +14,7 @@ import * as apiClient from '../src/frontend/services/apiClient';
  * Requirements: 1.1, 1.3, 2.1, 2.2, 3.1, 3.3, 5.1-5.5
  */
 
-// Mock the API client
-vi.mock('../src/frontend/services/apiClient', () => ({
-  apiClient: {
-    calculateCostRealTime: vi.fn(),
-  },
-}));
-
-// Import the cache for clearing in tests
-import { costCache } from '../src/frontend/hooks/useCostCalculation';
-
 describe('WeirdoCostDisplay', () => {
-  beforeEach(() => {
-    // Reset mocks before each test
-    vi.clearAllMocks();
-    
-    // Clear the cost cache to prevent test interference
-    costCache.clear();
-    
-    // Setup default mock response for calculateCostRealTime
-    vi.mocked(apiClient.apiClient.calculateCostRealTime).mockResolvedValue({
-      success: true,
-      data: {
-        totalCost: 10,
-        breakdown: {
-          attributes: 4,
-          weapons: 2,
-          equipment: 2,
-          psychicPowers: 2,
-        },
-        warnings: [],
-        isApproachingLimit: false,
-        isOverLimit: false,
-        calculationTime: 5,
-      },
-    });
-  });
   it('should apply sticky positioning styles', () => {
     const weirdo = createMockWeirdo('trooper');
     const { container } = render(

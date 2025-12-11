@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
-import { WarbandService } from '../services/WarbandService.js';
-import { DataRepository } from '../services/DataRepository.js';
-import { CostEngine } from '../services/CostEngine.js';
-import { ValidationService } from '../services/ValidationService.js';
-import { Weirdo, Weapon, Equipment, PsychicPower } from '../models/types.js';
-import { AppError, ValidationError, NotFoundError } from '../errors/AppError.js';
+import { WarbandService } from '../services/WarbandService';
+import { DataRepository } from '../services/DataRepository';
+import { CostEngine } from '../services/CostEngine';
+import { ValidationService } from '../services/ValidationService';
+import { Weirdo, Weapon, Equipment, PsychicPower } from '../models/types';
+import { AppError, ValidationError, NotFoundError } from '../errors/AppError';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -503,22 +503,18 @@ export function createWarbandRouter(repository: DataRepository): Router {
       // Load game data from JSON files to look up items by name
       const closeCombatWeaponsData = JSON.parse(
         await fs.readFile(path.join(process.cwd(), 'data', 'closeCombatWeapons.json'), 'utf-8')
-      // Type assertion safe: JSON files are validated to match type definitions at build time
       ) as Weapon[];
       
       const rangedWeaponsData = JSON.parse(
         await fs.readFile(path.join(process.cwd(), 'data', 'rangedWeapons.json'), 'utf-8')
-      // Type assertion safe: JSON files are validated to match type definitions at build time
       ) as Weapon[];
       
       const equipmentData = JSON.parse(
         await fs.readFile(path.join(process.cwd(), 'data', 'equipment.json'), 'utf-8')
-      // Type assertion safe: JSON files are validated to match type definitions at build time
       ) as Equipment[];
       
       const psychicPowersData = JSON.parse(
         await fs.readFile(path.join(process.cwd(), 'data', 'psychicPowers.json'), 'utf-8')
-      // Type assertion safe: JSON files are validated to match type definitions at build time
       ) as PsychicPower[];
 
       // Build a minimal weirdo object for cost calculation

@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import type { Equipment, WarbandAbility } from '../../backend/models/types';
-import { useItemCost } from '../hooks/useItemCost';
+import { Equipment, WarbandAbility } from '../../backend/models/types';
+import { calculateEquipmentCost } from '../utils/costCalculations';
 import './EquipmentSelector.css';
 
 /**
@@ -144,6 +144,12 @@ const EquipmentSelectorComponent = ({
     }
   };
 
+  const formatCostDisplay = (equipment: Equipment): string => {
+    // Apply warband ability modifiers to match backend calculations
+    const modifiedCost = calculateEquipmentCost(equipment, warbandAbility);
+    return `${modifiedCost} pts`;
+  };
+
   return (
     <div className="equipment-selector" role="group" aria-labelledby="equipment-heading">
       <h4 id="equipment-heading">Equipment</h4>
@@ -161,14 +167,40 @@ const EquipmentSelectorComponent = ({
           const isDisabled = !isSelected && isLimitReached;
 
           return (
-            <EquipmentItem
-              key={equipment.id}
-              equipment={equipment}
-              isSelected={isSelected}
-              warbandAbility={warbandAbility}
-              onToggle={handleToggle}
-              disabled={isDisabled}
-            />
+            <li key={equipment.id} className="equipment-selector__item" role="listitem">
+              <label 
+                className={`equipment-selector__label ${isDisabled ? 'disabled' : ''}`}
+                htmlFor={`equipment-${equipment.id}`}
+              >
+                <input
+                  type="checkbox"
+                  id={`equipment-${equipment.id}`}
+                  checked={isSelected}
+                  onChange={() => handleToggle(equipment)}
+                  disabled={isDisabled}
+                  className="equipment-selector__checkbox checkbox"
+                  aria-describedby={`equipment-effect-${equipment.id}`}
+                  aria-label={`${equipment.name}, ${formatCostDisplay(equipment)}`}
+                />
+                <div className="equipment-selector__content">
+                  <div className="equipment-selector__header">
+                    <span className="equipment-selector__name">{equipment.name}</span>
+                    <span 
+                      className="equipment-selector__cost"
+                      aria-label={`Cost: ${formatCostDisplay(equipment)}`}
+                    >
+                      {formatCostDisplay(equipment)}
+                    </span>
+                  </div>
+                  <div 
+                    className="equipment-selector__effect" 
+                    id={`equipment-effect-${equipment.id}`}
+                  >
+                    {equipment.effect}
+                  </div>
+                </div>
+              </label>
+            </li>
           );
         })}
       </ul>

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { WeaponSelector } from '../src/frontend/components/WeaponSelector';
 import { EquipmentSelector } from '../src/frontend/components/EquipmentSelector';
@@ -6,11 +6,6 @@ import { PsychicPowerSelector } from '../src/frontend/components/PsychicPowerSel
 import type { Weapon, Equipment, PsychicPower, WarbandAbility } from '../src/backend/models/types';
 import { promises as fs } from 'fs';
 import path from 'path';
-
-// Mock the useItemCost hook
-vi.mock('../src/frontend/hooks/useItemCost', () => ({
-  useItemCost: vi.fn(),
-}));
 
 /**
  * Automated tests for warband ability cost display in selector components
@@ -40,50 +35,6 @@ describe('Warband Ability Cost Display', () => {
     psychicPowers = JSON.parse(
       await fs.readFile(path.join(process.cwd(), 'data', 'psychicPowers.json'), 'utf-8')
     );
-
-    // Mock useItemCost to return costs based on item name and warband ability
-    const { useItemCost } = await import('../src/frontend/hooks/useItemCost');
-    vi.mocked(useItemCost).mockImplementation((params) => {
-      let cost = 0;
-
-      if (params.itemType === 'weapon') {
-        const weaponList = params.weaponType === 'close' ? closeCombatWeapons : rangedWeapons;
-        const weapon = weaponList.find(w => w.name === params.itemName);
-        if (weapon) {
-          cost = weapon.baseCost;
-          // Apply Mutants ability discount
-          if (params.warbandAbility === 'Mutants' && 
-              ['Claws & Teeth', 'Horrible Claws & Teeth', 'Whip/Tail'].includes(weapon.name)) {
-            cost = Math.max(0, cost - 1);
-          }
-          // Apply Heavily Armed ability discount
-          if (params.warbandAbility === 'Heavily Armed' && params.weaponType === 'ranged') {
-            cost = Math.max(0, cost - 1);
-          }
-        }
-      } else if (params.itemType === 'equipment') {
-        const equip = equipment.find(e => e.name === params.itemName);
-        if (equip) {
-          cost = equip.baseCost;
-          // Apply Soldiers ability discount
-          if (params.warbandAbility === 'Soldiers' && 
-              ['Grenade', 'Heavy Armor', 'Medkit'].includes(equip.name)) {
-            cost = 0;
-          }
-        }
-      } else if (params.itemType === 'psychicPower') {
-        const power = psychicPowers.find(p => p.name === params.itemName);
-        if (power) {
-          cost = power.cost;
-        }
-      }
-
-      return {
-        cost,
-        isLoading: false,
-        error: null,
-      };
-    });
   });
 
   /**
@@ -91,7 +42,7 @@ describe('Warband Ability Cost Display', () => {
    * Requirements: 1.1
    */
   describe('Mutants Ability', () => {
-    it('should display reduced costs for Claws & Teeth, Horrible Claws & Teeth, and Whip/Tail', async () => {
+    it('should display reduced costs for Claws & Teeth, Horrible Claws & Teeth, and Whip/Tail', () => {
       const mutantWeapons = ['Claws & Teeth', 'Horrible Claws & Teeth', 'Whip/Tail'];
       
       const { container } = render(
@@ -118,7 +69,7 @@ describe('Warband Ability Cost Display', () => {
       }
     });
 
-    it('should display base costs for non-mutant close combat weapons', async () => {
+    it('should display base costs for non-mutant close combat weapons', () => {
       const nonMutantWeapons = closeCombatWeapons.filter(
         w => !['Claws & Teeth', 'Horrible Claws & Teeth', 'Whip/Tail'].includes(w.name)
       );
@@ -147,7 +98,7 @@ describe('Warband Ability Cost Display', () => {
    * Requirements: 1.2
    */
   describe('Soldiers Ability', () => {
-    it('should display 0 cost for Grenade, Heavy Armor, and Medkit', async () => {
+    it('should display 0 cost for Grenade, Heavy Armor, and Medkit', () => {
       const soldierFreeEquipment = ['Grenade', 'Heavy Armor', 'Medkit'];
       
       render(
@@ -172,7 +123,7 @@ describe('Warband Ability Cost Display', () => {
       }
     });
 
-    it('should display base costs for non-soldier equipment', async () => {
+    it('should display base costs for non-soldier equipment', () => {
       const nonFreeEquipment = equipment.filter(
         e => !['Grenade', 'Heavy Armor', 'Medkit'].includes(e.name)
       );
@@ -201,7 +152,7 @@ describe('Warband Ability Cost Display', () => {
    * Requirements: 1.3
    */
   describe('Heavily Armed Ability', () => {
-    it('should display reduced costs for all ranged weapons', async () => {
+    it('should display reduced costs for all ranged weapons', () => {
       const { container } = render(
         <WeaponSelector
           type="ranged"
@@ -227,7 +178,7 @@ describe('Warband Ability Cost Display', () => {
    * Requirements: 2.4
    */
   describe('No Ability Selected', () => {
-    it('should display base costs for all close combat weapons', async () => {
+    it('should display base costs for all close combat weapons', () => {
       const { container } = render(
         <WeaponSelector
           type="close-combat"
@@ -246,7 +197,7 @@ describe('Warband Ability Cost Display', () => {
       }
     });
 
-    it('should display base costs for all ranged weapons', async () => {
+    it('should display base costs for all ranged weapons', () => {
       const { container } = render(
         <WeaponSelector
           type="ranged"
@@ -265,7 +216,7 @@ describe('Warband Ability Cost Display', () => {
       }
     });
 
-    it('should display base costs for all equipment', async () => {
+    it('should display base costs for all equipment', () => {
       const { container } = render(
         <EquipmentSelector
           selectedEquipment={[]}
@@ -284,7 +235,7 @@ describe('Warband Ability Cost Display', () => {
       }
     });
 
-    it('should display base costs for all psychic powers', async () => {
+    it('should display base costs for all psychic powers', () => {
       const { container } = render(
         <PsychicPowerSelector
           selectedPowers={[]}
@@ -308,7 +259,7 @@ describe('Warband Ability Cost Display', () => {
    * Requirements: 1.5
    */
   describe('Cost Clamping', () => {
-    it('should never display negative costs for weapons with Mutants ability', async () => {
+    it('should never display negative costs for weapons with Mutants ability', () => {
       render(
         <WeaponSelector
           type="close-combat"
@@ -327,7 +278,7 @@ describe('Warband Ability Cost Display', () => {
       }
     });
 
-    it('should never display negative costs for weapons with Heavily Armed ability', async () => {
+    it('should never display negative costs for weapons with Heavily Armed ability', () => {
       render(
         <WeaponSelector
           type="ranged"

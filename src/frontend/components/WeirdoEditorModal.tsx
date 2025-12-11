@@ -71,15 +71,12 @@ export function WeirdoEditorModal({ isOpen, onClose }: WeirdoEditorModalProps) {
   useEffect(() => {
     if (isOpen) {
       // Store currently focused element
-      // Type assertion safe: document.activeElement is always an Element, and we need HTMLElement for focus restoration
       previousFocusRef.current = document.activeElement as HTMLElement;
       
       // Focus modal after a brief delay to ensure it's rendered
-      const focusTimer = setTimeout(() => {
+      setTimeout(() => {
         modalRef.current?.focus();
       }, 10);
-      
-      return () => clearTimeout(focusTimer);
     } else {
       // Restore focus when modal closes
       previousFocusRef.current?.focus();

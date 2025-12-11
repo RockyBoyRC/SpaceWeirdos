@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect, useRef } from 'react';
-import type { Warband, Weirdo, ValidationError, ValidationResult } from '../../backend/models/types';
+import { Warband, Weirdo, ValidationError, ValidationResult } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
 
 /**
@@ -174,8 +174,8 @@ export function WarbandProvider({
           }
           return newErrors;
         });
-      } catch (error: unknown) {
-        console.error('Error validating weirdo:', error);
+      } catch (err) {
+        console.error('Error validating weirdo:', err);
       }
     }, 300);
   }, []);
@@ -364,7 +364,6 @@ export function WarbandProvider({
       }
 
       // Create a copy of updates without totalCost to prevent accidental overwrites
-      // Type assertion safe: destructuring to extract and ignore totalCost field from updates object
       const { totalCost: _ignoredCost, ...safeUpdates } = updates as any;
       
       // Merge updates while preserving totalCost from original weirdo

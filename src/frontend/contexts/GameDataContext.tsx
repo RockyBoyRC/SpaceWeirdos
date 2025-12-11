@@ -96,7 +96,6 @@ interface GameDataProviderProps {
 /**
  * API base URL configuration
  */
-// Type assertion safe: import.meta.env is a Vite-specific object that TypeScript doesn't recognize
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api';
 
 /**
@@ -175,27 +174,21 @@ export function GameDataProvider({ children }: GameDataProviderProps) {
       ]);
 
       // Update state with fetched data (Requirements 9.1, 9.6)
-      // Type assertions safe: API responses are validated to match type definitions by backend
       setAttributes(attributesData as AttributeCosts);
       setCloseCombatWeapons(closeCombatData as Weapon[]);
-      // Type assertion safe: API response validated by backend to match Weapon[] type
       setRangedWeapons(rangedData as Weapon[]);
-      // Type assertion safe: API response validated by backend to match Equipment[] type
       setEquipment(equipmentData as Equipment[]);
-      // Type assertion safe: API response validated by backend to match PsychicPower[] type
       setPsychicPowers(powersData as PsychicPower[]);
-      // Type assertion safe: API response validated by backend to match LeaderTrait[] type
       setLeaderTraits(traitsData as LeaderTrait[]);
-      // Type assertion safe: API response validated by backend to match WarbandAbility[] type
       setWarbandAbilities(abilitiesData as WarbandAbility[]);
       
       setIsLoading(false);
-    } catch (error: unknown) {
+    } catch (err) {
       // Handle errors (Requirement 9.5)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load game data';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load game data';
       setError(errorMessage);
       setIsLoading(false);
-      console.error('Error fetching game data:', error);
+      console.error('Error fetching game data:', err);
     }
   };
 
