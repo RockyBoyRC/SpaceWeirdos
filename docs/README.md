@@ -15,6 +15,7 @@ Welcome to the documentation for the Space Weirdos Warband Builder! This directo
   - [Quick Reference](API-SEPARATION-QUICK-REFERENCE.md) - Common patterns and usage
 - **[UI Design System](UI-DESIGN-SYSTEM.md)** - CSS design tokens, base styles, and utilities
 - **[Implementation Notes](implementation-notes/)** - Feature implementation details and summaries
+  - [Centralized Validation System](implementation-notes/centralized-validation-system.md) - Point limit validation architecture
 - **[Testing Guide](../TESTING.md)** - Testing strategies and guidelines
 - **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute to the project
 
@@ -59,9 +60,15 @@ Complete API reference:
 
 ## Key Concepts
 
-### Context-Aware Validation
+### Centralized Validation System
 
-The warband builder features an intelligent validation system that adapts to your warband composition:
+The warband builder features a centralized validation system with all business logic in the backend:
+
+**Architecture:**
+- All point limits and validation rules centralized in backend constants
+- Context-aware warning logic in ValidationService
+- Frontend components use API-driven validation states exclusively
+- No hardcoded business logic in frontend components
 
 **What It Does:**
 - Analyzes your warband to determine which limits apply to each weirdo
@@ -70,10 +77,11 @@ The warband builder features an intelligent validation system that adapts to you
 - Ensures consistency with Space Weirdos game rules
 
 **Why It Matters:**
+- Single source of truth for all validation logic
 - No confusing warnings for limits that don't apply
 - Better understanding of point allocation options
 - Improved user experience with relevant feedback
-- Confidence that your warband follows the rules
+- Easy maintenance when game rules change
 
 ### API-First Design
 
@@ -125,6 +133,8 @@ The UI provides immediate visual feedback:
 **Current Version**: 1.0.0
 
 **Recent Updates**:
+- ✅ Centralized validation system implemented
+- ✅ Frontend inconsistencies resolved (no hardcoded limits)
 - ✅ Context-aware warning system implemented
 - ✅ Frontend-backend API separation complete
 - ✅ Real-time feedback polish complete

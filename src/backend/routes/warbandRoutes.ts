@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
-import { WarbandService } from '../services/WarbandService';
-import { DataRepository } from '../services/DataRepository';
-import { CostEngine } from '../services/CostEngine';
-import { ValidationService } from '../services/ValidationService';
-import { Weirdo, Weapon, Equipment, PsychicPower } from '../models/types';
-import { AppError, ValidationError, NotFoundError } from '../errors/AppError';
+import { WarbandService } from '../services/WarbandService.js';
+import { DataRepository } from '../services/DataRepository.js';
+import { CostEngine } from '../services/CostEngine.js';
+import { ValidationService } from '../services/ValidationService.js';
+import { Weirdo, Weapon, Equipment, PsychicPower, Warband } from '../models/types.js';
+import { AppError, ValidationError, NotFoundError } from '../errors/AppError.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -501,20 +501,28 @@ export function createWarbandRouter(repository: DataRepository): Router {
       }
 
       // Load game data from JSON files to look up items by name
+      // Type assertion safe: JSON files contain arrays of typed objects matching our interfaces
       const closeCombatWeaponsData = JSON.parse(
         await fs.readFile(path.join(process.cwd(), 'data', 'closeCombatWeapons.json'), 'utf-8')
+        // Type assertion safe: JSON contains Weapon array
       ) as Weapon[];
       
+      // Type assertion safe: JSON files contain arrays of typed objects matching our interfaces
       const rangedWeaponsData = JSON.parse(
         await fs.readFile(path.join(process.cwd(), 'data', 'rangedWeapons.json'), 'utf-8')
+        // Type assertion safe: JSON contains Weapon array
       ) as Weapon[];
       
+      // Type assertion safe: JSON files contain arrays of typed objects matching our interfaces
       const equipmentData = JSON.parse(
         await fs.readFile(path.join(process.cwd(), 'data', 'equipment.json'), 'utf-8')
+        // Type assertion safe: JSON contains Equipment array
       ) as Equipment[];
       
+      // Type assertion safe: JSON files contain arrays of typed objects matching our interfaces
       const psychicPowersData = JSON.parse(
         await fs.readFile(path.join(process.cwd(), 'data', 'psychicPowers.json'), 'utf-8')
+        // Type assertion safe: JSON contains PsychicPower array
       ) as PsychicPower[];
 
       // Build a minimal weirdo object for cost calculation
@@ -610,7 +618,7 @@ export function createWarbandRouter(repository: DataRepository): Router {
 
       // Use ValidationService to generate warnings
       const validationResult = validationService.validateWeirdo(weirdo, tempWarband);
-      const warnings: string[] = validationResult.warnings.map(w => w.message);
+      const warnings: string[] = validationResult.warnings.map((w: any) => w.message);
 
       // Determine if over limit (error state)
       const limit = weirdoType === 'leader' ? 25 : 25; // Max limit for any weirdo
@@ -702,10 +710,10 @@ export function createWarbandRouter(repository: DataRepository): Router {
         // Validate weirdo (with or without warband context)
         if (warband) {
           // Full validation with warband context
-          const errors = validationService.validateWeirdo(weirdo, warband);
+          const validationResult = validationService.validateWeirdo(weirdo, warband);
           return res.json({
-            valid: errors.length === 0,
-            errors
+            valid: validationResult.valid,
+            errors: validationResult.errors
           });
         } else {
           // Partial validation without warband context
@@ -722,10 +730,10 @@ export function createWarbandRouter(repository: DataRepository): Router {
             createdAt: new Date(),
             updatedAt: new Date()
           };
-          const errors = validationService.validateWeirdo(weirdo, minimalWarband);
+          const validationResult = validationService.validateWeirdo(weirdo, minimalWarband);
           return res.json({
-            valid: errors.length === 0,
-            errors
+            valid: validationResult.valid,
+            errors: validationResult.errors
           });
         }
       }

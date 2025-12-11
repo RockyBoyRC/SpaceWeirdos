@@ -268,7 +268,7 @@ describe('EquipmentSelector Component', () => {
       expect(screen.getByText('Once per game, 1 weirdo touching this weirdo becomes ready')).toBeInTheDocument();
     });
 
-    it('should show modified costs based on warband ability', () => {
+    it('should show modified costs based on warband ability', async () => {
       const mockOnChange = vi.fn();
 
       // With Soldiers ability, selector shows modified costs (0 pts for free equipment)
@@ -283,9 +283,13 @@ describe('EquipmentSelector Component', () => {
         />
       );
 
-      // Equipment shows modified cost (0 pts for Soldiers ability)
-      // Requirements: 1.2, 1.4, 2.2
-      expect(screen.getAllByText('0 pts')).toHaveLength(3);
+      // Wait for API calls to complete and costs to load
+      await waitFor(() => {
+        // Equipment shows modified cost (0 pts for Soldiers ability)
+        // Requirements: 1.2, 1.4, 2.2
+        expect(screen.getAllByText('0 pts')).toHaveLength(3);
+      });
+      
       expect(screen.queryByText('1 pts')).not.toBeInTheDocument();
     });
   });

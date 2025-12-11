@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { apiClient } from '../services/apiClient';
 
 /**
  * GameDataContext
@@ -93,10 +94,7 @@ interface GameDataProviderProps {
   children: ReactNode;
 }
 
-/**
- * API base URL configuration
- */
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api';
+
 
 /**
  * GameDataProvider component
@@ -118,7 +116,7 @@ export function GameDataProvider({ children }: GameDataProviderProps) {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Fetch all game data from API
+   * Fetch all game data from API using API client
    * Requirements: 9.1, 9.5
    */
   const fetchGameData = async (): Promise<void> => {
@@ -126,35 +124,7 @@ export function GameDataProvider({ children }: GameDataProviderProps) {
     setError(null);
 
     try {
-      // Fetch all game data in parallel for better performance
-      const [
-        attributesRes,
-        closeCombatRes,
-        rangedRes,
-        equipmentRes,
-        powersRes,
-        traitsRes,
-        abilitiesRes,
-      ] = await Promise.all([
-        fetch(`${API_BASE_URL}/game-data/attributes`),
-        fetch(`${API_BASE_URL}/game-data/weapons/close`),
-        fetch(`${API_BASE_URL}/game-data/weapons/ranged`),
-        fetch(`${API_BASE_URL}/game-data/equipment`),
-        fetch(`${API_BASE_URL}/game-data/psychic-powers`),
-        fetch(`${API_BASE_URL}/game-data/leader-traits`),
-        fetch(`${API_BASE_URL}/game-data/warband-abilities`),
-      ]);
-
-      // Check for HTTP errors
-      if (!attributesRes.ok) throw new Error('Failed to fetch attributes');
-      if (!closeCombatRes.ok) throw new Error('Failed to fetch close combat weapons');
-      if (!rangedRes.ok) throw new Error('Failed to fetch ranged weapons');
-      if (!equipmentRes.ok) throw new Error('Failed to fetch equipment');
-      if (!powersRes.ok) throw new Error('Failed to fetch psychic powers');
-      if (!traitsRes.ok) throw new Error('Failed to fetch leader traits');
-      if (!abilitiesRes.ok) throw new Error('Failed to fetch warband abilities');
-
-      // Parse JSON responses
+      // Fetch all game data in parallel using API client for better performance
       const [
         attributesData,
         closeCombatData,
@@ -164,31 +134,38 @@ export function GameDataProvider({ children }: GameDataProviderProps) {
         traitsData,
         abilitiesData,
       ] = await Promise.all([
-        attributesRes.json(),
-        closeCombatRes.json(),
-        rangedRes.json(),
-        equipmentRes.json(),
-        powersRes.json(),
-        traitsRes.json(),
-        abilitiesRes.json(),
+        apiClient.getAttributes(),
+        apiClient.getCloseCombatWeapons(),
+        apiClient.getRangedWeapons(),
+        apiClient.getEquipment(),
+        apiClient.getPsychicPowers(),
+        apiClient.getLeaderTraits(),
+        apiClient.getWarbandAbilities(),
       ]);
 
       // Update state with fetched data (Requirements 9.1, 9.6)
+      // Type assertions safe: API responses are validated JSON data matching our interface definitions
       setAttributes(attributesData as AttributeCosts);
+      // Type assertion safe: API response contains Weapon array
       setCloseCombatWeapons(closeCombatData as Weapon[]);
+      // Type assertion safe: API response contains Weapon array
       setRangedWeapons(rangedData as Weapon[]);
+      // Type assertion safe: API response contains Equipment array
       setEquipment(equipmentData as Equipment[]);
+      // Type assertion safe: API response contains PsychicPower array
       setPsychicPowers(powersData as PsychicPower[]);
+      // Type assertion safe: API response contains LeaderTrait array
       setLeaderTraits(traitsData as LeaderTrait[]);
+      // Type assertion safe: API response contains WarbandAbility array
       setWarbandAbilities(abilitiesData as WarbandAbility[]);
       
       setIsLoading(false);
-    } catch (err) {
-      // Handle errors (Requirement 9.5)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load game data';
+    } catch (error: unknown) {
+      // Type assertion: Error handling with proper type checking
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load game data';
       setError(errorMessage);
       setIsLoading(false);
-      console.error('Error fetching game data:', err);
+      console.error('Error fetching game data:', error);
     }
   };
 

@@ -63,24 +63,60 @@ The Space Weirdos Warband Builder follows a modern, layered architecture with cl
 - Type safety across the boundary
 - Enables future backend changes without frontend modifications
 
-### 2. Context-Aware Validation
+### 2. Centralized Validation System
 
 **Intelligent Warning System:**
 - Backend ValidationService generates warnings based on game rules
 - Context-aware logic considers existing 25-point weirdos
 - Warnings trigger within 3 points of applicable limits
 - Clear messaging helps users understand which limits apply
+- Frontend components use API-driven warnings exclusively
 
-**Warning Logic Flow:**
+**Centralized Constants:**
+```typescript
+// Backend: src/backend/constants/costs.ts
+export const TROOPER_LIMITS = {
+  STANDARD_LIMIT: 20,     // Standard maximum for troopers
+  MAXIMUM_LIMIT: 25,      // Absolute maximum (premium slot)
+  SPECIAL_SLOT_MIN: 21,   // Minimum for premium slot
+  SPECIAL_SLOT_MAX: 25,   // Maximum for premium slot
+} as const;
+```
+
+**Context-Aware Warning Logic:**
 ```typescript
 // Backend ValidationService
+const warningThreshold = 3; // Centralized threshold
+
 if (hasOther25PointWeirdo) {
-  // Warn only at 18-20 (20-point limit)
+  // Another weirdo uses premium slot - warn at 18-20 (20-point limit)
+  if (pointsFrom20 >= 0 && pointsFrom20 <= warningThreshold) {
+    warnings.push("Cost is within X points of the 20-point limit");
+  }
 } else if (isThis25PointWeirdo) {
-  // Warn only at 23-25 (25-point limit)
+  // This weirdo uses premium slot - warn at 23-25 (25-point limit)
+  if (pointsFrom25 >= 0 && pointsFrom25 <= warningThreshold) {
+    warnings.push("Cost is within X points of the 25-point limit");
+  }
 } else {
-  // Warn at both 18-20 AND 23-25
+  // No premium slot used - warn at both 18-20 AND 23-25
+  // Provides guidance for both possible limits
 }
+```
+
+**Frontend Integration:**
+```typescript
+// Frontend components use centralized hooks
+const costResult = useCostCalculation({
+  weirdoType: weirdo.type,
+  attributes: weirdo.attributes,
+  // ... other params
+});
+
+// API-driven warning states (no hardcoded limits)
+const isApproachingLimit = costResult.isApproachingLimit;
+const isOverLimit = costResult.isOverLimit;
+const warnings = costResult.warnings; // Actual backend messages
 ```
 
 ### 3. Real-time Feedback
@@ -105,18 +141,26 @@ if (hasOther25PointWeirdo) {
 src/frontend/
 ├── components/
 │   ├── WeirdoEditor.tsx           # Main weirdo editing interface
-│   ├── WeirdoCostDisplay.tsx      # Context-aware cost display
-│   ├── WarbandCostDisplay.tsx     # Warband total with warnings
+│   ├── WeirdoCostDisplay.tsx      # API-driven cost display with warnings
+│   ├── WarbandCostDisplay.tsx     # Warband total with UX warnings
 │   ├── ValidationErrorDisplay.tsx # Error message display
 │   └── selectors/                 # Equipment/weapon selectors
 ├── hooks/
-│   ├── useCostCalculation.ts      # Real-time cost calculation
+│   ├── useCostCalculation.ts      # Centralized cost calculation with caching
+│   ├── useItemCost.ts             # Individual item cost calculation
 │   ├── useValidation.ts           # Validation with warnings
 │   └── useWarband.ts              # Warband state management
 └── services/
     ├── apiClient.ts               # Type-safe API client
-    └── apiTypes.ts                # API request/response types
+    ├── apiTypes.ts                # API request/response types
+    └── CostCache.ts               # LRU cache for cost calculations
 ```
+
+**Component Validation Patterns:**
+- **WeirdoCostDisplay**: Uses `useCostCalculation` hook for API-driven warnings
+- **WarbandCostDisplay**: Uses frontend-defined threshold for warband-level UX
+- **All Selectors**: Use `useItemCost` hook for individual item costs
+- **No Hardcoded Limits**: Components rely on API-provided validation states
 
 ### Backend Services
 
@@ -125,15 +169,21 @@ src/backend/
 ├── routes/
 │   └── warbandRoutes.ts           # API endpoint definitions
 ├── services/
-│   ├── ValidationService.ts       # Context-aware validation
+│   ├── ValidationService.ts       # Centralized validation with warnings
 │   ├── CostEngine.ts              # Cost calculation engine
 │   └── CostModifierStrategy.ts    # Faction ability modifiers
 ├── models/
 │   └── types.ts                   # Shared type definitions
 └── constants/
-    ├── costs.ts                   # Game cost tables
+    ├── costs.ts                   # Centralized game constants
     └── validationMessages.ts      # Error/warning messages
 ```
+
+**Centralized Validation Architecture:**
+- **ValidationService**: Single source of truth for all validation logic
+- **Constants**: All point limits, thresholds, and rules centralized in `costs.ts`
+- **Context-Aware Logic**: Sophisticated warning generation based on warband composition
+- **API Integration**: Validation results exposed through `/api/cost/calculate` and `/api/validation/*` endpoints
 
 ## Data Flow
 
@@ -153,9 +203,16 @@ src/backend/
 1. **Warband Analysis**: Backend analyzes existing weirdos in warband
 2. **Context Detection**: Determines if 25-point weirdo exists
 3. **Applicable Limits**: Calculates which limits apply to current weirdo
-4. **Warning Generation**: Generates warnings within 3 points of limits
-5. **Message Formatting**: Creates clear, contextual warning messages
-6. **Frontend Display**: UI shows appropriate warning indicators
+4. **Warning Generation**: Generates warnings within 3 points of limits using centralized threshold
+5. **Message Formatting**: Creates clear, contextual warning messages from ValidationService
+6. **API Response**: Returns warnings with `isApproachingLimit` and `isOverLimit` flags
+7. **Frontend Display**: Components use API-driven states without hardcoded logic
+
+**Warning Consistency:**
+- **Individual Weirdo Warnings**: Generated by backend ValidationService (3-point threshold)
+- **Warband Total Warnings**: Frontend-defined threshold (15 points) for UX feedback
+- **No Hardcoded Limits**: Frontend components use API-provided warning states
+- **Single Source of Truth**: All business logic centralized in backend constants
 
 ## State Management
 

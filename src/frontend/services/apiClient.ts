@@ -1,4 +1,4 @@
-import {
+import type {
   Warband,
   Weirdo,
   WarbandAbility,
@@ -344,6 +344,91 @@ export const apiClient = {
     rule: string;
   }>> {
     return fetchWithRetry('/game-data/warband-abilities', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Get all attributes with costs
+   */
+  async getAttributes(): Promise<Record<string, Record<string, number>>> {
+    return fetchWithRetry('/game-data/attributes', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Get all close combat weapons
+   */
+  async getCloseCombatWeapons(): Promise<Array<{
+    id: string;
+    name: string;
+    type: 'close';
+    baseCost: number;
+    maxActions?: number;
+    notes: string;
+  }>> {
+    return fetchWithRetry('/game-data/weapons/close', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Get all ranged weapons
+   */
+  async getRangedWeapons(): Promise<Array<{
+    id: string;
+    name: string;
+    type: 'ranged';
+    baseCost: number;
+    maxActions?: number;
+    range?: string;
+    notes: string;
+  }>> {
+    return fetchWithRetry('/game-data/weapons/ranged', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Get all equipment
+   */
+  async getEquipment(): Promise<Array<{
+    id: string;
+    name: string;
+    type: string;
+    baseCost: number;
+    effect: string;
+  }>> {
+    return fetchWithRetry('/game-data/equipment', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Get all psychic powers
+   */
+  async getPsychicPowers(): Promise<Array<{
+    id: string;
+    name: string;
+    type: string;
+    cost: number;
+    effect: string;
+  }>> {
+    return fetchWithRetry('/game-data/psychic-powers', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Get all leader traits
+   */
+  async getLeaderTraits(): Promise<Array<{
+    id: string;
+    name: string;
+    description: string;
+  }>> {
+    return fetchWithRetry('/game-data/leader-traits', {
       method: 'GET',
     });
   },

@@ -1,14 +1,15 @@
 import { useState, useEffect, memo } from 'react';
-import { Weirdo, WarbandAbility } from '../../backend/models/types';
-import { apiClient } from '../services/apiClient';
+import type { Weirdo, WarbandAbility } from '../../backend/models/types';
+import { useCostCalculation } from '../hooks/useCostCalculation';
 import './WeirdoCostDisplay.css';
 
 /**
  * WeirdoCostDisplay Component
  * 
  * Shows individual weirdo cost with sticky positioning at top of weirdo editor.
- * Provides expandable cost breakdown fetched from API.
- * Displays warning indicators when approaching limits (within 10 points).
+ * Uses centralized API-driven cost calculation and warning system.
+ * Provides expandable cost breakdown with real-time updates.
+ * Displays context-aware warning indicators based on backend ValidationService.
  * Displays error indicators when exceeding limits.
  * Uses design system tokens for consistent styling.
  * Animates breakdown expand/collapse with smooth transitions.
@@ -27,63 +28,27 @@ const WeirdoCostDisplayComponent = ({
   warbandAbility,
 }: WeirdoCostDisplayProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [costBreakdown, setCostBreakdown] = useState<{
-    attributeCost: number;
-    weaponCost: number;
-    equipmentCost: number;
-    psychicPowerCost: number;
-  } | null>(null);
 
-  // Use the cached total cost from the weirdo object (calculated by API via WarbandContext)
-  // Fallback to 0 if totalCost is undefined (shouldn't happen but provides safety)
-  const totalCost = weirdo.totalCost ?? 0;
+  // Use centralized cost calculation hook with API-driven warnings
+  const costResult = useCostCalculation({
+    weirdoType: weirdo.type,
+    attributes: weirdo.attributes,
+    weapons: {
+      close: weirdo.closeCombatWeapons.map(w => w.name),
+      ranged: weirdo.rangedWeapons.map(w => w.name),
+    },
+    equipment: weirdo.equipment.map(e => e.name),
+    psychicPowers: weirdo.psychicPowers.map(p => p.name),
+    warbandAbility: warbandAbility,
+  }, weirdo.totalCost);
 
-  // Fetch cost breakdown from API when expanded (Requirements 9.2, 9.6)
-  useEffect(() => {
-    if (isExpanded && !costBreakdown) {
-      const fetchBreakdown = async () => {
-        try {
-          const response = await apiClient.calculateCostRealTime({
-            weirdoType: weirdo.type,
-            attributes: weirdo.attributes,
-            weapons: {
-              close: weirdo.closeCombatWeapons.map(w => w.name),
-              ranged: weirdo.rangedWeapons.map(w => w.name),
-            },
-            equipment: weirdo.equipment.map(e => e.name),
-            psychicPowers: weirdo.psychicPowers.map(p => p.name),
-            warbandAbility: warbandAbility,
-          });
-          
-          setCostBreakdown({
-            attributeCost: response.data.breakdown.attributes,
-            weaponCost: response.data.breakdown.weapons,
-            equipmentCost: response.data.breakdown.equipment,
-            psychicPowerCost: response.data.breakdown.psychicPowers,
-          });
-        } catch (error) {
-          console.error('Error fetching cost breakdown:', error);
-        }
-      };
-      
-      fetchBreakdown();
-    }
-  }, [isExpanded, costBreakdown, weirdo, warbandAbility]);
+  // Use API-driven cost and warning states (Requirements 2.1, 2.2, 2.10)
+  const totalCost = costResult.totalCost;
+  const isApproachingLimit = costResult.isApproachingLimit;
+  const isOverLimit = costResult.isOverLimit;
+  const warnings = costResult.warnings;
 
-  // Reset breakdown when weirdo changes
-  useEffect(() => {
-    setCostBreakdown(null);
-  }, [weirdo.id, weirdo.attributes, weirdo.closeCombatWeapons, weirdo.rangedWeapons, weirdo.equipment, weirdo.psychicPowers, warbandAbility]);
-
-  // Determine warning/error state (Requirements 2.1, 2.2, 2.10)
-  // Use backend ValidationService warnings (within 3 points of applicable limit)
-  // Leaders have 25 point limit, troopers have 20 point limit
-  const weirdoLimit = weirdo.type === 'leader' ? 25 : 20;
-  const remaining = weirdoLimit - totalCost;
-  const isApproachingLimit = costResult.isApproachingLimit; // From backend warnings
-  const isOverLimit = remaining < 0;
-
-  // Build CSS classes based on state
+  // Build CSS classes based on API-driven state
   const displayClasses = [
     'weirdo-cost-display',
     isApproachingLimit && 'weirdo-cost-display--warning',
@@ -92,14 +57,17 @@ const WeirdoCostDisplayComponent = ({
     .filter(Boolean)
     .join(' ');
 
-  // Build ARIA label for accessibility
-  let ariaLabel = `Weirdo cost: ${totalCost} of ${weirdoLimit} points`;
+  // Build ARIA label for accessibility using API-driven warnings
+  let ariaLabel = `Weirdo cost: ${totalCost} points`;
   if (isOverLimit) {
-    ariaLabel += `, over limit by ${Math.abs(remaining)} points`;
+    ariaLabel += `, over limit`;
   } else if (isApproachingLimit) {
-    ariaLabel += `, warning: only ${remaining} points remaining`;
-  } else {
-    ariaLabel += `, ${remaining} points remaining`;
+    ariaLabel += `, warning: approaching limit`;
+  }
+  
+  // Add specific warning messages from API
+  if (warnings.length > 0) {
+    ariaLabel += `. ${warnings.join('. ')}`;
   }
 
   return (
@@ -113,7 +81,7 @@ const WeirdoCostDisplayComponent = ({
         <div className="weirdo-cost-display__main">
           <span className="weirdo-cost-display__label">Weirdo Cost:</span>
           <span className="weirdo-cost-display__value">
-            {totalCost} / {weirdoLimit} pts
+            {totalCost} pts
           </span>
           {isApproachingLimit && (
             <span className="weirdo-cost-display__indicator weirdo-cost-display__indicator--warning">
@@ -139,33 +107,47 @@ const WeirdoCostDisplayComponent = ({
       {/* Expandable cost breakdown (Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 9.2) */}
       {isExpanded && (
         <div className="weirdo-cost-display__breakdown">
-          {costBreakdown ? (
+          {costResult.isLoading ? (
+            <div className="weirdo-cost-display__breakdown-item">
+              <span>Loading breakdown...</span>
+            </div>
+          ) : costResult.error ? (
+            <div className="weirdo-cost-display__breakdown-item">
+              <span>Error loading breakdown: {costResult.error}</span>
+            </div>
+          ) : (
             <>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Attributes:</span>
-                <span>{costBreakdown.attributeCost} pts</span>
+                <span>{costResult.breakdown.attributes} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Weapons:</span>
-                <span>{costBreakdown.weaponCost} pts</span>
+                <span>{costResult.breakdown.weapons} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Equipment:</span>
-                <span>{costBreakdown.equipmentCost} pts</span>
+                <span>{costResult.breakdown.equipment} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Psychic Powers:</span>
-                <span>{costBreakdown.psychicPowerCost} pts</span>
+                <span>{costResult.breakdown.psychicPowers} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item weirdo-cost-display__breakdown-item--total">
                 <span>Total:</span>
                 <span>{totalCost} pts</span>
               </div>
+              {/* Display API-driven warnings */}
+              {warnings.length > 0 && (
+                <div className="weirdo-cost-display__warnings">
+                  {warnings.map((warning, index) => (
+                    <div key={index} className="weirdo-cost-display__warning">
+                      ⚠ {warning}
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
-          ) : (
-            <div className="weirdo-cost-display__breakdown-item">
-              <span>Loading breakdown...</span>
-            </div>
           )}
         </div>
       )}

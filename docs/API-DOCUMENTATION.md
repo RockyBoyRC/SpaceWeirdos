@@ -84,11 +84,19 @@ Calculates real-time cost for a weirdo with context-aware warnings.
 }
 ```
 
-**Warning Logic:**
+**Centralized Warning Logic:**
 - Uses backend ValidationService for context-aware warnings
 - Considers warband composition (25-point weirdo existence)
-- Warns within 3 points of applicable limits
+- Warns within 3 points of applicable limits (centralized threshold)
 - Provides clear messaging about which limits apply
+- Frontend components use API-driven warning states exclusively
+
+**Warning Generation Process:**
+1. Backend analyzes warband composition
+2. Determines applicable limits for current weirdo
+3. Generates warnings using centralized 3-point threshold
+4. Returns structured warnings with boolean flags
+5. Frontend displays warnings without hardcoded logic
 
 ### Validation
 
@@ -241,13 +249,26 @@ Delete a warband.
 
 ## Context-Aware Warning System
 
-### Warning Generation Logic
+### Centralized Warning Generation Logic
 
-The API uses the backend `ValidationService` to generate context-aware warnings:
+The API uses the backend `ValidationService` with centralized constants and logic:
 
+**Constants (src/backend/constants/costs.ts):**
+```typescript
+export const TROOPER_LIMITS = {
+  STANDARD_LIMIT: 20,     // Standard maximum for troopers
+  MAXIMUM_LIMIT: 25,      // Absolute maximum (premium slot)
+  SPECIAL_SLOT_MIN: 21,   // Minimum for premium slot
+  SPECIAL_SLOT_MAX: 25,   // Maximum for premium slot
+} as const;
+```
+
+**Context-Aware Logic:**
 1. **No 25-point weirdo exists**: Warns at 18-20 (20-limit) and 23-25 (25-limit)
-2. **25-point weirdo exists (different weirdo)**: Warns at 18-20 only
-3. **25-point weirdo exists (same weirdo)**: Warns at 23-25 only
+2. **25-point weirdo exists (different weirdo)**: Warns at 18-20 only (limited to standard)
+3. **25-point weirdo exists (same weirdo)**: Warns at 23-25 only (using premium slot)
+
+**Warning Threshold:** Fixed at 3 points (centralized in ValidationService)
 
 ### Warning Messages
 
@@ -255,12 +276,25 @@ The API uses the backend `ValidationService` to generate context-aware warnings:
 - `"Cost is within X points of the 25-point limit (premium weirdo slot)"`
 - `"Cost is within X points of the 25-point limit"`
 
-### Integration Notes
+### Frontend Integration Notes
 
-- Frontend should use `isApproachingLimit` flag for UI state
-- Display `warnings` array for user feedback
-- Warnings don't block actions (unlike errors)
-- Real-time endpoints provide immediate feedback
+- **Use API-driven states**: Frontend components should use `isApproachingLimit` and `isOverLimit` flags
+- **Display warning messages**: Show `warnings` array content directly (no hardcoded messages)
+- **No hardcoded limits**: Frontend should never duplicate point limit logic
+- **Centralized hooks**: Use `useCostCalculation` and `useItemCost` hooks for consistency
+- **Warnings vs Errors**: Warnings don't block actions (unlike validation errors)
+- **Real-time feedback**: Endpoints optimized for <100ms response time
+
+**Recommended Pattern:**
+```typescript
+// ✅ Correct: Use centralized hook
+const costResult = useCostCalculation(params);
+const isApproachingLimit = costResult.isApproachingLimit;
+const warnings = costResult.warnings;
+
+// ❌ Wrong: Hardcoded limits
+const isApproachingLimit = (totalCost >= 18);
+```
 
 ## Performance
 

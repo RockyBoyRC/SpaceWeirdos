@@ -8,7 +8,7 @@ import { WeaponSelector } from './WeaponSelector';
 import { EquipmentSelector } from './EquipmentSelector';
 import { PsychicPowerSelector } from './PsychicPowerSelector';
 import { LeaderTraitSelector } from './LeaderTraitSelector';
-import { Weirdo, SpeedLevel, DiceLevel, FirepowerLevel, Weapon, Equipment, PsychicPower, LeaderTrait } from '../../backend/models/types';
+import type { Weirdo, SpeedLevel, DiceLevel, FirepowerLevel, Weapon, Equipment, PsychicPower, LeaderTrait } from '../../backend/models/types';
 import './WeirdoEditor.css';
 
 /**
@@ -132,6 +132,7 @@ export function WeirdoEditor() {
           // ensure unarmed stays selected
           const unarmedWeapon = gameData.closeCombatWeapons.find(w => w.id === 'unarmed');
           if (unarmedWeapon) {
+            // Type assertion safe: unarmedWeapon is found from closeCombatWeapons array which contains Weapon objects
             updateWeirdo(selectedWeirdo.id, { closeCombatWeapons: [unarmedWeapon as Weapon] });
             return;
           }
@@ -281,6 +282,7 @@ export function WeirdoEditor() {
         <WeaponSelector
           type="close-combat"
           selectedWeapons={selectedWeirdo.closeCombatWeapons}
+          // Type assertion safe: gameData.closeCombatWeapons is loaded from API and contains Weapon objects
           availableWeapons={gameData.closeCombatWeapons as Weapon[]}
           warbandAbility={warbandAbility}
           onChange={handleCloseCombatWeaponsChange}
@@ -294,6 +296,7 @@ export function WeirdoEditor() {
           <WeaponSelector
             type="ranged"
             selectedWeapons={selectedWeirdo.rangedWeapons}
+            // Type assertion safe: gameData.rangedWeapons is loaded from API and contains Weapon objects
             availableWeapons={gameData.rangedWeapons as Weapon[]}
             warbandAbility={warbandAbility}
             onChange={handleRangedWeaponsChange}
@@ -313,6 +316,7 @@ export function WeirdoEditor() {
         {/* Type assertion safe: gameData.equipment is loaded from API and contains Equipment objects */}
         <EquipmentSelector
           selectedEquipment={selectedWeirdo.equipment}
+          // Type assertion safe: gameData.equipment is loaded from API and contains Equipment objects
           availableEquipment={gameData.equipment as Equipment[]}
           weirdoType={selectedWeirdo.type}
           warbandAbility={warbandAbility}
@@ -325,6 +329,7 @@ export function WeirdoEditor() {
         {/* Type assertion safe: gameData.psychicPowers is loaded from API and contains PsychicPower objects */}
         <PsychicPowerSelector
           selectedPowers={selectedWeirdo.psychicPowers}
+          // Type assertion safe: gameData.psychicPowers is loaded from API and contains PsychicPower objects
           availablePowers={gameData.psychicPowers as PsychicPower[]}
           warbandAbility={warbandAbility}
           onChange={handlePsychicPowersChange}
@@ -337,6 +342,7 @@ export function WeirdoEditor() {
           {/* Type assertion safe: gameData.leaderTraits is loaded from API and contains LeaderTrait objects */}
           <LeaderTraitSelector
             selectedTrait={selectedWeirdo.leaderTrait}
+            // Type assertion safe: gameData.leaderTraits is loaded from API and contains LeaderTrait objects
             availableTraits={gameData.leaderTraits as any}
             weirdoType={selectedWeirdo.type}
             onChange={handleLeaderTraitChange}

@@ -265,8 +265,34 @@ describe('WeaponSelector Component', () => {
   });
 
   describe('Cost Display', () => {
-    it('should show modified costs with warband ability modifiers', () => {
+    it('should show modified costs with warband ability modifiers', async () => {
       const mockOnChange = vi.fn();
+
+      // Mock API to return modified costs with Mutants ability
+      vi.mocked(apiClient.apiClient.calculateCostRealTime).mockImplementation(async (params) => {
+        const weaponName = params.weapons?.close?.[0] || '';
+        let weaponCost = 0;
+        
+        // Apply Mutants ability modifier (reduces specific close combat weapons by 1)
+        if (weaponName === 'Claws & Teeth') weaponCost = 1; // 2 - 1 = 1
+        else if (weaponName === 'Unarmed') weaponCost = 0; // Already 0
+
+        return {
+          success: true,
+          data: {
+            totalCost: weaponCost,
+            breakdown: {
+              attributes: 0,
+              weapons: weaponCost,
+              equipment: 0,
+              psychicPowers: 0,
+            },
+            warnings: [],
+            isApproachingLimit: false,
+            isOverLimit: false,
+          },
+        };
+      });
 
       // With Mutants ability, selector shows modified costs
       // Mutants reduces specific close combat weapon costs by 1
@@ -280,13 +306,16 @@ describe('WeaponSelector Component', () => {
         />
       );
 
-      // Claws & Teeth shows modified cost (1 pt) with Mutants ability
-      // Mutants reduces Claws & Teeth from 2 pts to 1 pt
-      const clawsTeethElement = screen.getByText('Claws & Teeth').closest('.weapon-selector__item');
-      expect(clawsTeethElement).toHaveTextContent('1 pts');
+      // Wait for API calls to complete and costs to load
+      await waitFor(() => {
+        // Claws & Teeth shows modified cost (1 pt) with Mutants ability
+        // Mutants reduces Claws & Teeth from 2 pts to 1 pt
+        const clawsTeethElement = screen.getByText('Claws & Teeth').closest('.weapon-selector__item');
+        expect(clawsTeethElement).toHaveTextContent('1 pts');
+      });
     });
 
-    it('should show modified costs for ranged weapons with Heavily Armed ability', () => {
+    it('should show modified costs for ranged weapons with Heavily Armed ability', async () => {
       const mockOnChange = vi.fn();
 
       // Mock API to return modified costs with Heavily Armed ability
@@ -325,10 +354,13 @@ describe('WeaponSelector Component', () => {
         />
       );
 
-      // Auto Rifle shows modified cost (0 pts) with Heavily Armed ability
-      // Heavily Armed reduces Auto Rifle from 1 pt to 0 pts
-      const autoRifleElement = screen.getByText('Auto Rifle').closest('.weapon-selector__item');
-      expect(autoRifleElement).toHaveTextContent('0 pts');
+      // Wait for API calls to complete and costs to load
+      await waitFor(() => {
+        // Auto Rifle shows modified cost (0 pts) with Heavily Armed ability
+        // Heavily Armed reduces Auto Rifle from 1 pt to 0 pts
+        const autoRifleElement = screen.getByText('Auto Rifle').closest('.weapon-selector__item');
+        expect(autoRifleElement).toHaveTextContent('0 pts');
+      });
     });
 
     it('should not show modified cost when no ability applies', () => {

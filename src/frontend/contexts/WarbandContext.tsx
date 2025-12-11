@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect, useRef } from 'react';
-import { Warband, Weirdo, ValidationError, ValidationResult } from '../../backend/models/types';
+import type { Warband, Weirdo, ValidationError, ValidationResult } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
 
 /**
@@ -174,8 +174,8 @@ export function WarbandProvider({
           }
           return newErrors;
         });
-      } catch (err) {
-        console.error('Error validating weirdo:', err);
+      } catch (error: unknown) {
+        console.error('Error validating weirdo:', error);
       }
     }, 300);
   }, []);

@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { PsychicPower, WarbandAbility } from '../../backend/models/types';
-import { calculatePsychicPowerCost } from '../utils/costCalculations';
+import type { PsychicPower, WarbandAbility } from '../../backend/models/types';
+import { useItemCost } from '../hooks/useItemCost';
 import './PsychicPowerSelector.css';
 
 /**
@@ -114,13 +114,6 @@ const PsychicPowerSelectorComponent = ({
     }
   };
 
-  const formatCostDisplay = (power: PsychicPower): string => {
-    // Apply warband ability modifiers to display accurate costs
-    // Currently no abilities modify psychic power costs, but pattern is established
-    const modifiedCost = calculatePsychicPowerCost(power, warbandAbility);
-    return `${modifiedCost} pts`;
-  };
-
   return (
     <div className="psychic-power-selector" role="group" aria-labelledby="psychic-powers-heading">
       <h4 id="psychic-powers-heading">Psychic Powers</h4>
@@ -129,39 +122,13 @@ const PsychicPowerSelectorComponent = ({
           const isSelected = selectedPowers.some(p => p.id === power.id);
 
           return (
-            <li key={power.id} className="psychic-power-selector__item" role="listitem">
-              <label 
-                className="psychic-power-selector__label"
-                htmlFor={`psychic-power-${power.id}`}
-              >
-                <input
-                  type="checkbox"
-                  id={`psychic-power-${power.id}`}
-                  checked={isSelected}
-                  onChange={() => handleToggle(power)}
-                  className="psychic-power-selector__checkbox checkbox"
-                  aria-describedby={`psychic-power-effect-${power.id}`}
-                  aria-label={`${power.name}, ${power.cost} points`}
-                />
-                <div className="psychic-power-selector__content">
-                  <div className="psychic-power-selector__header">
-                    <span className="psychic-power-selector__name">{power.name}</span>
-                    <span 
-                      className="psychic-power-selector__cost"
-                      aria-label={`Cost: ${formatCostDisplay(power)}`}
-                    >
-                      {formatCostDisplay(power)}
-                    </span>
-                  </div>
-                  <div 
-                    className="psychic-power-selector__effect"
-                    id={`psychic-power-effect-${power.id}`}
-                  >
-                    {power.effect}
-                  </div>
-                </div>
-              </label>
-            </li>
+            <PsychicPowerItem
+              key={power.id}
+              power={power}
+              isSelected={isSelected}
+              warbandAbility={warbandAbility}
+              onToggle={handleToggle}
+            />
           );
         })}
       </ul>

@@ -103,7 +103,8 @@ export class DataRepository {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
+      warnings: []
     };
   }
 

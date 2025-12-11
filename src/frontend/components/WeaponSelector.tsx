@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { Weapon, WarbandAbility } from '../../backend/models/types';
-import { calculateWeaponCost } from '../utils/costCalculations';
+import type { Weapon, WarbandAbility } from '../../backend/models/types';
+import { useItemCost } from '../hooks/useItemCost';
 import './WeaponSelector.css';
 
 /**
@@ -133,12 +133,6 @@ const WeaponSelectorComponent = ({
     }
   };
 
-  const formatCostDisplay = (weapon: Weapon): string => {
-    // Apply warband ability modifiers to display accurate costs
-    const modifiedCost = calculateWeaponCost(weapon, warbandAbility);
-    return `${modifiedCost} pts`;
-  };
-
   const title = type === 'close-combat' ? 'Close Combat Weapons' : 'Ranged Weapons';
   const sectionId = `weapon-selector-${type}`;
 
@@ -155,41 +149,15 @@ const WeaponSelectorComponent = ({
           const isSelected = selectedWeapons.some(w => w.id === weapon.id);
 
           return (
-            <li key={weapon.id} className="weapon-selector__item" role="listitem">
-              <label 
-                className={`weapon-selector__label ${disabled ? 'disabled' : ''}`}
-                htmlFor={`weapon-${weapon.id}`}
-              >
-                <input
-                  type="checkbox"
-                  id={`weapon-${weapon.id}`}
-                  checked={isSelected}
-                  onChange={() => handleToggle(weapon)}
-                  disabled={disabled}
-                  className="weapon-selector__checkbox checkbox"
-                  aria-describedby={weapon.notes ? `weapon-notes-${weapon.id}` : undefined}
-                />
-                <div className="weapon-selector__content">
-                  <div className="weapon-selector__header">
-                    <span className="weapon-selector__name">{weapon.name}</span>
-                    <span 
-                      className="weapon-selector__cost"
-                      aria-label={`Cost: ${formatCostDisplay(weapon)}`}
-                    >
-                      {formatCostDisplay(weapon)}
-                    </span>
-                  </div>
-                  {weapon.notes && (
-                    <div 
-                      className="weapon-selector__notes" 
-                      id={`weapon-notes-${weapon.id}`}
-                    >
-                      {weapon.notes}
-                    </div>
-                  )}
-                </div>
-              </label>
-            </li>
+            <WeaponItem
+              key={weapon.id}
+              weapon={weapon}
+              type={type}
+              isSelected={isSelected}
+              warbandAbility={warbandAbility}
+              onToggle={handleToggle}
+              disabled={disabled}
+            />
           );
         })}
       </ul>

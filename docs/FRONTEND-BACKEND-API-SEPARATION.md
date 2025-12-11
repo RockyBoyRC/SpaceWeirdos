@@ -351,6 +351,172 @@ function WeaponOption({ weapon, warbandAbility, weaponType }) {
 - **Lightweight** - Optimized for rendering many items in selectors
 - **Warband ability aware** - Automatically applies ability modifiers
 
+## Centralized Validation Pattern
+
+### Overview
+
+The application implements a **centralized validation system** where all point limit validation logic and constants are managed in the backend, with frontend components using API-driven validation states exclusively.
+
+### Centralized Constants
+
+**Location:** `src/backend/constants/costs.ts`
+
+```typescript
+export const TROOPER_LIMITS = {
+  /** Standard maximum cost for troopers when another weirdo is in 21-25 range */
+  STANDARD_LIMIT: 20,
+  /** Absolute maximum cost for any trooper */
+  MAXIMUM_LIMIT: 25,
+  /** Minimum cost for special 21-25 point slot */
+  SPECIAL_SLOT_MIN: 21,
+  /** Maximum cost for special 21-25 point slot */
+  SPECIAL_SLOT_MAX: 25,
+} as const;
+
+export const POINT_LIMITS = {
+  /** Standard point limit for smaller warbands */
+  STANDARD_LIMIT: 75,
+  /** Extended point limit for larger warbands */
+  EXTENDED_LIMIT: 125,
+  /** Threshold percentage for "approaching limit" warnings (90%) */
+  WARNING_THRESHOLD: 0.9,
+} as const;
+```
+
+### Context-Aware Warning Logic
+
+**Location:** `src/backend/services/ValidationService.ts`
+
+The ValidationService implements sophisticated context-aware warning generation:
+
+```typescript
+private generateWeirdoCostWarnings(weirdo: Weirdo, warband: Warband): ValidationWarning[] {
+  const warnings: ValidationWarning[] = [];
+  const weirdoCost = this.costEngine.calculateWeirdoCost(weirdo, warband.ability);
+  const warningThreshold = 3; // Centralized threshold
+  
+  // Context-aware logic based on warband composition
+  if (hasOther25PointWeirdo) {
+    // Another weirdo uses premium slot - warn at 18-20 (20-point limit)
+    if (pointsFrom20 >= 0 && pointsFrom20 <= warningThreshold) {
+      warnings.push("Cost is within X points of the 20-point limit");
+    }
+  } else if (isThis25PointWeirdo) {
+    // This weirdo uses premium slot - warn at 23-25 (25-point limit)
+    if (pointsFrom25 >= 0 && pointsFrom25 <= warningThreshold) {
+      warnings.push("Cost is within X points of the 25-point limit");
+    }
+  } else {
+    // No premium slot used - warn at both limits
+    // Provides guidance for both possible limits
+  }
+  
+  return warnings;
+}
+```
+
+### Frontend Integration
+
+**✅ Correct Pattern:**
+```typescript
+// Use centralized hooks for validation
+import { useCostCalculation } from '../hooks/useCostCalculation';
+
+function WeirdoCostDisplay({ weirdo, warbandAbility }) {
+  const costResult = useCostCalculation({
+    weirdoType: weirdo.type,
+    attributes: weirdo.attributes,
+    weapons: weirdo.weapons,
+    equipment: weirdo.equipment,
+    psychicPowers: weirdo.psychicPowers,
+    warbandAbility
+  });
+
+  // Use API-driven validation states
+  const isApproachingLimit = costResult.isApproachingLimit;
+  const isOverLimit = costResult.isOverLimit;
+  const warnings = costResult.warnings;
+
+  return (
+    <div className={isApproachingLimit ? 'warning' : ''}>
+      <span>Cost: {costResult.totalCost} pts</span>
+      {warnings.map(warning => (
+        <div key={warning} className="warning-message">
+          ⚠ {warning}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+**❌ Wrong Pattern:**
+```typescript
+// DON'T: Hardcode point limits or validation logic
+function WeirdoCostDisplay({ weirdo, totalCost }) {
+  const weirdoLimit = weirdo.type === 'leader' ? 25 : 20; // ❌ Hardcoded
+  const remaining = weirdoLimit - totalCost;
+  const isApproachingLimit = remaining <= 10; // ❌ Hardcoded threshold
+  
+  return (
+    <div className={isApproachingLimit ? 'warning' : ''}>
+      <span>Cost: {totalCost} / {weirdoLimit} pts</span> {/* ❌ Hardcoded limit */}
+    </div>
+  );
+}
+```
+
+### Validation Levels
+
+The system provides validation at two levels:
+
+#### 1. Individual Weirdo Validation (API-Driven)
+- **Source**: Backend ValidationService
+- **Threshold**: 3 points (centralized)
+- **Logic**: Context-aware based on warband composition
+- **Frontend Usage**: Use `useCostCalculation` hook
+- **Messages**: Provided by backend ValidationService
+
+#### 2. Warband Total Validation (UX-Driven)
+- **Source**: Frontend component logic
+- **Threshold**: 15 points (explicit constant)
+- **Logic**: Simple remaining points calculation
+- **Rationale**: Backend doesn't provide warband-level warnings
+- **Usage**: Only in `WarbandCostDisplay` component
+
+```typescript
+// Warband-level warning (frontend-defined for UX)
+const WARBAND_WARNING_THRESHOLD = 15;
+
+const { remaining, isApproachingLimit } = useMemo(() => {
+  const remaining = pointLimit - totalCost;
+  return {
+    remaining,
+    isApproachingLimit: remaining <= WARBAND_WARNING_THRESHOLD && remaining > 0,
+  };
+}, [pointLimit, totalCost]);
+```
+
+### Benefits of Centralized Pattern
+
+1. **Single Source of Truth**: All validation logic in backend constants and services
+2. **Context-Aware Logic**: Sophisticated warning generation based on warband composition
+3. **Consistent Messaging**: Warning messages generated by ValidationService
+4. **Easy Maintenance**: Changes to limits only require backend updates
+5. **Type Safety**: Frontend uses API-provided validation states
+6. **Performance**: Caching and debouncing built into hooks
+7. **Testability**: Validation logic can be tested independently
+
+### Migration from Hardcoded Logic
+
+When migrating components from hardcoded validation to centralized pattern:
+
+1. **Remove hardcoded constants**: Delete local point limit variables
+2. **Replace with hooks**: Use `useCostCalculation` or `useItemCost`
+3. **Use API states**: Replace local calculations with API-provided flags
+4. **Display API messages**: Show warning messages from ValidationService
+5. **Remove local thresholds**: Use API-provided `isApproachingLimit` flag
+
 ## Caching Strategy
 
 ### Overview

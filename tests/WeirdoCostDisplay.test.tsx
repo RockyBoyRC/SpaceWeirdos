@@ -1,9 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { WeirdoCostDisplay } from '../src/frontend/components/WeirdoCostDisplay';
 import { createMockWeirdo } from './testHelpers';
 import * as apiClient from '../src/frontend/services/apiClient';
+
+// Mock the API client
+vi.mock('../src/frontend/services/apiClient', () => ({
+  apiClient: {
+    calculateCostRealTime: vi.fn(),
+  }
+}));
 
 /**
  * WeirdoCostDisplay Component Tests
