@@ -117,10 +117,36 @@ const WeirdoCostDisplayComponent = ({
             </div>
           ) : (
             <>
-              <div className="weirdo-cost-display__breakdown-item">
-                <span>Attributes:</span>
-                <span>{costResult.breakdown.attributes} pts</span>
-              </div>
+              {/* Show individual attribute costs if available, otherwise show total */}
+              {costResult.breakdown.attributeDetails ? (
+                <>
+                  <div className="weirdo-cost-display__breakdown-item">
+                    <span>Speed:</span>
+                    <span>{costResult.breakdown.attributeDetails.speed} pts</span>
+                  </div>
+                  <div className="weirdo-cost-display__breakdown-item">
+                    <span>Defense:</span>
+                    <span>{costResult.breakdown.attributeDetails.defense} pts</span>
+                  </div>
+                  <div className="weirdo-cost-display__breakdown-item">
+                    <span>Firepower:</span>
+                    <span>{costResult.breakdown.attributeDetails.firepower} pts</span>
+                  </div>
+                  <div className="weirdo-cost-display__breakdown-item">
+                    <span>Prowess:</span>
+                    <span>{costResult.breakdown.attributeDetails.prowess} pts</span>
+                  </div>
+                  <div className="weirdo-cost-display__breakdown-item">
+                    <span>Willpower:</span>
+                    <span>{costResult.breakdown.attributeDetails.willpower} pts</span>
+                  </div>
+                </>
+              ) : (
+                <div className="weirdo-cost-display__breakdown-item">
+                  <span>Attributes:</span>
+                  <span>{costResult.breakdown.attributes} pts</span>
+                </div>
+              )}
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Weapons:</span>
                 <span>{costResult.breakdown.weapons} pts</span>

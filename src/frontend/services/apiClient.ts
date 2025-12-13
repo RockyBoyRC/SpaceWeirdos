@@ -3,6 +3,7 @@ import type {
   Weirdo,
   WarbandAbility,
   ValidationResult,
+  Attributes, // Backend Attributes interface ensures type compatibility
 } from '../../backend/models/types';
 import {
   CreateWarbandResponse,
@@ -13,6 +14,8 @@ import {
   AddWeirdoResponse,
   UpdateWeirdoResponse,
   RemoveWeirdoResponse,
+  DuplicateWeirdoResponse,
+  DuplicateWarbandResponse,
   CalculateCostResponse,
   RealTimeCostResponse,
   ValidateResponse,
@@ -22,6 +25,7 @@ import {
   JsonResponse,
   BatchCostRequest,
   BatchCostResponse,
+  ReadmeContentResponse,
 } from './apiTypes';
 
 /**
@@ -196,6 +200,22 @@ export const apiClient = {
   },
 
   /**
+   * Duplicate an existing warband
+   */
+  async duplicateWarband(id: string): Promise<{
+    newWarband: Warband;
+    originalWarband: Warband;
+  }> {
+    const response = await fetchWithRetry<DuplicateWarbandResponse>(
+      `/warbands/${id}/duplicate`,
+      {
+        method: 'POST',
+      }
+    );
+    return response.data;
+  },
+
+  /**
    * Add a weirdo to a warband
    */
   async addWeirdo(warbandId: string, weirdo: Weirdo): Promise<Warband> {
@@ -235,6 +255,22 @@ export const apiClient = {
   },
 
   /**
+   * Duplicate an existing weirdo in a warband
+   */
+  async duplicateWeirdo(warbandId: string, weirdoId: string): Promise<{
+    newWeirdo: Weirdo;
+    warband: Warband;
+  }> {
+    const response = await fetchWithRetry<DuplicateWeirdoResponse>(
+      `/warbands/${warbandId}/weirdos/${weirdoId}/duplicate`,
+      {
+        method: 'POST',
+      }
+    );
+    return response.data;
+  },
+
+  /**
    * Calculate cost for a weirdo or warband
    * @deprecated Use calculateCostRealTime instead
    */
@@ -256,13 +292,7 @@ export const apiClient = {
    */
   async calculateCostRealTime(params: {
     weirdoType: 'leader' | 'trooper';
-    attributes: {
-      speed: number;
-      defense: string;
-      firepower: string;
-      prowess: string;
-      willpower: string;
-    };
+    attributes: Attributes;
     weapons?: {
       close?: string[];
       ranged?: string[];
@@ -271,9 +301,20 @@ export const apiClient = {
     psychicPowers?: string[];
     warbandAbility?: WarbandAbility | null;
   }): Promise<RealTimeCostResponse> {
+    // Ensure the request body matches the backend's expected format exactly
+    // by explicitly structuring the request with proper Attributes interface
+    const requestBody = {
+      weirdoType: params.weirdoType,
+      attributes: params.attributes, // Uses backend Attributes interface directly
+      weapons: params.weapons,
+      equipment: params.equipment,
+      psychicPowers: params.psychicPowers,
+      warbandAbility: params.warbandAbility,
+    };
+
     return fetchWithRetry<RealTimeCostResponse>('/cost/calculate', {
       method: 'POST',
-      body: params,
+      body: requestBody,
     });
   },
 
@@ -316,6 +357,7 @@ export const apiClient = {
     return {
       valid: response.data.valid,
       errors: response.data.errors,
+      warnings: [], // Warband validation doesn't return warnings in current implementation
     };
   },
 
@@ -331,6 +373,7 @@ export const apiClient = {
     return {
       valid: response.data.valid,
       errors: response.data.errors,
+      warnings: [], // Weirdo validation doesn't return warnings in current implementation
     };
   },
 
@@ -431,6 +474,27 @@ export const apiClient = {
     return fetchWithRetry('/game-data/leader-traits', {
       method: 'GET',
     });
+  },
+
+  /**
+   * Get README content for Learn About popup
+   */
+  async getReadmeContent(): Promise<{
+    title: string;
+    version: string;
+    features: string[];
+    gameRules: string[];
+    lastUpdated: Date;
+  }> {
+    const response = await fetchWithRetry<ReadmeContentResponse>('/readme-content', {
+      method: 'GET',
+    });
+    
+    // Convert lastUpdated string back to Date object
+    return {
+      ...response.data,
+      lastUpdated: new Date(response.data.lastUpdated),
+    };
   },
 };
 

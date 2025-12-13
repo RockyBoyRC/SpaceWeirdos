@@ -2,6 +2,7 @@ import { useState, useEffect, memo } from 'react';
 import type { Warband, WarbandSummary } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
+import { DuplicateConfirmationDialog } from './DuplicateConfirmationDialog';
 import './WarbandList.css';
 
 /**
@@ -19,18 +20,28 @@ interface WarbandListProps {
   onLoadWarband: (id: string) => void;
   onDeleteSuccess: () => void;
   onDeleteError: (error: Error) => void;
+  onDuplicateSuccess: () => void;
+  onDuplicateError: (error: Error) => void;
+  onLearnAboutClick: () => void;
 }
 
 export function WarbandList({ 
   onCreateWarband, 
   onLoadWarband,
   onDeleteSuccess,
-  onDeleteError
+  onDeleteError,
+  onDuplicateSuccess,
+  onDuplicateError,
+  onLearnAboutClick
 }: WarbandListProps) {
   const [warbands, setWarbands] = useState<Warband[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [duplicateConfirmation, setDuplicateConfirmation] = useState<{
     id: string;
     name: string;
   } | null>(null);
@@ -101,6 +112,44 @@ export function WarbandList({
     setDeleteConfirmation(null);
   };
 
+  /**
+   * Show duplicate confirmation dialog
+   * Requirements: 7.2
+   */
+  const handleDuplicateRequest = (id: string, name: string) => {
+    setDuplicateConfirmation({ id, name });
+  };
+
+  /**
+   * Confirm warband duplication
+   * Requirements: 7.4, 7.6, 7.7
+   */
+  const handleConfirmDuplicate = async () => {
+    if (duplicateConfirmation) {
+      try {
+        await apiClient.duplicateWarband(duplicateConfirmation.id);
+        setDuplicateConfirmation(null);
+        // Reload the list after duplication
+        await loadWarbands();
+        // Show success notification
+        onDuplicateSuccess();
+      } catch (error: unknown) {
+        setDuplicateConfirmation(null);
+        // Show error notification
+        const err = error instanceof Error ? error : new Error(String(error));
+        onDuplicateError(err);
+      }
+    }
+  };
+
+  /**
+   * Cancel warband duplication
+   * Requirements: 7.5
+   */
+  const handleCancelDuplicate = () => {
+    setDuplicateConfirmation(null);
+  };
+
   // Load warbands on component mount
   useEffect(() => {
     loadWarbands();
@@ -139,8 +188,14 @@ export function WarbandList({
     return (
       <div className="warband-list">
         <h1>My Warbands</h1>
-        <div className="empty-state" role="status">
-          <p>No warbands found. Create your first warband to get started!</p>
+        <div className="button-container">
+          <button 
+            onClick={onLearnAboutClick}
+            className="learn-about-button"
+            aria-label="Learn about Space Weirdos game and warband builder"
+          >
+            Learn About Space Weirdos
+          </button>
           <button 
             onClick={onCreateWarband}
             className="create-button"
@@ -148,6 +203,9 @@ export function WarbandList({
           >
             Create New Warband
           </button>
+        </div>
+        <div className="empty-state" role="status">
+          <p>No warbands found. Create your first warband to get started!</p>
         </div>
       </div>
     );
@@ -157,13 +215,22 @@ export function WarbandList({
   return (
     <div className="warband-list">
       <h1>My Warbands</h1>
-      <button 
-        onClick={onCreateWarband}
-        className="create-button"
-        aria-label="Create a new warband"
-      >
-        Create New Warband
-      </button>
+      <div className="button-container">
+        <button 
+          onClick={onLearnAboutClick}
+          className="learn-about-button"
+          aria-label="Learn about Space Weirdos game and warband builder"
+        >
+          Learn About Space Weirdos
+        </button>
+        <button 
+          onClick={onCreateWarband}
+          className="create-button"
+          aria-label="Create a new warband"
+        >
+          Create New Warband
+        </button>
+      </div>
       
       <div className="warband-grid" role="list" aria-label="Saved warbands">
         {warbands.map((warband) => {
@@ -185,6 +252,7 @@ export function WarbandList({
               warband={summary}
               onSelect={() => handleSelectWarband(warband.id)}
               onDelete={() => handleDeleteRequest(warband.id, warband.name)}
+              onDuplicate={() => handleDuplicateRequest(warband.id, warband.name)}
             />
           );
         })}
@@ -195,6 +263,14 @@ export function WarbandList({
           warbandName={deleteConfirmation.name}
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
+        />
+      )}
+
+      {duplicateConfirmation && (
+        <DuplicateConfirmationDialog
+          warbandName={duplicateConfirmation.name}
+          onConfirm={handleConfirmDuplicate}
+          onCancel={handleCancelDuplicate}
         />
       )}
     </div>
@@ -215,9 +291,10 @@ interface WarbandListItemProps {
   warband: WarbandSummary;
   onSelect: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
 }
 
-const WarbandListItemComponent = ({ warband, onSelect, onDelete }: WarbandListItemProps) => {
+const WarbandListItemComponent = ({ warband, onSelect, onDelete, onDuplicate }: WarbandListItemProps) => {
   return (
     <article 
       className="warband-card fade-in"
@@ -258,7 +335,14 @@ const WarbandListItemComponent = ({ warband, onSelect, onDelete }: WarbandListIt
           className="load-button"
           aria-label={`Load ${warband.name} for editing`}
         >
-          Load
+          Edit
+        </button>
+        <button 
+          onClick={onDuplicate}
+          className="duplicate-button"
+          aria-label={`Duplicate ${warband.name}`}
+        >
+          Duplicate
         </button>
         <button 
           onClick={onDelete}

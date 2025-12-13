@@ -3,6 +3,7 @@ import { WarbandService } from '../services/WarbandService.js';
 import { DataRepository } from '../services/DataRepository.js';
 import { CostEngine } from '../services/CostEngine.js';
 import { ValidationService } from '../services/ValidationService.js';
+import { ReadmeContentService } from '../services/ReadmeContentService.js';
 import { Weirdo, Weapon, Equipment, PsychicPower, Warband } from '../models/types.js';
 import { AppError, ValidationError, NotFoundError } from '../errors/AppError.js';
 import { promises as fs } from 'fs';
@@ -62,6 +63,30 @@ export function createWarbandRouter(repository: DataRepository): Router {
   const warbandService = new WarbandService(repository);
   const costEngine = new CostEngine();
   const validationService = new ValidationService();
+  const readmeContentService = ReadmeContentService.getInstance();
+
+  /**
+   * GET /api/readme-content
+   * Get README content for the Learn About popup
+   */
+  router.get('/readme-content', async (_req: Request, res: Response) => {
+    try {
+      const content = await readmeContentService.getContent();
+      res.json({
+        success: true,
+        data: content
+      });
+    } catch (error: unknown) {
+      // If README content fails to load, return fallback content
+      console.warn('README content not available, using fallback:', error);
+      const fallbackContent = readmeContentService.getFallbackContent();
+      res.json({
+        success: true,
+        data: fallbackContent,
+        warning: 'Using fallback content - README.md could not be loaded'
+      });
+    }
+  });
 
   /**
    * POST /api/warbands
@@ -273,6 +298,158 @@ export function createWarbandRouter(repository: DataRepository): Router {
       // Update warband (recalculates costs)
       const updatedWarband = warbandService.updateWarband(id, warband);
       res.json(updatedWarband);
+    } catch (error: unknown) {
+      handleError(error, res);
+    }
+  });
+
+  /**
+   * POST /api/warbands/:id/weirdos/:weirdoId/duplicate
+   * Duplicate an existing weirdo in a warband
+   */
+  router.post('/warbands/:id/weirdos/:weirdoId/duplicate', (req: Request, res: Response) => {
+    try {
+      const { id, weirdoId } = req.params;
+
+      // Load existing warband
+      const warband = warbandService.getWarband(id);
+      if (!warband) {
+        throw new NotFoundError('Warband', id);
+      }
+
+      // Find source weirdo
+      const sourceWeirdo = warband.weirdos.find((w: Weirdo) => w.id === weirdoId);
+      if (!sourceWeirdo) {
+        throw new NotFoundError('Weirdo', weirdoId);
+      }
+
+      // Generate unique name for duplicated weirdo
+      const generateUniqueName = (baseName: string, existingNames: string[]): string => {
+        // Extract base name without number suffix
+        const baseNameMatch = baseName.match(/^(.+?)(?:\s+\d+)?$/);
+        const cleanBaseName = baseNameMatch ? baseNameMatch[1] : baseName;
+        
+        // Find highest number suffix
+        let maxNumber = 0;
+        existingNames.forEach(name => {
+          const match = name.match(new RegExp(`^${cleanBaseName}\\s+(\\d+)$`));
+          if (match) {
+            maxNumber = Math.max(maxNumber, parseInt(match[1], 10));
+          }
+        });
+        
+        // Always start from 1 for the first duplicate
+        return `${cleanBaseName} ${maxNumber + 1}`;
+      };
+
+      const existingNames = warband.weirdos.map(w => w.name);
+      const newName = generateUniqueName(sourceWeirdo.name, existingNames);
+
+      // Create duplicated weirdo
+      const duplicatedWeirdo: Weirdo = {
+        id: `weirdo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        name: newName,
+        // Convert leader to trooper when duplicating
+        type: sourceWeirdo.type === 'leader' ? 'trooper' : sourceWeirdo.type,
+        attributes: { ...sourceWeirdo.attributes },
+        closeCombatWeapons: [...sourceWeirdo.closeCombatWeapons],
+        rangedWeapons: [...sourceWeirdo.rangedWeapons],
+        equipment: [...sourceWeirdo.equipment],
+        psychicPowers: [...sourceWeirdo.psychicPowers],
+        // Don't copy leader trait when converting leader to trooper
+        leaderTrait: sourceWeirdo.type === 'leader' ? null : sourceWeirdo.leaderTrait,
+        notes: sourceWeirdo.notes,
+        totalCost: 0 // Will be recalculated
+      };
+
+      // Add duplicated weirdo to warband
+      warband.weirdos.push(duplicatedWeirdo);
+
+      // Update warband (recalculates costs)
+      const updatedWarband = warbandService.updateWarband(id, warband);
+      
+      // Return the new weirdo data
+      res.status(201).json({
+        success: true,
+        data: {
+          newWeirdo: duplicatedWeirdo,
+          warband: updatedWarband
+        }
+      });
+    } catch (error: unknown) {
+      handleError(error, res);
+    }
+  });
+
+  /**
+   * POST /api/warbands/:id/duplicate
+   * Duplicate an existing warband
+   */
+  router.post('/warbands/:id/duplicate', (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      // Load existing warband
+      const sourceWarband = warbandService.getWarband(id);
+      if (!sourceWarband) {
+        throw new NotFoundError('Warband', id);
+      }
+
+      // Get all existing warband names for unique name generation
+      const allWarbands = warbandService.getAllWarbands();
+      const existingNames = allWarbands.map(w => w.name);
+
+      // Generate unique name for duplicated warband
+      const generateUniqueName = (baseName: string, existingNames: string[]): string => {
+        // Extract base name without number suffix
+        const baseNameMatch = baseName.match(/^(.+?)(?:\s+\d+)?$/);
+        const cleanBaseName = baseNameMatch ? baseNameMatch[1] : baseName;
+        
+        // Find highest number suffix
+        let maxNumber = 0;
+        existingNames.forEach(name => {
+          const match = name.match(new RegExp(`^${cleanBaseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+(\\d+)$`));
+          if (match) {
+            maxNumber = Math.max(maxNumber, parseInt(match[1], 10));
+          }
+        });
+        
+        // Always start from 1 for the first duplicate
+        return `${cleanBaseName} ${maxNumber + 1}`;
+      };
+
+      const newWarbandName = generateUniqueName(sourceWarband.name, existingNames);
+
+      // Generate unique IDs for duplicated weirdos
+      const duplicatedWeirdos: Weirdo[] = sourceWarband.weirdos.map(weirdo => ({
+        ...weirdo,
+        id: `weirdo_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        // Deep copy arrays to avoid reference sharing
+        closeCombatWeapons: [...weirdo.closeCombatWeapons],
+        rangedWeapons: [...weirdo.rangedWeapons],
+        equipment: [...weirdo.equipment],
+        psychicPowers: [...weirdo.psychicPowers],
+        attributes: { ...weirdo.attributes }
+      }));
+
+      // Create duplicated warband with new ID and name
+      const duplicatedWarband = {
+        name: newWarbandName,
+        ability: sourceWarband.ability,
+        pointLimit: sourceWarband.pointLimit,
+        weirdos: duplicatedWeirdos
+      };
+
+      // Create the new warband using the service
+      const newWarband = warbandService.createWarband(duplicatedWarband);
+      
+      res.status(201).json({
+        success: true,
+        data: {
+          newWarband,
+          originalWarband: sourceWarband
+        }
+      });
     } catch (error: unknown) {
       handleError(error, res);
     }
@@ -637,13 +814,15 @@ export function createWarbandRouter(repository: DataRepository): Router {
           totalCost,
           breakdown: {
             attributes: Object.values(attributeCosts).reduce((sum, cost) => sum + cost, 0),
+            attributeDetails: attributeCosts,
             weapons: weaponsCost,
             equipment: equipmentCost,
             psychicPowers: psychicPowersCost
           },
           warnings,
           isApproachingLimit,
-          isOverLimit
+          isOverLimit,
+          calculationTime: elapsedTime
         }
       });
 

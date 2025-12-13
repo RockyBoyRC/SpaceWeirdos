@@ -190,6 +190,118 @@ describe('WeaponSelector Component', () => {
 
       expect(mockOnChange).toHaveBeenCalledWith([]);
     });
+
+    // Tests for automatic Unarmed deselection (Requirements 4.9)
+    it('should automatically unselect Unarmed when selecting another close combat weapon', () => {
+      const mockOnChange = vi.fn();
+
+      // Start with Unarmed selected
+      render(
+        <WeaponSelector
+          type="close-combat"
+          selectedWeapons={[mockCloseCombatWeapons[0]]} // Unarmed
+          availableWeapons={mockCloseCombatWeapons}
+          warbandAbility={null}
+          onChange={mockOnChange}
+        />
+      );
+
+      // Click checkbox for Claws & Teeth (index 1)
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[1]);
+
+      // Should call onChange with only Claws & Teeth (Unarmed automatically removed)
+      expect(mockOnChange).toHaveBeenCalledWith([mockCloseCombatWeapons[1]]);
+    });
+
+    it('should automatically unselect Unarmed when selecting multiple other weapons', () => {
+      const mockOnChange = vi.fn();
+
+      // Start with Unarmed and Claws & Teeth selected
+      render(
+        <WeaponSelector
+          type="close-combat"
+          selectedWeapons={[mockCloseCombatWeapons[0], mockCloseCombatWeapons[1]]} // Unarmed + Claws & Teeth
+          availableWeapons={mockCloseCombatWeapons}
+          warbandAbility={null}
+          onChange={mockOnChange}
+        />
+      );
+
+      // Click checkbox for Melee Weapon (index 2)
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[2]);
+
+      // Should call onChange with Claws & Teeth and Melee Weapon (Unarmed automatically removed)
+      expect(mockOnChange).toHaveBeenCalledWith([
+        mockCloseCombatWeapons[1], // Claws & Teeth
+        mockCloseCombatWeapons[2]  // Melee Weapon
+      ]);
+    });
+
+    it('should allow selecting Unarmed when no other weapons are selected', () => {
+      const mockOnChange = vi.fn();
+
+      render(
+        <WeaponSelector
+          type="close-combat"
+          selectedWeapons={[]}
+          availableWeapons={mockCloseCombatWeapons}
+          warbandAbility={null}
+          onChange={mockOnChange}
+        />
+      );
+
+      // Click checkbox for Unarmed
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[0]);
+
+      // Should call onChange with Unarmed
+      expect(mockOnChange).toHaveBeenCalledWith([mockCloseCombatWeapons[0]]);
+    });
+
+    it('should not affect Unarmed deselection logic for ranged weapons', () => {
+      const mockOnChange = vi.fn();
+
+      render(
+        <WeaponSelector
+          type="ranged"
+          selectedWeapons={[]}
+          availableWeapons={mockRangedWeapons}
+          warbandAbility={null}
+          onChange={mockOnChange}
+        />
+      );
+
+      // Click checkbox for Auto Pistol
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[0]);
+
+      // Should call onChange with Auto Pistol (no Unarmed logic for ranged weapons)
+      expect(mockOnChange).toHaveBeenCalledWith([mockRangedWeapons[0]]);
+    });
+
+    it('should handle edge case when Unarmed is not in available weapons', () => {
+      const mockOnChange = vi.fn();
+      const weaponsWithoutUnarmed = mockCloseCombatWeapons.slice(1); // Remove Unarmed
+
+      render(
+        <WeaponSelector
+          type="close-combat"
+          selectedWeapons={[]}
+          availableWeapons={weaponsWithoutUnarmed}
+          warbandAbility={null}
+          onChange={mockOnChange}
+        />
+      );
+
+      // Click checkbox for Claws & Teeth
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[0]);
+
+      // Should call onChange with Claws & Teeth (no Unarmed to remove)
+      expect(mockOnChange).toHaveBeenCalledWith([weaponsWithoutUnarmed[0]]);
+    });
   });
 
   describe('Ranged Weapons', () => {
@@ -474,6 +586,179 @@ describe('Property-Based Tests: Weapon Selector API Usage', () => {
 
             // Property 4: The component should render all weapons
             expect(container.querySelectorAll('.weapon-selector__item').length).toBe(weapons.length);
+
+            return true;
+          } finally {
+            // Clean up after each iteration
+            unmount();
+          }
+        }
+      ),
+      testConfig
+    );
+  });
+});
+
+/**
+ * Property-Based Tests for Automatic Unarmed Deselection
+ * 
+ * **Feature: 4-weirdo-editor, Property 10: Automatic Unarmed deselection**
+ * **Validates: Requirements 4.9**
+ */
+describe('Property-Based Tests: Automatic Unarmed Deselection', () => {
+  const testConfig = { numRuns: 50 };
+
+  /**
+   * Property 10: Automatic Unarmed deselection
+   * 
+   * For any close combat weapon selection other than Unarmed, the Unarmed option should be 
+   * automatically unselected to maintain mutual exclusivity.
+   * 
+   * This property verifies that:
+   * 1. When selecting a non-Unarmed close combat weapon, Unarmed is automatically removed
+   * 2. The behavior only applies to close combat weapons, not ranged weapons
+   * 3. Multiple non-Unarmed weapons can be selected together
+   * 4. Unarmed can still be selected when no other weapons are present
+   * 
+   * **Feature: 4-weirdo-editor, Property 10: Automatic Unarmed deselection**
+   * **Validates: Requirements 4.9**
+   */
+  it('Property 10: Automatic Unarmed deselection for close combat weapons', () => {
+    fc.assert(
+      fc.property(
+        // Generate close combat weapons including Unarmed
+        fc.array(
+          fc.record({
+            id: fc.oneof(
+              fc.constant('unarmed'),
+              fc.string({ minLength: 1, maxLength: 20 }).filter(s => s !== 'unarmed')
+            ),
+            name: fc.oneof(
+              fc.constant('Unarmed'),
+              fc.string({ minLength: 1, maxLength: 30 }).filter(s => s !== 'Unarmed')
+            ),
+            type: fc.constant('close' as const),
+            baseCost: fc.integer({ min: 0, max: 5 }),
+            maxActions: fc.constantFrom(1, 2, 3),
+            notes: fc.string({ maxLength: 50 })
+          }),
+          { minLength: 2, maxLength: 5 }
+        ).filter(weapons => {
+          // Ensure we have at least one Unarmed and one non-Unarmed weapon
+          const hasUnarmed = weapons.some(w => w.id === 'unarmed');
+          const hasNonUnarmed = weapons.some(w => w.id !== 'unarmed');
+          return hasUnarmed && hasNonUnarmed;
+        }),
+        // Generate initial selected weapons (may include Unarmed)
+        fc.boolean(), // Whether to start with Unarmed selected
+
+        (availableWeapons, startWithUnarmed) => {
+          const mockOnChange = vi.fn();
+          const unarmedWeapon = availableWeapons.find(w => w.id === 'unarmed')!;
+          const nonUnarmedWeapons = availableWeapons.filter(w => w.id !== 'unarmed');
+          
+          // Set initial selection
+          const initialSelection = startWithUnarmed ? [unarmedWeapon] : [];
+
+          const { unmount } = render(
+            <WeaponSelector
+              type="close-combat"
+              selectedWeapons={initialSelection}
+              availableWeapons={availableWeapons}
+              warbandAbility={null}
+              onChange={mockOnChange}
+            />
+          );
+
+          try {
+            // Find a non-Unarmed weapon to select
+            const targetWeapon = nonUnarmedWeapons[0];
+            const targetWeaponIndex = availableWeapons.findIndex(w => w.id === targetWeapon.id);
+            
+            // Click the checkbox for the non-Unarmed weapon
+            const checkboxes = screen.getAllByRole('checkbox');
+            fireEvent.click(checkboxes[targetWeaponIndex]);
+
+            // Property 1: onChange should have been called
+            expect(mockOnChange).toHaveBeenCalled();
+
+            // Property 2: The result should not contain Unarmed if we selected a non-Unarmed weapon
+            const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
+            const resultWeapons = lastCall[0] as Weapon[];
+            
+            const hasUnarmedInResult = resultWeapons.some(w => w.id === 'unarmed');
+            expect(hasUnarmedInResult).toBe(false);
+
+            // Property 3: The result should contain the selected non-Unarmed weapon
+            const hasTargetWeapon = resultWeapons.some(w => w.id === targetWeapon.id);
+            expect(hasTargetWeapon).toBe(true);
+
+            // Property 4: If there were other non-Unarmed weapons selected initially, they should remain
+            const otherInitialWeapons = initialSelection.filter(w => w.id !== 'unarmed');
+            otherInitialWeapons.forEach(weapon => {
+              const isStillSelected = resultWeapons.some(w => w.id === weapon.id);
+              expect(isStillSelected).toBe(true);
+            });
+
+            return true;
+          } finally {
+            // Clean up after each iteration
+            unmount();
+          }
+        }
+      ),
+      testConfig
+    );
+  });
+
+  /**
+   * Property: Unarmed deselection only applies to close combat weapons
+   * 
+   * Verifies that the automatic Unarmed deselection logic does not affect ranged weapons.
+   */
+  it('Property: Unarmed deselection logic does not apply to ranged weapons', () => {
+    fc.assert(
+      fc.property(
+        // Generate ranged weapons
+        fc.array(
+          fc.record({
+            id: fc.string({ minLength: 1, maxLength: 20 }),
+            name: fc.string({ minLength: 1, maxLength: 30 }),
+            type: fc.constant('ranged' as const),
+            baseCost: fc.integer({ min: 0, max: 5 }),
+            maxActions: fc.constantFrom(1, 2, 3),
+            notes: fc.string({ maxLength: 50 })
+          }),
+          { minLength: 1, maxLength: 3 }
+        ),
+
+        (rangedWeapons) => {
+          const mockOnChange = vi.fn();
+
+          const { unmount } = render(
+            <WeaponSelector
+              type="ranged"
+              selectedWeapons={[]}
+              availableWeapons={rangedWeapons}
+              warbandAbility={null}
+              onChange={mockOnChange}
+            />
+          );
+
+          try {
+            // Select the first ranged weapon
+            const checkboxes = screen.getAllByRole('checkbox');
+            if (checkboxes.length > 0) {
+              fireEvent.click(checkboxes[0]);
+
+              // Property: onChange should be called with the selected weapon
+              expect(mockOnChange).toHaveBeenCalledWith([rangedWeapons[0]]);
+              
+              // Property: No special Unarmed logic should apply (this is just normal selection)
+              const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1];
+              const resultWeapons = lastCall[0] as Weapon[];
+              expect(resultWeapons).toEqual([rangedWeapons[0]]);
+            }
 
             return true;
           } finally {

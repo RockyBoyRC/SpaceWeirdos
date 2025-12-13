@@ -38,8 +38,13 @@ App
 │   │   └── WarbandListItem (multiple)
 │   │       ├── WarbandInfo
 │   │       ├── WarbandStats
+│   │       ├── DuplicateButton
 │   │       └── DeleteButton
-│   └── DeleteConfirmationDialog
+│   ├── DeleteConfirmationDialog
+│   │   ├── DialogOverlay
+│   │   ├── DialogContent
+│   │   └── DialogActions
+│   └── DuplicateConfirmationDialog
 │       ├── DialogOverlay
 │       ├── DialogContent
 │       └── DialogActions
@@ -82,6 +87,7 @@ interface WarbandListContextValue {
   loadWarbands: () => Promise<void>;
   createWarband: () => void;
   deleteWarband: (id: string) => Promise<void>;
+  duplicateWarband: (id: string) => Promise<void>;
   selectWarband: (id: string) => void;
   
   // Notifications
@@ -117,6 +123,13 @@ const deleteWarband = async (id: string) => {
   await apiClient.delete(`/api/warbands/${id}`);
   await loadWarbands();
 };
+
+// Example: Duplicate warband via API
+const duplicateWarband = async (id: string) => {
+  const response = await apiClient.post(`/api/warbands/${id}/duplicate`);
+  await loadWarbands();
+  return response.data;
+};
 ```
 
 
@@ -140,6 +153,7 @@ interface WarbandListProps {
 - Displays empty state when no warbands
 - Renders list of warband items
 - Manages delete confirmation dialog
+- Manages duplicate confirmation dialog
 
 ### WarbandListItem
 
@@ -150,6 +164,7 @@ interface WarbandListItemProps {
   warband: WarbandSummary;
   onSelect: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
 }
 ```
 
@@ -158,13 +173,14 @@ interface WarbandListItemProps {
 - Warband ability (with icon if available)
 - Point limit and total cost (e.g., "45/75 points")
 - Weirdo count (e.g., "3 weirdos")
-- Delete button (danger styling)
+- Action buttons: Duplicate button (secondary styling), Delete button (danger styling)
 
 **Styling:**
 - Uses `.card` base style from design system
 - Hover state for interactivity
 - Click anywhere on card to select
-- Delete button with confirmation
+- Action buttons positioned at bottom-right of card
+- Duplicate and delete buttons with appropriate styling
 
 ### DeleteConfirmationDialog
 
@@ -186,6 +202,27 @@ interface DeleteConfirmationDialogProps {
 - Click outside to cancel
 - Prominent warband name display
 - Danger-styled confirm button
+
+### DuplicateConfirmationDialog
+
+Modal dialog for confirming warband duplication.
+
+```typescript
+interface DuplicateConfirmationDialogProps {
+  warbandName: string;
+  isOpen: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+```
+
+**Features:**
+- Modal overlay (uses `--z-index-modal`)
+- Focus trap (keyboard navigation contained)
+- Escape key to cancel
+- Click outside to cancel
+- Prominent warband name display
+- Primary-styled confirm button (less destructive than delete)
 
 ### ToastNotification
 
@@ -274,6 +311,22 @@ After reviewing all properties:
 *For any* navigation from list to editor, the selected warband data should be loaded; for any navigation from editor to list, the list should refresh to show current warbands.
 **Validates: Requirements 6.2, 6.4**
 
+**Property 6: Warband duplication creates complete copy**
+*For any* warband, duplicating it should create a new warband with identical configuration (name, ability, point limit, and all weirdos) but with unique IDs for the warband and all weirdos.
+**Validates: Requirements 7.4, 7.9, 7.10**
+
+**Property 7: Duplicate confirmation prevents accidental duplication**
+*For any* duplicate request, a confirmation dialog should appear displaying the warband name; the warband should only be duplicated if the user confirms, and should be retained unchanged if the user cancels.
+**Validates: Requirements 7.1, 7.2, 7.3, 7.5**
+
+**Property 8: Duplicate operations update list and provide feedback**
+*For any* successful duplication, the warband list should include the new warband and a success notification should be displayed; for any failed duplication, an error notification should be displayed with details.
+**Validates: Requirements 7.6, 7.7**
+
+**Property 9: Duplicate names are unique**
+*For any* warband name, duplicating a warband should generate a unique name that doesn't conflict with existing warband names.
+**Validates: Requirements 7.8**
+
 
 
 ## Testing Strategy
@@ -283,7 +336,9 @@ After reviewing all properties:
 - WarbandList renders loading state correctly
 - WarbandList renders empty state when no warbands
 - WarbandListItem displays all warband information
+- WarbandListItem shows duplicate and delete buttons
 - DeleteConfirmationDialog shows warband name
+- DuplicateConfirmationDialog shows warband name
 - ToastNotification auto-dismisses after timeout
 - Navigation updates URL correctly
 
@@ -298,11 +353,16 @@ After reviewing all properties:
 2. **Property 3**: Generate random delete requests, verify confirmation flow
 3. **Property 4**: Generate random operations, verify notifications appear and dismiss
 4. **Property 5**: Generate random navigation sequences, verify data loads correctly
+5. **Property 6**: Generate random warbands, verify duplication creates complete copies with unique IDs
+6. **Property 7**: Generate random duplicate requests, verify confirmation flow
+7. **Property 8**: Generate random duplication operations, verify list updates and notifications
+8. **Property 9**: Generate random warband names, verify unique names are generated
 
 ### Integration Testing
 
 - Complete warband creation flow
 - Complete warband deletion flow with confirmation
+- Complete warband duplication flow with confirmation
 - Navigation between list and editor
 - Error handling for failed operations
 
@@ -316,6 +376,7 @@ GET    /api/warbands/:id       - Fetch single warband
 POST   /api/warbands           - Create new warband
 PUT    /api/warbands/:id       - Update warband
 DELETE /api/warbands/:id       - Delete warband
+POST   /api/warbands/:id/duplicate - Duplicate existing warband
 ```
 
 **Response Format:**

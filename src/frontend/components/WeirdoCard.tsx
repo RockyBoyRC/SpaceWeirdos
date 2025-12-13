@@ -22,6 +22,8 @@ interface WeirdoCardProps {
   validationErrors?: ValidationError[];
   onClick: () => void;
   onRemove: () => void;
+  onDuplicate: () => void;
+  canDuplicate?: boolean;
 }
 
 const WeirdoCardComponent = ({
@@ -32,6 +34,8 @@ const WeirdoCardComponent = ({
   validationErrors = [],
   onClick,
   onRemove,
+  onDuplicate,
+  canDuplicate = true,
 }: WeirdoCardProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -48,6 +52,12 @@ const WeirdoCardComponent = ({
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onRemove();
+  };
+
+  // Handle duplicate button click (prevent event bubbling to card click)
+  const handleDuplicateClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDuplicate();
   };
 
   // Format weirdo type for display
@@ -130,15 +140,31 @@ const WeirdoCardComponent = ({
       {/* Cost display (Requirement 3.3) */}
       <div className="weirdo-card__cost">{cost} pts</div>
 
-      {/* Remove button (Requirement 11.4) */}
-      <button
-        className="weirdo-card__remove"
-        onClick={handleRemoveClick}
-        aria-label={`Remove ${weirdo.name}`}
-        type="button"
-      >
-        ×
-      </button>
+      {/* Action buttons */}
+      <div className="weirdo-card__actions">
+        {/* Duplicate button (Requirement 10.1) */}
+        <button
+          className={`weirdo-card__duplicate ${!canDuplicate ? 'weirdo-card__duplicate--disabled' : ''}`}
+          onClick={canDuplicate ? handleDuplicateClick : undefined}
+          disabled={!canDuplicate}
+          aria-label={canDuplicate ? `Duplicate ${weirdo.name}` : `Cannot duplicate ${weirdo.name} - save warband first`}
+          type="button"
+          title={canDuplicate ? "Duplicate this weirdo" : "Save the warband first to enable duplication"}
+        >
+          ⧉
+        </button>
+
+        {/* Remove button (Requirement 11.4) */}
+        <button
+          className="weirdo-card__remove"
+          onClick={handleRemoveClick}
+          aria-label={`Remove ${weirdo.name}`}
+          type="button"
+          title="Remove this weirdo"
+        >
+          ×
+        </button>
+      </div>
     </div>
   );
 };

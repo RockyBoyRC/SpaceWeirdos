@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { WarbandAbility } from '../../backend/models/types';
+import type { WarbandAbility, Attributes } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
 import { CostCache } from '../services/CostCache';
 import type { RealTimeCostResponse } from '../services/apiTypes';
@@ -9,13 +9,7 @@ import type { RealTimeCostResponse } from '../services/apiTypes';
  */
 export interface CostCalculationParams {
   weirdoType: 'leader' | 'trooper';
-  attributes: {
-    speed: number;
-    defense: string;
-    firepower: string;
-    prowess: string;
-    willpower: string;
-  };
+  attributes: Attributes;
   weapons?: {
     close?: string[];
     ranged?: string[];
@@ -32,6 +26,13 @@ export interface CostCalculationResult {
   totalCost: number;
   breakdown: {
     attributes: number;
+    attributeDetails?: {
+      speed: number;
+      defense: number;
+      firepower: number;
+      prowess: number;
+      willpower: number;
+    };
     weapons: number;
     equipment: number;
     psychicPowers: number;

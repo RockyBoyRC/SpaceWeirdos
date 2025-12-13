@@ -70,6 +70,42 @@
   transform: translateY(0);
 }
 
+.button-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.learn-about-button {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+  transition: all 0.2s ease;
+}
+
+.learn-about-button:hover {
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
+}
+
+.learn-about-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+.learn-about-button:focus {
+  outline: 3px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
 .create-button {
   padding: 0.875rem 2rem;
   background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
@@ -79,7 +115,6 @@
   cursor: pointer;
   font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 2rem;
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
   transition: all 0.2s ease;
 }
@@ -190,6 +225,7 @@
 }
 
 .load-button,
+.duplicate-button,
 .delete-button {
   flex: 1;
   padding: 0.875rem;
@@ -204,6 +240,7 @@
 }
 
 .load-button::before,
+.duplicate-button::before,
 .delete-button::before {
   content: '';
   position: absolute;
@@ -218,6 +255,7 @@
 }
 
 .load-button:active::before,
+.duplicate-button:active::before,
 .delete-button:active::before {
   width: 300px;
   height: 300px;
@@ -235,6 +273,18 @@
   box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
 }
 
+.duplicate-button {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+.duplicate-button:hover {
+  background: linear-gradient(135deg, #F57C00 0%, #E65100 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+}
+
 .delete-button {
   background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
   color: white;
@@ -248,12 +298,22 @@
 }
 
 .load-button:active,
+.duplicate-button:active,
 .delete-button:active {
   transform: translateY(0);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .button-container {
+    flex-direction: column;
+  }
+  
+  .learn-about-button,
+  .create-button {
+    width: 100%;
+  }
+  
   .warband-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -268,6 +328,7 @@
   }
   
   .load-button,
+  .duplicate-button,
   .delete-button {
     width: 100%;
   }

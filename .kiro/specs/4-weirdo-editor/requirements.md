@@ -72,7 +72,8 @@ This spec focuses on the weirdo editing interface as a modal dialog. It depends 
 6. WHEN a user has Mutants ability selected AND views close combat weapons THEN the Warband Builder SHALL display costs reduced by 1 for Claws & Teeth, Horrible Claws & Teeth, and Whip/Tail
 7. WHEN a user has Heavily Armed ability selected AND views ranged weapons THEN the Warband Builder SHALL display costs reduced by 1 for all ranged weapons
 8. WHEN any weapon cost reduction would result in negative cost THEN the Warband Builder SHALL display 0 as the minimum cost
-9. WHEN weapons change THEN the Warband Builder SHALL recalculate the weirdo's total cost
+9. WHEN a user selects any close combat weapon other than Unarmed THEN the Warband Builder SHALL automatically unselect the Unarmed option
+10. WHEN weapons change THEN the Warband Builder SHALL recalculate the weirdo's total cost
 
 ### Requirement 5
 
@@ -142,6 +143,22 @@ This spec focuses on the weirdo editing interface as a modal dialog. It depends 
 
 ### Requirement 10
 
+**User Story:** As a player, I want to duplicate an existing weirdo, so that I can quickly create similar characters without manually configuring all attributes and equipment.
+
+#### Acceptance Criteria
+
+1. WHEN a weirdo is displayed in the weirdo list THEN the Warband Builder SHALL provide a duplicate button
+2. WHEN a user clicks the duplicate button THEN the Warband Builder SHALL create a new weirdo with identical configuration
+3. WHEN a weirdo is duplicated THEN the Warband Builder SHALL copy all attributes, weapons, equipment, psychic powers, and leader traits
+4. WHEN a leader is duplicated THEN the Warband Builder SHALL create a new trooper (not a second leader)
+5. WHEN a trooper is duplicated THEN the Warband Builder SHALL create a new trooper
+6. WHEN a weirdo is duplicated THEN the Warband Builder SHALL generate a unique name for the new weirdo
+7. WHEN a weirdo is duplicated THEN the Warband Builder SHALL add the new weirdo to the warband immediately
+8. WHEN a weirdo is duplicated THEN the Warband Builder SHALL update the warband total cost to include the duplicated weirdo
+9. WHEN a weirdo is duplicated THEN the Warband Builder SHALL automatically select the new weirdo for editing
+
+### Requirement 11
+
 **User Story:** As a user, I want the item cost displays in selectors to match the backend calculations, so that the UI is consistent and accurate.
 
 #### Acceptance Criteria
@@ -163,7 +180,7 @@ This spec focuses on the weirdo editing interface as a modal dialog. It depends 
 ### 2. Weirdo Duplication
 **Question:** Should users be able to duplicate a weirdo to quickly create similar characters?
 
-**Current Assumption:** No duplication feature initially.
+**Current Assumption:** ~~No duplication feature initially.~~ **Updated:** Users can duplicate existing weirdos to quickly create similar characters.
 
 ### 3. Weapon Requirements
 **Question:** Should the system enforce minimum weapon requirements (e.g., at least one close combat weapon)?

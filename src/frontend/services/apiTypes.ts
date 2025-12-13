@@ -53,6 +53,28 @@ export interface UpdateWeirdoResponse extends Warband {}
 export interface RemoveWeirdoResponse extends Warband {}
 
 /**
+ * Response from POST /api/warbands/:id/weirdos/:weirdoId/duplicate (duplicate weirdo)
+ */
+export interface DuplicateWeirdoResponse {
+  success: boolean;
+  data: {
+    newWeirdo: import('../../backend/models/types').Weirdo;
+    warband: Warband;
+  };
+}
+
+/**
+ * Response from POST /api/warbands/:id/duplicate (duplicate warband)
+ */
+export interface DuplicateWarbandResponse {
+  success: boolean;
+  data: {
+    newWarband: Warband;
+    originalWarband: Warband;
+  };
+}
+
+/**
  * Response from POST /api/calculate-cost
  * @deprecated Use RealTimeCostResponse instead
  */
@@ -69,6 +91,13 @@ export interface RealTimeCostResponse {
     totalCost: number;
     breakdown: {
       attributes: number;
+      attributeDetails?: {
+        speed: number;
+        defense: number;
+        firepower: number;
+        prowess: number;
+        willpower: number;
+      };
       weapons: number;
       equipment: number;
       psychicPowers: number;
@@ -136,6 +165,21 @@ export interface BatchCostResponse {
   data: {
     costs: Record<string, number>; // id -> cost mapping
   };
+}
+
+/**
+ * Response from GET /api/readme-content
+ */
+export interface ReadmeContentResponse {
+  success: boolean;
+  data: {
+    title: string;
+    version: string;
+    features: string[];
+    gameRules: string[];
+    lastUpdated: string; // ISO date string from API
+  };
+  warning?: string;
 }
 
 /**

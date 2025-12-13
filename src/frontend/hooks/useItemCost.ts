@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { WarbandAbility } from '../../backend/models/types';
+import type { WarbandAbility, Attributes } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
 import { CostCache } from '../services/CostCache';
 
@@ -114,13 +114,7 @@ export function useItemCost(params: ItemCostParams): ItemCostResult {
       // We'll use the real-time cost calculation endpoint with minimal params
       const apiParams: {
         weirdoType: 'trooper';
-        attributes: {
-          speed: number;
-          defense: string;
-          firepower: string;
-          prowess: string;
-          willpower: string;
-        };
+        attributes: Attributes;
         weapons?: {
           close?: string[];
           ranged?: string[];

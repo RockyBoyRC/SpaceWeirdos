@@ -80,10 +80,10 @@ interface WeirdoEditorModalProps {
 - Uses `--z-index-modal` from design system
 
 ### WeirdosList (in Warband Editor)
-Displays all weirdos with add/remove controls. Clicking a weirdo opens the modal.
+Displays all weirdos with add/remove/duplicate controls. Clicking a weirdo opens the modal.
 
 ### WeirdoCard
-Compact display of weirdo in list with name, type, cost, and error indicator. Clickable to open modal.
+Compact display of weirdo in list with name, type, cost, and error indicator. Includes duplicate and remove buttons. Clickable to open modal.
 
 ### WeirdoEditor
 Comprehensive editor with all weirdo customization options. Used within modal body.
@@ -92,7 +92,7 @@ Comprehensive editor with all weirdo customization options. Used within modal bo
 Dropdown for each attribute with cost display.
 
 ### WeaponSelector
-Multi-select checkbox list for weapons with costs and notes.
+Multi-select checkbox list for weapons with costs and notes. Implements automatic Unarmed deselection when other close combat weapons are selected.
 
 ### EquipmentSelector
 Multi-select checkbox list for equipment with limit enforcement.
@@ -148,6 +148,18 @@ Dropdown for leader trait (only shown for leaders).
 *For any* warband ability change, all displayed costs in selector components must update to reflect the new ability's modifiers.
 **Validates: Requirements 10.6**
 
+**Property 10: Automatic Unarmed deselection**
+*For any* close combat weapon selection other than Unarmed, the Unarmed option should be automatically unselected to maintain mutual exclusivity.
+**Validates: Requirements 4.9**
+
+**Property 11: Weirdo duplication preserves configuration**
+*For any* weirdo configuration (attributes, weapons, equipment, psychic powers, leader traits), duplicating that weirdo should create a new weirdo with identical configuration except for the name.
+**Validates: Requirements 10.3**
+
+**Property 12: Leader duplication creates trooper**
+*For any* leader weirdo, duplicating it should create a new trooper (not a second leader) with the same configuration except leader traits are not copied.
+**Validates: Requirements 10.4**
+
 ## Testing Strategy
 
 ### Unit Testing
@@ -155,12 +167,14 @@ Dropdown for leader trait (only shown for leaders).
 - Test cost display with different warband abilities
 - Test conditional rendering based on weirdo type and attributes
 - Test equipment limit enforcement
+- Test automatic Unarmed deselection when other weapons are selected
 - Test form controls and accessibility
 
 ### Property-Based Testing
 - Property tests for conditional rendering and limits
 - Property test for frontend-backend cost consistency (Property 8)
 - Property test for cost display reactivity (Property 9)
+- Property test for automatic Unarmed deselection (Property 10)
 
 ### Integration Testing
 - Integration tests for weirdo creation and editing flows
@@ -184,6 +198,7 @@ GET    /api/game-data/psychic-powers      - Fetch psychic powers
 GET    /api/game-data/leader-traits       - Fetch leader traits
 POST   /api/cost/calculate                - Calculate weirdo cost
 POST   /api/validation/weirdo             - Validate weirdo configuration
+POST   /api/weirdo/duplicate              - Duplicate existing weirdo
 ```
 
 **Request/Response Examples:**
@@ -209,6 +224,30 @@ POST /api/cost/calculate
       weapons: number,
       equipment: number,
       psychicPowers: number
+    }
+  }
+}
+
+// Weirdo duplication request
+POST /api/weirdo/duplicate
+{
+  sourceWeirdoId: string,
+  warbandId: string
+}
+
+// Weirdo duplication response
+{
+  success: true,
+  data: {
+    newWeirdo: {
+      id: string,
+      name: string,
+      type: 'leader' | 'trooper',
+      attributes: { speed: number, defense: number, ... },
+      weapons: string[],
+      equipment: string[],
+      psychicPowers: string[],
+      leaderTrait?: string
     }
   }
 }
@@ -252,6 +291,24 @@ POST /api/cost/calculate
 - Auto-save weirdo changes when modal closes
 - Show weirdo name and type prominently in modal header
 - Ensure modal content is scrollable if it exceeds viewport height
+
+### Duplication Behavior
+
+- **Duplicate Button**: Each WeirdoCard displays a duplicate button alongside the remove button
+- **Configuration Copy**: Duplicate copies all attributes, weapons, equipment, and psychic powers
+- **Type Conversion**: When duplicating a leader, create a trooper (leader traits are not copied)
+- **Name Generation**: Generate unique names like "Trooper 2", "Trooper 3" based on existing weirdo names
+- **Auto-Selection**: Automatically select the newly duplicated weirdo for immediate editing
+- **Cost Update**: Immediately update warband total cost to include the new weirdo
+- **API Integration**: Use POST /api/weirdo/duplicate endpoint for server-side duplication logic
+
+### Weapon Selection Logic
+
+**Close Combat Weapon Mutual Exclusivity:**
+- When any close combat weapon other than "Unarmed" is selected, automatically unselect "Unarmed"
+- This ensures logical consistency where a weirdo cannot be both armed and unarmed simultaneously
+- Implement in WeaponSelector component's onChange handler
+- Provide clear visual feedback when automatic deselection occurs
 
 ### Cost Display Implementation
 

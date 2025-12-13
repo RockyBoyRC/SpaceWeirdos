@@ -56,8 +56,8 @@ describe('WeirdoCostDisplay', () => {
     // Should display weirdo cost label
     expect(screen.getByText(/weirdo cost:/i)).toBeTruthy();
     
-    // Should display cost value with format "X / Y pts" (trooper limit is 20)
-    expect(screen.getByText(/\/ 20 pts/i)).toBeTruthy();
+    // Should display cost value (using initial cost from weirdo.totalCost)
+    expect(screen.getByText(/10 pts/i)).toBeTruthy();
   });
 
   it('should show warning indicator when trooper within 10 points of limit', async () => {
@@ -80,6 +80,13 @@ describe('WeirdoCostDisplay', () => {
         totalCost: 12,
         breakdown: {
           attributes: 8,
+          attributeDetails: {
+            speed: 1,
+            defense: 2,
+            firepower: 0,
+            prowess: 2,
+            willpower: 3,
+          },
           weapons: 2,
           equipment: 2,
           psychicPowers: 0,
@@ -121,6 +128,13 @@ describe('WeirdoCostDisplay', () => {
         totalCost: 17,
         breakdown: {
           attributes: 10,
+          attributeDetails: {
+            speed: 1,
+            defense: 2,
+            firepower: 2,
+            prowess: 2,
+            willpower: 3,
+          },
           weapons: 3,
           equipment: 2,
           psychicPowers: 2,
@@ -181,11 +195,18 @@ describe('WeirdoCostDisplay', () => {
         totalCost: 22,
         breakdown: {
           attributes: 12,
+          attributeDetails: {
+            speed: 3,
+            defense: 4,
+            firepower: 0,
+            prowess: 2,
+            willpower: 3,
+          },
           weapons: 4,
           equipment: 4,
           psychicPowers: 2,
         },
-        warnings: [],
+        warnings: ['Cost exceeds the 25-point limit'],
         isApproachingLimit: false,
         isOverLimit: true,
         calculationTime: 5,
@@ -222,11 +243,18 @@ describe('WeirdoCostDisplay', () => {
         totalCost: 27,
         breakdown: {
           attributes: 15,
+          attributeDetails: {
+            speed: 3,
+            defense: 4,
+            firepower: 2,
+            prowess: 4,
+            willpower: 2,
+          },
           weapons: 5,
           equipment: 4,
           psychicPowers: 3,
         },
-        warnings: [],
+        warnings: ['Cost exceeds the 25-point limit'],
         isApproachingLimit: false,
         isOverLimit: true,
         calculationTime: 5,
@@ -262,6 +290,13 @@ describe('WeirdoCostDisplay', () => {
         totalCost: 12,
         breakdown: {
           attributes: 8,
+          attributeDetails: {
+            speed: 1,
+            defense: 2,
+            firepower: 0,
+            prowess: 2,
+            willpower: 3,
+          },
           weapons: 2,
           equipment: 2,
           psychicPowers: 0,
@@ -304,11 +339,18 @@ describe('WeirdoCostDisplay', () => {
         totalCost: 22,
         breakdown: {
           attributes: 12,
+          attributeDetails: {
+            speed: 3,
+            defense: 4,
+            firepower: 0,
+            prowess: 2,
+            willpower: 3,
+          },
           weapons: 4,
           equipment: 4,
           psychicPowers: 2,
         },
-        warnings: [],
+        warnings: ['Cost exceeds the 25-point limit'],
         isApproachingLimit: false,
         isOverLimit: true,
         calculationTime: 5,
@@ -346,7 +388,7 @@ describe('WeirdoCostDisplay', () => {
     );
 
     // Initially, breakdown should not be visible
-    expect(screen.queryByText(/attributes:/i)).toBeNull();
+    expect(screen.queryByText(/speed:/i)).toBeNull();
     
     // Click the breakdown toggle button
     const toggleButton = screen.getByRole('button', { name: /show cost breakdown/i });
@@ -355,7 +397,7 @@ describe('WeirdoCostDisplay', () => {
     // After clicking, breakdown should be visible (may show loading or actual data)
     // Wait for breakdown to appear
     await waitFor(() => {
-      expect(screen.getByText(/attributes:/i)).toBeInTheDocument();
+      expect(screen.getByText(/speed:/i)).toBeInTheDocument();
     });
     
     expect(screen.getByText(/weapons:/i)).toBeTruthy();
@@ -367,7 +409,7 @@ describe('WeirdoCostDisplay', () => {
     await user.click(hideButton);
     
     // Breakdown should be hidden again
-    expect(screen.queryByText(/attributes:/i)).toBeNull();
+    expect(screen.queryByText(/speed:/i)).toBeNull();
   });
 
   it('should show all cost components in breakdown', async () => {
@@ -388,10 +430,15 @@ describe('WeirdoCostDisplay', () => {
     
     // Wait for breakdown to load
     await waitFor(() => {
-      expect(screen.getByText(/attributes:/i)).toBeTruthy();
+      expect(screen.getByText(/speed:/i)).toBeTruthy();
     });
     
     // Verify all cost components are shown
+    expect(screen.getByText(/speed:/i)).toBeTruthy();
+    expect(screen.getByText(/defense:/i)).toBeTruthy();
+    expect(screen.getByText(/firepower:/i)).toBeTruthy();
+    expect(screen.getByText(/prowess:/i)).toBeTruthy();
+    expect(screen.getByText(/willpower:/i)).toBeTruthy();
     expect(screen.getByText(/weapons:/i)).toBeTruthy();
     expect(screen.getByText(/equipment:/i)).toBeTruthy();
     expect(screen.getByText(/psychic powers:/i)).toBeTruthy();
@@ -412,6 +459,32 @@ describe('WeirdoCostDisplay', () => {
       willpower: '2d8'
     };
     
+    // Mock API response for this test
+    vi.clearAllMocks();
+    vi.mocked(apiClient.apiClient.calculateCostRealTime).mockResolvedValue({
+      success: true,
+      data: {
+        totalCost: 22,
+        breakdown: {
+          attributes: 12,
+          attributeDetails: {
+            speed: 1,
+            defense: 4,
+            firepower: 2,
+            prowess: 4,
+            willpower: 1,
+          },
+          weapons: 4,
+          equipment: 4,
+          psychicPowers: 2,
+        },
+        warnings: [],
+        isApproachingLimit: false,
+        isOverLimit: true,
+        calculationTime: 5,
+      },
+    });
+    
     render(
       <WeirdoCostDisplay
         weirdo={weirdo}
@@ -426,17 +499,21 @@ describe('WeirdoCostDisplay', () => {
     
     // Wait for breakdown to load from API
     await waitFor(() => {
-      expect(screen.getByText(/attributes:/i)).toBeInTheDocument();
+      expect(screen.getByText(/speed:/i)).toBeInTheDocument();
     });
     
     // Verify breakdown sections are displayed
-    expect(screen.getByText(/attributes:/i)).toBeInTheDocument();
+    expect(screen.getByText(/speed:/i)).toBeInTheDocument();
+    expect(screen.getByText(/defense:/i)).toBeInTheDocument();
+    expect(screen.getByText(/firepower:/i)).toBeInTheDocument();
+    expect(screen.getByText(/prowess:/i)).toBeInTheDocument();
+    expect(screen.getByText(/willpower:/i)).toBeInTheDocument();
     expect(screen.getByText(/weapons:/i)).toBeInTheDocument();
     expect(screen.getByText(/equipment:/i)).toBeInTheDocument();
     expect(screen.getByText(/psychic powers:/i)).toBeInTheDocument();
     
-    // Verify total cost is displayed (weirdo.totalCost is set to 10 in mock)
-    const totalTexts = screen.getAllByText(/10 pts/i);
+    // Verify total cost is displayed (from mock API response)
+    const totalTexts = screen.getAllByText(/22 pts/i);
     expect(totalTexts.length).toBeGreaterThan(0);
   });
 
@@ -470,7 +547,7 @@ describe('WeirdoCostDisplay', () => {
     
     // Wait for breakdown section to be visible (may show loading or actual data)
     await waitFor(() => {
-      const breakdownSection = screen.queryByText(/attributes:/i) || screen.queryByText(/loading/i);
+      const breakdownSection = screen.queryByText(/speed:/i) || screen.queryByText(/loading/i);
       expect(breakdownSection).toBeInTheDocument();
     }, { timeout: 3000 });
     
@@ -481,6 +558,13 @@ describe('WeirdoCostDisplay', () => {
         totalCost: 10,
         breakdown: {
           attributes: 4,
+          attributeDetails: {
+            speed: 0,
+            defense: 2,
+            firepower: 0,
+            prowess: 2,
+            willpower: 0,
+          },
           weapons: 2,
           equipment: 2,
           psychicPowers: 2,
@@ -494,7 +578,7 @@ describe('WeirdoCostDisplay', () => {
     
     // Wait for actual breakdown to load
     await waitFor(() => {
-      expect(screen.getByText(/attributes:/i)).toBeInTheDocument();
+      expect(screen.getByText(/speed:/i)).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 });

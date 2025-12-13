@@ -113,6 +113,16 @@ export interface WarbandSummary {
   updatedAt: Date;
 }
 
+export interface ReadmeContent {
+  title: string;
+  version: string;
+  description: string;
+  features: string[];
+  gameRules: string[];
+  recentUpdates: string[];
+  lastUpdated: Date;
+}
+
 // Error codes for persistence operations
 export enum PersistenceErrorCode {
   FILE_READ_ERROR = 'FILE_READ_ERROR',

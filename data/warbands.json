@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "13ddff29-4589-4bb6-baba-06e1102519fa",
+    "name": "Test Warband",
+    "ability": null,
+    "pointLimit": 125,
+    "totalCost": 0,
+    "weirdos": [],
+    "createdAt": "2025-12-13T01:41:13.729Z",
+    "updatedAt": "2025-12-13T01:41:13.729Z"
+  }
+]

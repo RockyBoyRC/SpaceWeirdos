@@ -45,11 +45,11 @@ const ATTRIBUTE_LEVELS = {
 // Base costs for each attribute level (from game rules)
 // These are display-only; actual costs (including modifications) are calculated by the API
 const ATTRIBUTE_BASE_COSTS: Record<AttributeType, Record<string, number>> = {
-  speed: { '1': 0, '2': 1, '3': 2 },
-  defense: { '2d6': 0, '2d8': 1, '2d10': 2 },
-  firepower: { 'None': 0, '2d8': 1, '2d10': 2 },
-  prowess: { '2d6': 0, '2d8': 1, '2d10': 2 },
-  willpower: { '2d6': 0, '2d8': 1, '2d10': 2 }
+  speed: { '1': 0, '2': 1, '3': 3 },
+  defense: { '2d6': 2, '2d8': 4, '2d10': 8 },
+  firepower: { 'None': 0, '2d8': 2, '2d10': 4 },
+  prowess: { '2d6': 2, '2d8': 4, '2d10': 6 },
+  willpower: { '2d6': 2, '2d8': 4, '2d10': 6 }
 };
 
 // Attribute display names

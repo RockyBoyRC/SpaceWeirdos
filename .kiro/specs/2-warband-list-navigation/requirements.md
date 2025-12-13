@@ -103,6 +103,23 @@ This spec focuses on the list view, CRUD operations, and user feedback. It depen
 
 ### Requirement 7
 
+**User Story:** As a player, I want to duplicate an existing warband with confirmation, so that I can create variations of successful warband builds without starting from scratch.
+
+#### Acceptance Criteria
+
+1. WHEN a warband list item is displayed THEN the Warband Builder SHALL provide a duplicate button for that warband
+2. WHEN a user clicks the duplicate button THEN the Warband Builder SHALL display a confirmation dialog
+3. WHEN the confirmation dialog is shown THEN the Warband Builder SHALL display the warband name being duplicated
+4. WHEN a user confirms duplication THEN the Warband Builder SHALL create a new warband with copied configuration
+5. WHEN a user cancels duplication THEN the Warband Builder SHALL close the dialog and retain the original warband
+6. WHEN a warband is successfully duplicated THEN the Warband Builder SHALL update the warband list to include the new warband
+7. WHEN duplication fails THEN the Warband Builder SHALL display an error message with details
+8. WHEN duplicating a warband THEN the Warband Builder SHALL generate a unique name for the duplicated warband
+9. WHEN duplicating a warband THEN the Warband Builder SHALL copy all warband properties including name, ability, point limit, and all weirdos
+10. WHEN duplicating a warband THEN the Warband Builder SHALL assign new unique IDs to the duplicated warband and all its weirdos
+
+### Requirement 8
+
 **User Story:** As a developer, I want all frontend-backend communication to use API calls, so that the frontend and backend remain properly decoupled and maintainable.
 
 #### Acceptance Criteria
@@ -111,9 +128,10 @@ This spec focuses on the list view, CRUD operations, and user feedback. It depen
 2. WHEN the frontend needs to create a warband THEN the Frontend SHALL send HTTP POST requests to the backend API
 3. WHEN the frontend needs to update a warband THEN the Frontend SHALL send HTTP PUT requests to the backend API
 4. WHEN the frontend needs to delete a warband THEN the Frontend SHALL send HTTP DELETE requests to the backend API
-5. WHEN the frontend receives API responses THEN the Frontend SHALL handle both success and error responses appropriately
-6. WHEN making API calls THEN the Frontend SHALL NOT directly import or use backend service classes
-7. WHEN the backend provides data THEN the Backend SHALL expose RESTful API endpoints for all warband operations
+5. WHEN the frontend needs to duplicate a warband THEN the Frontend SHALL send HTTP POST requests to the backend API
+6. WHEN the frontend receives API responses THEN the Frontend SHALL handle both success and error responses appropriately
+7. WHEN making API calls THEN the Frontend SHALL NOT directly import or use backend service classes
+8. WHEN the backend provides data THEN the Backend SHALL expose RESTful API endpoints for all warband operations
 
 ## Items Requiring Clarification
 
@@ -130,7 +148,7 @@ This spec focuses on the list view, CRUD operations, and user feedback. It depen
 ### 3. Warband Duplication
 **Question:** Should users be able to duplicate an existing warband?
 
-**Current Assumption:** No duplication feature initially, users can manually recreate warbands.
+**Resolution:** Yes, users should be able to duplicate warbands similar to how weirdo duplication works. This allows users to create variations of existing warbands without starting from scratch.
 
 ### 4. Unsaved Changes Warning
 **Question:** Should the system warn users about unsaved changes when navigating away from the editor?

@@ -18,6 +18,7 @@ export function WeirdosList() {
     addWeirdo,
     selectWeirdo,
     removeWeirdo,
+    duplicateWeirdo,
     getWeirdoCost,
     validationErrors,
   } = useWarband();
@@ -28,6 +29,9 @@ export function WeirdosList() {
 
   // Check if warband has a leader (Requirement 11.3)
   const hasLeader = currentWarband.weirdos.some(w => w.type === 'leader');
+
+  // Check if warband is saved (has a valid ID) to enable duplication
+  const canDuplicate = Boolean(currentWarband.id && currentWarband.id !== '');
 
   // Handle add leader button click
   const handleAddLeader = async () => {
@@ -51,6 +55,19 @@ export function WeirdosList() {
         console.error('Error adding trooper:', error.message);
       } else {
         console.error('Error adding trooper:', error);
+      }
+    }
+  };
+
+  // Handle duplicate weirdo button click
+  const handleDuplicateWeirdo = async (weirdoId: string) => {
+    try {
+      await duplicateWeirdo(weirdoId);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error duplicating weirdo:', error.message);
+      } else {
+        console.error('Error duplicating weirdo:', error);
       }
     }
   };
@@ -94,6 +111,8 @@ export function WeirdosList() {
               validationErrors={validationErrors.get(weirdo.id) || []}
               onClick={() => selectWeirdo(weirdo.id)}
               onRemove={() => removeWeirdo(weirdo.id)}
+              onDuplicate={() => handleDuplicateWeirdo(weirdo.id)}
+              canDuplicate={canDuplicate}
             />
           ))
         )}

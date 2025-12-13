@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { WarbandList } from './components/WarbandList';
 import { WarbandEditor } from './components/WarbandEditor';
 import { ToastNotification, ToastType } from './components/ToastNotification';
+import { LearnAboutPopup, ReadmeContent } from './components/LearnAboutPopup';
+import { readmeContentService } from './services/ReadmeContentService';
 import { GameDataProvider } from './contexts/GameDataContext';
 import { WarbandProvider } from './contexts/WarbandContext';
 
@@ -12,10 +14,23 @@ interface ToastState {
   type: ToastType;
 }
 
+interface PopupState {
+  isOpen: boolean;
+  content: ReadmeContent | null;
+  loading: boolean;
+  error: string | null;
+}
+
 function App() {
   const [currentView, setCurrentView] = useState<View>('list');
   const [selectedWarbandId, setSelectedWarbandId] = useState<string | undefined>(undefined);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [popupState, setPopupState] = useState<PopupState>({
+    isOpen: false,
+    content: null,
+    loading: false,
+    error: null
+  });
 
   const handleCreateWarband = () => {
     setSelectedWarbandId(undefined);
@@ -81,6 +96,74 @@ function App() {
     showToast(`Failed to delete warband: ${error.message}`, 'error');
   };
 
+  /**
+   * Handle successful duplicate
+   * Requirements: 7.6
+   */
+  const handleDuplicateSuccess = () => {
+    showToast('Warband duplicated successfully!', 'success');
+  };
+
+  /**
+   * Handle duplicate error
+   * Requirements: 7.7
+   */
+  const handleDuplicateError = (error: Error) => {
+    showToast(`Failed to duplicate warband: ${error.message}`, 'error');
+  };
+
+  /**
+   * Handle Learn About button click
+   * Requirements: 1.4, 4.3
+   */
+  const handleLearnAboutClick = async () => {
+    // Open popup and start loading
+    setPopupState({
+      isOpen: true,
+      content: readmeContentService.getCachedContent(),
+      loading: true,
+      error: null
+    });
+
+    try {
+      // Fetch README content
+      const content = await readmeContentService.getContent();
+      
+      setPopupState(prev => ({
+        ...prev,
+        content,
+        loading: false,
+        error: null
+      }));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load content';
+      
+      // Try to use fallback content
+      const fallbackContent = readmeContentService.getFallbackContent();
+      
+      setPopupState(prev => ({
+        ...prev,
+        content: fallbackContent,
+        loading: false,
+        error: null // Don't show error if we have fallback content
+      }));
+      
+      // Show toast notification for the error
+      showToast(`Could not load latest content, showing cached version: ${errorMessage}`, 'error');
+    }
+  };
+
+  /**
+   * Handle Learn About popup close
+   * Requirements: 3.2, 3.3, 3.4, 3.5
+   */
+  const handleLearnAboutClose = () => {
+    setPopupState(prev => ({
+      ...prev,
+      isOpen: false
+    }));
+  };
+
   return (
     <GameDataProvider>
       <WarbandProvider>
@@ -91,6 +174,9 @@ function App() {
               onLoadWarband={handleLoadWarband}
               onDeleteSuccess={handleDeleteSuccess}
               onDeleteError={handleDeleteError}
+              onDuplicateSuccess={handleDuplicateSuccess}
+              onDuplicateError={handleDuplicateError}
+              onLearnAboutClick={handleLearnAboutClick}
             />
           ) : (
             <WarbandEditor 
@@ -110,6 +196,14 @@ function App() {
               onDismiss={dismissToast}
             />
           )}
+
+          <LearnAboutPopup
+            isOpen={popupState.isOpen}
+            onClose={handleLearnAboutClose}
+            content={popupState.content}
+            loading={popupState.loading}
+            error={popupState.error}
+          />
         </div>
       </WarbandProvider>
     </GameDataProvider>

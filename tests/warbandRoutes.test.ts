@@ -895,4 +895,115 @@ describe('Warband API Routes', () => {
       expect(response.body).toHaveProperty('error');
     });
   });
+
+  describe('POST /api/warbands/:id/duplicate', () => {
+    it('should duplicate a warband with unique name and IDs', async () => {
+      // Create a test warband
+      const createResponse = await request(app)
+        .post('/api/warbands')
+        .send({
+          name: 'Test Warband',
+          pointLimit: 125,
+          ability: 'Cyborgs'
+        });
+
+      const originalWarband = createResponse.body as Warband;
+
+      // Add a weirdo to the warband
+      const weirdo: Weirdo = {
+        id: 'weirdo-1',
+        name: 'Test Trooper',
+        type: 'trooper',
+        attributes: {
+          speed: 2,
+          defense: '1d6',
+          firepower: 'None',
+          prowess: '1d6',
+          willpower: '2d6',
+        },
+        closeCombatWeapons: [{
+          id: 'weapon-1',
+          name: 'Unarmed',
+          type: 'close',
+          baseCost: 0,
+          maxActions: 2,
+          notes: ''
+        }],
+        rangedWeapons: [],
+        equipment: [],
+        psychicPowers: [],
+        leaderTrait: null,
+        notes: 'Test notes',
+        totalCost: 10,
+      };
+
+      await request(app)
+        .post(`/api/warbands/${originalWarband.id}/weirdos`)
+        .send(weirdo);
+
+      // Duplicate the warband
+      const duplicateResponse = await request(app)
+        .post(`/api/warbands/${originalWarband.id}/duplicate`)
+        .send({});
+
+      expect(duplicateResponse.status).toBe(201);
+      expect(duplicateResponse.body.success).toBe(true);
+
+      const { newWarband, originalWarband: returnedOriginal } = duplicateResponse.body.data;
+
+      // Verify new warband has different ID and unique name
+      expect(newWarband.id).not.toBe(originalWarband.id);
+      expect(newWarband.name).toBe('Test Warband 1');
+      
+      // Verify warband properties are copied
+      expect(newWarband.ability).toBe(originalWarband.ability);
+      expect(newWarband.pointLimit).toBe(originalWarband.pointLimit);
+      
+      // Verify weirdos are copied with new IDs
+      expect(newWarband.weirdos).toHaveLength(1);
+      expect(newWarband.weirdos[0].id).not.toBe(weirdo.id);
+      expect(newWarband.weirdos[0].name).toBe(weirdo.name);
+      expect(newWarband.weirdos[0].type).toBe(weirdo.type);
+      expect(newWarband.weirdos[0].attributes).toEqual(weirdo.attributes);
+    });
+
+    it('should generate unique names for multiple duplicates', async () => {
+      // Create a test warband
+      const createResponse = await request(app)
+        .post('/api/warbands')
+        .send({
+          name: 'Elite Squad',
+          pointLimit: 75,
+          ability: null
+        });
+
+      const originalWarband = createResponse.body as Warband;
+
+      // Duplicate the warband multiple times
+      const duplicate1Response = await request(app)
+        .post(`/api/warbands/${originalWarband.id}/duplicate`)
+        .send({});
+
+      const duplicate2Response = await request(app)
+        .post(`/api/warbands/${originalWarband.id}/duplicate`)
+        .send({});
+
+      const duplicate3Response = await request(app)
+        .post(`/api/warbands/${originalWarband.id}/duplicate`)
+        .send({});
+
+      // Verify unique names are generated
+      expect(duplicate1Response.body.data.newWarband.name).toBe('Elite Squad 1');
+      expect(duplicate2Response.body.data.newWarband.name).toBe('Elite Squad 2');
+      expect(duplicate3Response.body.data.newWarband.name).toBe('Elite Squad 3');
+    });
+
+    it('should return 404 when warband not found', async () => {
+      const response = await request(app)
+        .post('/api/warbands/nonexistent/duplicate')
+        .send({});
+
+      expect(response.status).toBe(404);
+    });
+  });
 });

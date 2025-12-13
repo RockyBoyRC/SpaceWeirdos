@@ -1,12 +1,12 @@
 # Space Weirdos Warband Builder
 
-**Version 1.0.0**
+**Version 1.2.0**
 
-A complete web application for creating and managing warbands for the Space Weirdos tabletop game. Built with TypeScript, React, and Express using spec-driven development with formal correctness guarantees.
+A complete web application for creating and managing warbands for the [Space Weirdos](https://www.drivethrurpg.com/en/product/359157/space-weirdos) tabletop game. Built with TypeScript, React, and Express using spec-driven development with formal correctness guarantees. For more game info join the [Space/Sword Weirdos Facebook Group](https://www.facebook.com/groups/1168347074170965/)
 
 ## Features
 
-- **Complete Warband Management:** Create, edit, save, load, and delete warbands
+- **Complete Warband Management:** Create, edit, save, duplicate, load, and delete warbands
 - **Real-Time Cost Calculation:** Automatic point cost calculation with warband ability modifiers
 - **Context-Aware Validation:** Smart warning system that adapts to your warband composition
 - **Intelligent Warning System:** Warns when approaching point limits (within 3 points) with context-specific messaging

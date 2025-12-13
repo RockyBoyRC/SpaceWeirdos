@@ -137,7 +137,7 @@ describe('WeirdoCostDisplay', () => {
     // Check for the cost value span specifically
     const costValue = container.querySelector('.weirdo-cost-display__value');
     expect(costValue).toBeInTheDocument();
-    expect(costValue?.textContent).toMatch(/\d+\s*\/\s*20\s+pts/i);
+    expect(costValue?.textContent).toMatch(/\d+\s+pts/i);
   });
 
   /**
@@ -149,11 +149,11 @@ describe('WeirdoCostDisplay', () => {
     // Set attributes to make cost approach limit (within 10 points of 20, so 11-20)
     // Need to get cost between 11 and 20
     mockWeirdo.attributes.speed = 2; // 1pt
-    mockWeirdo.attributes.defense = '2d8'; // 1pt
-    mockWeirdo.attributes.prowess = '2d10'; // 2pts
-    mockWeirdo.attributes.willpower = '2d10'; // 2pts
-    // Total should be around 12 points (within warning range)
-    mockWeirdo.totalCost = 12;
+    mockWeirdo.attributes.defense = '2d8'; // 4pts
+    mockWeirdo.attributes.prowess = '2d10'; // 6pts
+    mockWeirdo.attributes.willpower = '2d10'; // 6pts
+    // Total should be around 17 points (within warning range)
+    mockWeirdo.totalCost = 17;
     
     // Mock API to return approaching limit
     vi.mocked(apiClient.apiClient.calculateCostRealTime).mockResolvedValue({
@@ -249,7 +249,7 @@ describe('WeirdoCostDisplay', () => {
     // Check for the cost value span specifically
     const costValue = container.querySelector('.weirdo-cost-display__value');
     expect(costValue).toBeInTheDocument();
-    expect(costValue?.textContent).toMatch(/\d+\s*\/\s*25\s+pts/i);
+    expect(costValue?.textContent).toMatch(/\d+\s+pts/i);
   });
 
   /**

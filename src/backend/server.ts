@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { DataRepository } from './services/DataRepository.js';
+import { ReadmeContentService } from './services/ReadmeContentService.js';
 import { createWarbandRouter } from './routes/warbandRoutes.js';
 import { isError } from './utils/typeGuards.js';
 import path from 'path';
@@ -75,9 +76,14 @@ async function startServer() {
     await dataRepository.loadFromFile();
     console.log('Warband data loaded successfully');
 
+    // Initialize README content service
+    const readmeContentService = ReadmeContentService.getInstance();
+    await readmeContentService.initialize();
+
     app.listen(PORT, () => {
       console.log(`Backend server running on http://localhost:${PORT}`);
       console.log('API endpoints available at:');
+      console.log('  GET    /api/readme-content');
       console.log('  POST   /api/warbands');
       console.log('  GET    /api/warbands');
       console.log('  GET    /api/warbands/:id');

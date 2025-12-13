@@ -304,7 +304,7 @@ describe('WarbandList Component', () => {
       );
 
       await waitFor(() => {
-        const loadButtons = screen.getAllByText('Load');
+        const loadButtons = screen.getAllByText('Edit');
         const deleteButtons = screen.getAllByText('Delete');
         
         expect(loadButtons).toHaveLength(2);
@@ -368,7 +368,7 @@ describe('WarbandList Component', () => {
         expect(screen.getByText('The Cyborg Squad')).toBeInTheDocument();
       });
 
-      const loadButtons = screen.getAllByText('Load');
+      const loadButtons = screen.getAllByText('Edit');
       fireEvent.click(loadButtons[0]);
 
       expect(mockOnLoadWarband).toHaveBeenCalledWith('1');
@@ -510,6 +510,109 @@ describe('WarbandList Component', () => {
       expect(mockOnCreateWarband).toHaveBeenCalled();
     });
   });
+
+  describe('Learn About button', () => {
+    it('should display Learn About button', async () => {
+      // Requirements: 1.1, 1.2
+      vi.mocked(apiClient.apiClient.getAllWarbands).mockResolvedValue(mockWarbands);
+      
+      const mockOnCreateWarband = vi.fn();
+      const mockOnLoadWarband = vi.fn();
+      const mockOnDeleteSuccess = vi.fn();
+      const mockOnDeleteError = vi.fn();
+      const mockOnDuplicateSuccess = vi.fn();
+      const mockOnDuplicateError = vi.fn();
+      const mockOnLearnAboutClick = vi.fn();
+
+      render(
+        <WarbandList
+          onCreateWarband={mockOnCreateWarband}
+          onLoadWarband={mockOnLoadWarband}
+          onDeleteSuccess={mockOnDeleteSuccess}
+          onDeleteError={mockOnDeleteError}
+          onDuplicateSuccess={mockOnDuplicateSuccess}
+          onDuplicateError={mockOnDuplicateError}
+          onLearnAboutClick={mockOnLearnAboutClick}
+        />
+      );
+
+      await waitFor(() => {
+        const learnAboutButton = screen.getByRole('button', { name: /Learn about Space Weirdos game and warband builder/ });
+        expect(learnAboutButton).toBeInTheDocument();
+        expect(learnAboutButton).toHaveTextContent('Learn About Space Weirdos');
+      });
+    });
+
+    it('should call onLearnAboutClick when Learn About button is clicked', async () => {
+      // Requirements: 1.3, 1.4
+      vi.mocked(apiClient.apiClient.getAllWarbands).mockResolvedValue(mockWarbands);
+      
+      const mockOnCreateWarband = vi.fn();
+      const mockOnLoadWarband = vi.fn();
+      const mockOnDeleteSuccess = vi.fn();
+      const mockOnDeleteError = vi.fn();
+      const mockOnDuplicateSuccess = vi.fn();
+      const mockOnDuplicateError = vi.fn();
+      const mockOnLearnAboutClick = vi.fn();
+
+      render(
+        <WarbandList
+          onCreateWarband={mockOnCreateWarband}
+          onLoadWarband={mockOnLoadWarband}
+          onDeleteSuccess={mockOnDeleteSuccess}
+          onDeleteError={mockOnDeleteError}
+          onDuplicateSuccess={mockOnDuplicateSuccess}
+          onDuplicateError={mockOnDuplicateError}
+          onLearnAboutClick={mockOnLearnAboutClick}
+        />
+      );
+
+      await waitFor(() => {
+        const learnAboutButton = screen.getByRole('button', { name: /Learn about Space Weirdos game and warband builder/ });
+        fireEvent.click(learnAboutButton);
+        expect(mockOnLearnAboutClick).toHaveBeenCalled();
+      });
+    });
+
+    it('should position Learn About button to the left of Create New Warband button', async () => {
+      // Requirements: 1.1
+      vi.mocked(apiClient.apiClient.getAllWarbands).mockResolvedValue(mockWarbands);
+      
+      const mockOnCreateWarband = vi.fn();
+      const mockOnLoadWarband = vi.fn();
+      const mockOnDeleteSuccess = vi.fn();
+      const mockOnDeleteError = vi.fn();
+      const mockOnDuplicateSuccess = vi.fn();
+      const mockOnDuplicateError = vi.fn();
+      const mockOnLearnAboutClick = vi.fn();
+
+      render(
+        <WarbandList
+          onCreateWarband={mockOnCreateWarband}
+          onLoadWarband={mockOnLoadWarband}
+          onDeleteSuccess={mockOnDeleteSuccess}
+          onDeleteError={mockOnDeleteError}
+          onDuplicateSuccess={mockOnDuplicateSuccess}
+          onDuplicateError={mockOnDuplicateError}
+          onLearnAboutClick={mockOnLearnAboutClick}
+        />
+      );
+
+      await waitFor(() => {
+        const learnAboutButton = screen.getByRole('button', { name: /Learn about Space Weirdos game and warband builder/ });
+        const createButton = screen.getByRole('button', { name: /Create a new warband/ });
+        
+        expect(learnAboutButton).toBeInTheDocument();
+        expect(createButton).toBeInTheDocument();
+        
+        // Check that Learn About button comes before Create button in DOM order
+        const buttonContainer = learnAboutButton.parentElement;
+        const buttons = buttonContainer?.querySelectorAll('button');
+        expect(buttons?.[0]).toBe(learnAboutButton);
+        expect(buttons?.[1]).toBe(createButton);
+      });
+    });
+  });
 });
 
 describe('WarbandListItem Component', () => {
@@ -555,7 +658,7 @@ describe('WarbandListItem Component', () => {
       />
     );
 
-    const loadButton = screen.getByText('Load');
+    const loadButton = screen.getByText('Edit');
     fireEvent.click(loadButton);
 
     expect(mockOnSelect).toHaveBeenCalled();

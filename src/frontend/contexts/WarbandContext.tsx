@@ -28,12 +28,14 @@ interface WarbandContextValue {
   saveWarband: () => Promise<void>;
   loadWarband: (id: string) => Promise<void>;
   deleteWarband: (id: string) => Promise<void>;
+  duplicateWarband: (id: string) => Promise<void>;
   
   // Weirdo operations
   addWeirdo: (type: 'leader' | 'trooper') => Promise<void>;
   removeWeirdo: (id: string) => void;
   updateWeirdo: (id: string, updates: Partial<Weirdo>) => void;
   selectWeirdo: (id: string) => void;
+  duplicateWeirdo: (id: string) => Promise<void>;
   
   // Computed values
   getWeirdoCost: (id: string) => number;
@@ -403,6 +405,34 @@ export function WarbandProvider({
   };
 
   /**
+   * Duplicate an existing weirdo in the warband
+   * Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9
+   */
+  const duplicateWeirdo = async (weirdoId: string): Promise<void> => {
+    if (!currentWarband || !currentWarband.id) {
+      throw new Error('Cannot duplicate weirdo: no warband loaded');
+    }
+
+    try {
+      const result = await apiClient.duplicateWeirdo(currentWarband.id, weirdoId);
+      
+      // Update warband with the new weirdo and updated costs
+      setCurrentWarband(result.warband);
+      
+      // Auto-select the new weirdo for editing (Requirement 10.9)
+      setSelectedWeirdoId(result.newWeirdo.id);
+      
+      // Clear any validation errors for the new weirdo
+      const newErrors = new Map(validationErrors);
+      newErrors.delete(result.newWeirdo.id);
+      setValidationErrors(newErrors);
+    } catch (error: unknown) {
+      console.error('Error duplicating weirdo:', error);
+      throw error;
+    }
+  };
+
+  /**
    * Save the warband to API
    * Requirements: 9.1, 9.2, 6.1, 6.2
    */
@@ -468,6 +498,24 @@ export function WarbandProvider({
       }
     } catch (error: unknown) {
       console.error('Error deleting warband:', error);
+      throw error;
+    }
+  };
+
+  /**
+   * Duplicate an existing warband
+   * Requirements: 7.4, 7.6, 7.7, 8.5
+   */
+  const duplicateWarband = async (id: string): Promise<void> => {
+    try {
+      const result = await apiClient.duplicateWarband(id);
+      
+      // Load the new warband as the current warband
+      setCurrentWarband(result.newWarband);
+      setSelectedWeirdoId(null);
+      setValidationErrors(new Map());
+    } catch (error: unknown) {
+      console.error('Error duplicating warband:', error);
       throw error;
     }
   };
@@ -574,10 +622,12 @@ export function WarbandProvider({
     saveWarband,
     loadWarband,
     deleteWarband,
+    duplicateWarband,
     addWeirdo,
     removeWeirdo,
     updateWeirdo,
     selectWeirdo,
+    duplicateWeirdo,
     getWeirdoCost,
     getWarbandCost,
     validateWarband,

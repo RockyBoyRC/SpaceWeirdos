@@ -124,11 +124,11 @@ The warband builder features a smart warning system that adapts to your warband 
 ## Game Rules Implemented
 
 ### Individual Weirdo Rules
-- Speed: 1, 2, or 3 (costs: 0, 3, 6 points)
-- Defense: 2d6, 2d8, or 2d10 (costs: 0, 3, 6 points)
-- Firepower: None, 2d8, or 2d10 (costs: 0, 3, 6 points)
-- Prowess: 2d6, 2d8, or 2d10 (costs: 0, 3, 6 points)
-- Willpower: 2d6, 2d8, or 2d10 (costs: 0, 3, 6 points)
+- Speed: 1, 2, or 3 (costs: 0, 1, 3 points)
+- Defense: 2d6, 2d8, or 2d10 (costs: 2, 4, 8 points)
+- Firepower: None, 2d8, or 2d10 (costs: 0, 2, 4 points)
+- Prowess: 2d6, 2d8, or 2d10 (costs: 2, 4, 6 points)
+- Willpower: 2d6, 2d8, or 2d10 (costs: 2, 4, 6 points)
 
 ### Weapon Rules
 - Firepower None: No ranged weapons allowed

@@ -160,6 +160,29 @@ The implementation uses an embedded three-section layout within WarbandEditor ra
   - Test weapon updates trigger cost recalculation via API
   - _Requirements: 4.1-4.6, 9.2_
 
+- [x] 8.3 Implement automatic Unarmed weapon deselection
+
+
+  - Modify WeaponSelector to automatically unselect Unarmed when other close combat weapons are selected
+  - Add logic to onChange handler to detect non-Unarmed weapon selections
+  - Ensure mutual exclusivity between Unarmed and other close combat weapons
+  - _Requirements: 4.9_
+
+
+
+- [ ] 8.4 Write unit tests for automatic Unarmed deselection
+  - Test Unarmed is automatically unselected when other weapons are chosen
+  - Test multiple weapon selections work correctly with Unarmed logic
+
+
+
+  - Test edge cases (selecting Unarmed after other weapons, etc.)
+  - _Requirements: 4.9_
+
+- [ ]* 8.5 Write property test for automatic Unarmed deselection
+  - **Property 10: Automatic Unarmed deselection**
+  - **Validates: Requirements 4.9**
+
 - [x] 9. Implement equipment selector
 
 - [x] 9.1 Create EquipmentSelector component
@@ -274,6 +297,40 @@ The implementation uses an embedded three-section layout within WarbandEditor ra
   - Add focus management
   - _Requirements: All_
 
+- [ ] 15. Implement weirdo duplication functionality
+
+- [ ] 15.1 Add API endpoint for weirdo duplication
+  - Implement POST /api/weirdo/duplicate endpoint
+  - Accept source weirdo ID and warband ID
+  - Copy all weirdo properties (attributes, weapons, equipment, psychic powers)
+  - Convert leader to trooper when duplicating (exclude leader traits)
+  - Generate unique name for duplicated weirdo
+  - Return new weirdo configuration
+  - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
+
+- [ ] 15.2 Add duplicate button to WeirdoCard component
+  - Add duplicate button alongside remove button
+  - Style duplicate button using design system
+  - Handle duplicate button click event
+  - Call duplication API endpoint
+  - Update warband context with new weirdo
+  - Automatically select new weirdo for editing
+  - _Requirements: 10.1, 10.7, 10.8, 10.9_
+
+- [ ] 15.3 Write unit tests for duplication functionality
+  - Test API endpoint creates correct duplicate
+  - Test leader duplication creates trooper
+  - Test trooper duplication creates trooper
+  - Test unique name generation
+  - Test warband cost update after duplication
+  - Test automatic selection of duplicated weirdo
+  - _Requirements: 10.1-10.9_
+
+- [ ]* 15.4 Write property tests for duplication
+  - **Property 11: Weirdo duplication preserves configuration**
+  - **Property 12: Leader duplication creates trooper**
+  - **Validates: Requirements 10.3, 10.4**
+
 - [x] 14. Final verification
 
 - [x] 14.1 Ensure all tests pass
@@ -291,16 +348,24 @@ The implementation uses an embedded three-section layout within WarbandEditor ra
   - Verify game data caching works correctly
   - _Requirements: All, 9.1-9.7_
 
-## Implementation Complete
+## Implementation Status
 
-All functional requirements (1-7, 9) have been implemented and tested. The weirdo editor provides:
+Requirements 1-9 and 11 have been implemented and tested. Requirement 10 (weirdo duplication) is pending implementation. The weirdo editor provides:
 - ✅ Add/remove leaders and troopers with proper validation
 - ✅ Edit all weirdo attributes with real-time cost calculation via API
 - ✅ Select weapons, equipment, psychic powers, and leader traits
 - ✅ Conditional rendering based on weirdo type and attributes
 - ✅ Equipment limit enforcement
 - ✅ API-based cost calculations and game data loading
+- ✅ Automatic Unarmed weapon deselection for logical consistency
 - ✅ Comprehensive unit and property-based tests
 - ✅ Design system styling and accessibility features
+- ⏳ Weirdo duplication functionality (pending implementation)
+
+**Recently Completed:**
+- ✅ Automatic Unarmed weapon deselection (Tasks 8.3-8.5)
+
+**Pending Implementation:**
+- ⏳ Weirdo duplication functionality (Tasks 15.1-15.4)
 
 **Architectural Note:** Requirement 8 specified URL-based navigation to a separate weirdo editor screen. The implementation uses an embedded three-section layout instead, which provides simpler UX without requiring a routing library. All functional aspects of Requirement 8 (editing weirdos, preserving changes, displaying weirdo info) are met through the embedded approach.
