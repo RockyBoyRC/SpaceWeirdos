@@ -221,48 +221,7 @@ export class ReadmeContentService {
     }
   }
 
-  /**
-   * Get fallback content for when API is unavailable
-   * This matches the backend's fallback content structure
-   */
-  public getFallbackContent(): ReadmeContent {
-    return {
-      title: 'Space Weirdos Warband Builder',
-      version: 'Version 1.5.0 - Invasion Protocol Edition',
-      description: 'A complete web application for creating and managing warbands for the Space Weirdos tabletop game. Built with TypeScript, React, and Express using spec-driven development with formal correctness guarantees. Features a dramatic vintage sci-fi horror theme inspired by classic space monster movies.',
-      features: [
-        'Vintage Space Monster Theme: Complete visual overhaul with retro sci-fi horror aesthetic',
-        'Warband Cloning: New ability to duplicate existing warbands with confirmation dialog',
-        'Weirdo Duplication: Clone individual weirdos within warbands for efficient army building',
-        'Learn About Integration: In-app README content system with dynamic loading and caching',
-        'Real-Time Cost Calculation: Automatic point cost calculation with warband ability modifiers',
-        'Context-Aware Validation: Smart warning system that adapts to your warband composition',
-        'Comprehensive Validation: Enforces all game rules including point limits and equipment restrictions',
-        'Sci-Fi UI Elements: Scanline overlays, noise textures, animated monster eye, and pulsing alerts'
-      ],
-      gameRules: [
-        'Warband creation with 75 or 125 point limits',
-        'Leader and trooper customization with 5 attributes (Speed, Defense, Firepower, Prowess, Willpower)',
-        'Close combat and ranged weapon selection',
-        'Equipment limits (2 for leaders, 1 for troopers, +1 with Cyborgs ability)',
-        'Psychic powers (unlimited)',
-        'Leader traits (optional, leader only)',
-        'Warband abilities with cost modifiers (Heavily Armed, Mutants, Soldiers, Cyborgs, etc.)',
-        'Point limit enforcement (20 points for troopers, one 25-point weirdo allowed)'
-      ],
-      recentUpdates: [
-        'Version 1.5.0 - Invasion Protocol Edition',
-        'Complete visual transformation with vintage space monster theme',
-        'High-contrast design with dramatic red accents and sci-fi typography',
-        'New warband and weirdo cloning functionality with confirmation dialogs',
-        'Enhanced user experience with centered buttons and improved legibility',
-        'Thematic UI elements including "Invasion Protocol" branding and sci-fi messaging',
-        'Special effects: scanline overlays, noise textures, and animated elements',
-        'Updated button terminology from "Duplicate" to "Clone" for better theming'
-      ],
-      lastUpdated: new Date()
-    };
-  }
+
 }
 
 /**

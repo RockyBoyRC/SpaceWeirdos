@@ -196,8 +196,7 @@ export function LearnAboutPopup({
 
           {error && (
             <div className="learn-about-error">
-              <p>Unable to load game information: {error}</p>
-              <p>Please try again later or contact support if the problem persists.</p>
+              <p>{error}</p>
             </div>
           )}
 

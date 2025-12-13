@@ -74,9 +74,12 @@ export class ReadmeParser {
         }
 
         // Extract version (look for **Version X.X.X** pattern)
-        if (trimmedLine.startsWith('**Version ') && trimmedLine.endsWith('**')) {
-          version = trimmedLine.substring(2, trimmedLine.length - 2);
-          continue;
+        if (trimmedLine.startsWith('**Version ')) {
+          const versionMatch = trimmedLine.match(/\*\*Version ([^*]+)\*\*/);
+          if (versionMatch) {
+            version = 'Version ' + versionMatch[1];
+            continue;
+          }
         }
 
         // Check for section headers
@@ -106,11 +109,19 @@ export class ReadmeParser {
           }
         }
 
-        // Extract bullet points from Features section
-        if (inFeatures && trimmedLine.startsWith('- **')) {
-          const feature = this.extractBulletPoint(trimmedLine);
-          if (feature) {
-            features.push(feature);
+        // Extract bullet points from Features section (handle subsections and various bullet formats)
+        if (inFeatures) {
+          // Handle subsection headers (### headers) - extract as feature categories
+          if (trimmedLine.startsWith('### ')) {
+            const subsectionTitle = trimmedLine.substring(4).trim();
+            features.push(subsectionTitle);
+          }
+          // Handle bullet points with various formats
+          else if (trimmedLine.startsWith('- **') || trimmedLine.startsWith('- ')) {
+            const feature = this.extractBulletPoint(trimmedLine);
+            if (feature) {
+              features.push(feature);
+            }
           }
         }
 
@@ -192,7 +203,9 @@ export class ReadmeParser {
       if (boldEnd !== -1) {
         const boldText = text.substring(2, boldEnd);
         const remainder = text.substring(boldEnd + 2).trim();
-        text = boldText + remainder;
+        // Clean up the colon if it exists
+        const cleanRemainder = remainder.startsWith(':') ? remainder.substring(1).trim() : remainder;
+        text = boldText + (cleanRemainder ? ': ' + cleanRemainder : '');
       }
     }
 

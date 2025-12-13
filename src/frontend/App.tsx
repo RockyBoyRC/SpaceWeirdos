@@ -136,20 +136,13 @@ function App() {
         error: null
       }));
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load content';
-      
-      // Try to use fallback content
-      const fallbackContent = readmeContentService.getFallbackContent();
-      
+      // Show simple error message
       setPopupState(prev => ({
         ...prev,
-        content: fallbackContent,
+        content: null,
         loading: false,
-        error: null // Don't show error if we have fallback content
+        error: 'System loading error'
       }));
-      
-      // Show toast notification for the error
-      showToast(`Could not load latest content, showing cached version: ${errorMessage}`, 'error');
     }
   };
 

@@ -77,13 +77,11 @@ export function createWarbandRouter(repository: DataRepository): Router {
         data: content
       });
     } catch (error: unknown) {
-      // If README content fails to load, return fallback content
-      console.warn('README content not available, using fallback:', error);
-      const fallbackContent = readmeContentService.getFallbackContent();
-      res.json({
-        success: true,
-        data: fallbackContent,
-        warning: 'Using fallback content - README.md could not be loaded'
+      // Return error response when README content cannot be loaded
+      console.error('README content not available:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Server loading error'
       });
     }
   });
