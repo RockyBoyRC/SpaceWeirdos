@@ -159,7 +159,10 @@ export function WarbandList({
   if (loading) {
     return (
       <div className="warband-list">
-        <h1>My Warbands</h1>
+        <header className="header-primary">
+          <h1 className="header-title">SPACE WEIRDOS</h1>
+          <p className="header-subtitle">Warband Command Center</p>
+        </header>
         <div className="loading" role="status" aria-live="polite">
           <div className="spinner spinner-large" aria-hidden="true"></div>
           <span>Loading warbands...</span>
@@ -172,7 +175,10 @@ export function WarbandList({
   if (error) {
     return (
       <div className="warband-list">
-        <h1>My Warbands</h1>
+        <header className="header-primary">
+          <h1 className="header-title">Invasion Protocol</h1>
+          <p className="header-subtitle">Warband Command Center</p>
+        </header>
         <div className="error" role="alert" aria-live="assertive">
           <p>{error}</p>
           <button onClick={loadWarbands} aria-label="Retry loading warbands">
@@ -187,25 +193,32 @@ export function WarbandList({
   if (warbands.length === 0) {
     return (
       <div className="warband-list">
-        <h1>My Warbands</h1>
+        <header className="header-primary">
+          <h1 className="header-title">SPACE WEIRDOS</h1>
+          <p className="header-subtitle">Warband Command Center</p>
+        </header>
+        
+        <div className="alert-box">
+          <p className="alert-text">No Active Warbands Detected<br/>Initialize First Strike Force</p>
+        </div>
+        
+        <div className="monster-eye"></div>
+        
         <div className="button-container">
           <button 
             onClick={onLearnAboutClick}
-            className="learn-about-button"
+            className="btn btn-secondary"
             aria-label="Learn about Space Weirdos game and warband builder"
           >
             Learn About Space Weirdos
           </button>
           <button 
             onClick={onCreateWarband}
-            className="create-button"
+            className="btn btn-primary"
             aria-label="Create your first warband"
           >
             Create New Warband
           </button>
-        </div>
-        <div className="empty-state" role="status">
-          <p>No warbands found. Create your first warband to get started!</p>
         </div>
       </div>
     );
@@ -214,18 +227,21 @@ export function WarbandList({
   // Display warband list - Requirement 7.1
   return (
     <div className="warband-list">
-      <h1>My Warbands</h1>
+      <header className="header-primary">
+        <h1 className="header-title">SPACE WEIRDOS</h1>
+        <p className="header-subtitle">Warband Command Center</p>
+      </header>
       <div className="button-container">
         <button 
           onClick={onLearnAboutClick}
-          className="learn-about-button"
+          className="btn btn-secondary"
           aria-label="Learn about Space Weirdos game and warband builder"
         >
           Learn About Space Weirdos
         </button>
         <button 
           onClick={onCreateWarband}
-          className="create-button"
+          className="btn btn-primary"
           aria-label="Create a new warband"
         >
           Create New Warband
@@ -340,9 +356,9 @@ const WarbandListItemComponent = ({ warband, onSelect, onDelete, onDuplicate }: 
         <button 
           onClick={onDuplicate}
           className="duplicate-button"
-          aria-label={`Duplicate ${warband.name}`}
+          aria-label={`Clone ${warband.name}`}
         >
-          Duplicate
+          Clone
         </button>
         <button 
           onClick={onDelete}

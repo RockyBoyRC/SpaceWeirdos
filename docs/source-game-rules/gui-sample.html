@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPACE WEIRDOS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Rubik+Mono+One&family=Bebas+Neue&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Bebas Neue', cursive;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Scanline effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        /* Noise texture */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 4px solid #ff0000;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            position: relative;
+        }
+        
+        h1 {
+            font-family: 'Rubik Mono One', sans-serif;
+            font-size: 4rem;
+            letter-spacing: 0.5rem;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 
+                0 0 10px #ff0000,
+                0 0 20px #ff0000,
+                0 0 30px #ff0000,
+                4px 4px 0 #ff0000;
+            animation: flicker 3s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow: 
+                    0 0 10px #ff0000,
+                    0 0 20px #ff0000,
+                    0 0 30px #ff0000,
+                    4px 4px 0 #ff0000;
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            letter-spacing: 0.3rem;
+            margin-top: 1rem;
+            color: #ff0000;
+            text-transform: uppercase;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        
+        .alert-box {
+            background: #1a1a1a;
+            border: 3px solid #ff0000;
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+            box-shadow: 
+                0 0 20px rgba(255, 0, 0, 0.3),
+                inset 0 0 20px rgba(255, 0, 0, 0.1);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.3), inset 0 0 20px rgba(255, 0, 0, 0.1); }
+            50% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.6), inset 0 0 30px rgba(255, 0, 0, 0.2); }
+        }
+        
+        .alert-box::before {
+            content: '⚠ WARNING ⚠';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff0000;
+            color: #000;
+            padding: 0.5rem 2rem;
+            font-size: 1.2rem;
+            letter-spacing: 0.3rem;
+        }
+        
+        .alert-text {
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 0.2rem;
+            line-height: 1.6;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .card {
+            background: #1a1a1a;
+            border: 2px solid #fff;
+            padding: 2rem;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            border-color: #ff0000;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+        }
+        
+        .card-title {
+            font-size: 2rem;
+            letter-spacing: 0.2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #ff0000;
+            padding-bottom: 0.5rem;
+        }
+        
+        .card-content {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            letter-spacing: 0.1rem;
+        }
+        
+        .monster-eye {
+            width: 80px;
+            height: 80px;
+            background: #ff0000;
+            border-radius: 50%;
+            position: relative;
+            margin: 1rem auto;
+            box-shadow: 0 0 30px #ff0000;
+            animation: blink 4s infinite;
+        }
+        
+        .monster-eye::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #000;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        @keyframes blink {
+            0%, 98%, 100% { height: 80px; }
+            99% { height: 5px; }
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #000;
+            color: #fff;
+            border: 3px solid #fff;
+            padding: 1rem 3rem;
+            font-size: 1.5rem;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            font-family: 'Bebas Neue', cursive;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            margin: 1rem;
+        }
+        
+        .btn:hover {
+            background: #ff0000;
+            border-color: #ff0000;
+            color: #000;
+            box-shadow: 0 0 20px #ff0000;
+            transform: scale(1.05);
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 3rem 0;
+            gap: 2rem;
+        }
+        
+        .stat {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            letter-spacing: 0.2rem;
+            color: #888;
+        }
+        
+        .stat-value {
+            font-size: 3rem;
+            letter-spacing: 0.3rem;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+        }
+        
+        .divider {
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                #fff 0px,
+                #fff 20px,
+                transparent 20px,
+                transparent 40px
+            );
+            margin: 3rem 0;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 4px solid #ff0000;
+            background: #1a1a1a;
+            margin-top: 4rem;
+        }
+        
+        footer p {
+            font-size: 1.2rem;
+            letter-spacing: 0.2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>INVASION</h1>
+        <p class="subtitle">Protocol Alpha-Red Activated</p>
+    </header>
+    
+    <div class="container">
+        <div class="alert-box">
+            <p class="alert-text">UNIDENTIFIED ENTITIES DETECTED<br>THREAT LEVEL: MAXIMUM</p>
+        </div>
+        
+        <div class="monster-eye"></div>
+        
+        <div class="status-bar">
+            <div class="stat">
+                <div class="stat-label">TARGETS</div>
+                <div class="stat-value">847</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">ALERT LEVEL</div>
+                <div class="stat-value">RED</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">DEFENSE</div>
+                <div class="stat-value">92%</div>
+            </div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2 class="card-title">SECTOR ALPHA</h2>
+                <p class="card-content">Multiple breach attempts detected. Defense systems engaging. Maintain perimeter at all costs.</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">SECTOR BETA</h2>
+                <p class="card-content">Communications disrupted. Visual contact confirmed with hostile entities. Requesting immediate backup.</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">SECTOR GAMMA</h2>
+                <p class="card-content">Containment protocols active. Unknown biological signatures. Exercise extreme caution.</p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="btn">ENGAGE PROTOCOL</button>
+            <button class="btn">EVACUATE NOW</button>
+        </div>
+    </div>
+    
+    <footer>
+        <p>CLASSIFIED // EYES ONLY // DESTROY AFTER READING</p>
+    </footer>
+</body>
+</html>

@@ -130,16 +130,23 @@ The UI provides immediate visual feedback:
 
 ## Project Status
 
-**Current Version**: 1.0.0
+**Current Version**: 1.5.0 - *Invasion Protocol Edition*
 
-**Recent Updates**:
+**Recent Updates (v1.5.0)**:
+- 🎨 **Vintage Space Monster Theme**: Complete visual overhaul with retro sci-fi horror aesthetic
+- 🔄 **Warband Cloning**: New ability to duplicate existing warbands with confirmation dialog
+- 👽 **Weirdo Duplication**: Clone individual weirdos within warbands for efficient army building
+- 📚 **Learn About Integration**: In-app README content system with dynamic loading and caching
+- 🚀 **Sci-Fi UI Elements**: Scanline overlays, noise textures, animated monster eye, and pulsing alerts
+- 🎯 **Enhanced UX**: Centered buttons, improved typography, and thematic messaging throughout
+
+**Previous Milestones**:
 - ✅ Centralized validation system implemented
-- ✅ Frontend inconsistencies resolved (no hardcoded limits)
-- ✅ Context-aware warning system implemented
+- ✅ Context-aware warning system with intelligent thresholds
 - ✅ Frontend-backend API separation complete
-- ✅ Real-time feedback polish complete
+- ✅ Real-time feedback polish with sub-100ms performance
 - ✅ 140+ tests passing (100% success rate)
-- ✅ Comprehensive documentation complete
+- ✅ Comprehensive documentation and release notes
 
 ## Support and Contribution
 

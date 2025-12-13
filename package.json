@@ -1,6 +1,6 @@
 {
   "name": "space-weirdos",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "description": "A comprehensive warband builder for the Space Weirdos tabletop game with context-aware validation, intelligent warnings, and real-time cost calculation",
   "type": "module",
   "scripts": {

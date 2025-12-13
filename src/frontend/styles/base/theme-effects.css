@@ -1,0 +1,277 @@
+/**
+ * Vintage Space Monster Theme Effects
+ * 
+ * Special visual effects and components for the sci-fi horror aesthetic.
+ * Includes animations, glows, and dramatic visual elements.
+ */
+
+/* ============================================
+   HEADER STYLES
+   Dramatic sci-fi headers with glow effects
+   ============================================ */
+
+.header-primary {
+  background: var(--color-bg-dark);
+  color: var(--color-text-inverse);
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 4px solid var(--color-primary-500);
+  position: relative;
+}
+
+.header-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-6xl);
+  letter-spacing: var(--letter-spacing-wider);
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  text-shadow: var(--text-shadow-glow-strong);
+  animation: flicker 3s infinite alternate;
+  margin: 0;
+}
+
+.header-subtitle {
+  font-size: var(--font-size-xl);
+  letter-spacing: var(--letter-spacing-wide);
+  margin-top: 1rem;
+  color: var(--color-primary-500);
+  text-transform: uppercase;
+}
+
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    text-shadow: var(--text-shadow-glow-strong);
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+/* ============================================
+   ALERT BOXES
+   Warning and notification containers
+   ============================================ */
+
+.alert-box {
+  background: var(--color-bg-elevated);
+  border: 3px solid var(--color-primary-500);
+  padding: 2rem;
+  margin: 2rem 0;
+  position: relative;
+  box-shadow: 0 0 20px var(--color-glow-red);
+  animation: pulse-alert 2s infinite;
+}
+
+.alert-box::before {
+  content: '⚠ ALERT ⚠';
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  padding: 0.5rem 2rem;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+.alert-text {
+  font-size: var(--font-size-xl);
+  text-align: center;
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+@keyframes pulse-alert {
+  0%, 100% { 
+    box-shadow: 0 0 20px var(--color-glow-red); 
+  }
+  50% { 
+    box-shadow: 0 0 30px var(--color-glow-red-strong); 
+  }
+}
+
+/* ============================================
+   MONSTER EYE EFFECT
+   Animated eye for dramatic effect
+   ============================================ */
+
+.monster-eye {
+  width: 80px;
+  height: 80px;
+  background: var(--color-primary-500);
+  border-radius: 50%;
+  position: relative;
+  margin: 1rem auto;
+  box-shadow: 0 0 30px var(--color-primary-500);
+  animation: blink 4s infinite;
+}
+
+.monster-eye::before {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: var(--color-neutral-900);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes blink {
+  0%, 98%, 100% { height: 80px; }
+  99% { height: 5px; }
+}
+
+/* ============================================
+   STATUS DISPLAYS
+   Sci-fi style status indicators
+   ============================================ */
+
+.status-bar {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin: 3rem 0;
+  gap: 2rem;
+}
+
+.stat {
+  flex: 1;
+  min-width: 150px;
+}
+
+.stat-label {
+  font-size: var(--font-size-xl);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-bold);
+}
+
+.stat-value {
+  font-size: var(--font-size-xl);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-primary-500);
+  text-shadow: var(--text-shadow-glow);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family-display);
+}
+
+/* ============================================
+   DIVIDERS AND SEPARATORS
+   Sci-fi style section dividers
+   ============================================ */
+
+.divider {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-border-default) 0px,
+    var(--color-border-default) 20px,
+    transparent 20px,
+    transparent 40px
+  );
+  margin: 3rem 0;
+}
+
+.divider-glow {
+  height: 2px;
+  background: var(--color-primary-500);
+  box-shadow: 0 0 10px var(--color-primary-500);
+  margin: 2rem 0;
+}
+
+/* ============================================
+   GRID LAYOUTS
+   Responsive grid for cards and content
+   ============================================ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 3rem 0;
+}
+
+.grid-tight {
+  gap: 1rem;
+}
+
+.grid-wide {
+  gap: 3rem;
+}
+
+/* ============================================
+   FOOTER STYLES
+   Classified document footer
+   ============================================ */
+
+.footer-classified {
+  text-align: center;
+  padding: 2rem;
+  border-top: 4px solid var(--color-primary-500);
+  background: var(--color-bg-dark);
+  margin-top: 4rem;
+  color: var(--color-text-inverse);
+}
+
+.footer-classified p {
+  font-size: var(--font-size-lg);
+  letter-spacing: var(--letter-spacing-normal);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-bold);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   Mobile-friendly adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+  .header-title {
+    font-size: var(--font-size-4xl);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  .alert-text {
+    font-size: var(--font-size-lg);
+  }
+  
+  .stat-value {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .status-bar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   Reduced motion support
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .header-title,
+  .alert-box,
+  .monster-eye {
+    animation: none;
+  }
+  
+  .card:hover,
+  .btn:hover {
+    transform: none;
+  }
+}

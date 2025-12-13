@@ -2,11 +2,139 @@
   {
     "id": "13ddff29-4589-4bb6-baba-06e1102519fa",
     "name": "Test Warband",
-    "ability": null,
+    "ability": "Mutants",
     "pointLimit": 125,
-    "totalCost": 0,
-    "weirdos": [],
+    "totalCost": 30,
+    "weirdos": [
+      {
+        "id": "temp-1765596335680",
+        "name": "New Leader",
+        "type": "leader",
+        "attributes": {
+          "speed": 1,
+          "defense": "2d6",
+          "firepower": "2d8",
+          "prowess": "2d8",
+          "willpower": "2d6"
+        },
+        "closeCombatWeapons": [
+          {
+            "id": "claws-teeth",
+            "name": "Claws & Teeth",
+            "type": "close",
+            "baseCost": 2,
+            "maxActions": 3,
+            "notes": ""
+          },
+          {
+            "id": "horrible-claws-teeth",
+            "name": "Horrible Claws & Teeth",
+            "type": "close",
+            "baseCost": 3,
+            "maxActions": 3,
+            "notes": "+1 to Under Attack rolls"
+          },
+          {
+            "id": "powered-weapon",
+            "name": "Powered Weapon",
+            "type": "close",
+            "baseCost": 2,
+            "maxActions": 2,
+            "notes": "Reroll Power rolls of 1"
+          }
+        ],
+        "rangedWeapons": [
+          {
+            "id": "auto-rifle",
+            "name": "Auto Rifle",
+            "type": "ranged",
+            "baseCost": 1,
+            "maxActions": 3,
+            "notes": "Aim1"
+          },
+          {
+            "id": "energy-pistol",
+            "name": "Energy Pistol",
+            "type": "ranged",
+            "baseCost": 2,
+            "maxActions": 3,
+            "notes": "Reroll FP rolls of 1, -1DT range > 1 stick"
+          },
+          {
+            "id": "heavy-rifle",
+            "name": "Heavy Rifle",
+            "type": "ranged",
+            "baseCost": 2,
+            "maxActions": 2,
+            "notes": "Aim1, +1 to Under Fire rolls"
+          }
+        ],
+        "equipment": [
+          {
+            "id": "jump-pack",
+            "name": "Jump Pack",
+            "type": "Passive",
+            "baseCost": 1,
+            "effect": "The weirdo can ignore terrain and other weirdos when taking Move actions"
+          },
+          {
+            "id": "cybernetics",
+            "name": "Cybernetics",
+            "type": "Passive",
+            "baseCost": 1,
+            "effect": "+1 to Power rolls"
+          }
+        ],
+        "psychicPowers": [
+          {
+            "id": "healing",
+            "name": "Healing",
+            "type": "Effect",
+            "cost": 1,
+            "effect": "1 weirdo within 1 stick of this weirdo and in LoS becomes ready."
+          },
+          {
+            "id": "teleport",
+            "name": "Teleport",
+            "type": "Effect",
+            "cost": 1,
+            "effect": "Place the psychic anywhere on the board."
+          }
+        ],
+        "leaderTrait": "Political Officer",
+        "notes": "",
+        "totalCost": 24
+      },
+      {
+        "id": "temp-1765596347883",
+        "name": "New Trooper",
+        "type": "trooper",
+        "attributes": {
+          "speed": 1,
+          "defense": "2d6",
+          "firepower": "None",
+          "prowess": "2d6",
+          "willpower": "2d6"
+        },
+        "closeCombatWeapons": [
+          {
+            "id": "unarmed",
+            "name": "Unarmed",
+            "type": "close",
+            "baseCost": 0,
+            "maxActions": 3,
+            "notes": "-1DT to Power rolls"
+          }
+        ],
+        "rangedWeapons": [],
+        "equipment": [],
+        "psychicPowers": [],
+        "leaderTrait": null,
+        "notes": "",
+        "totalCost": 6
+      }
+    ],
     "createdAt": "2025-12-13T01:41:13.729Z",
-    "updatedAt": "2025-12-13T01:41:13.729Z"
+    "updatedAt": "2025-12-13T04:26:17.930Z"
   }
 ]

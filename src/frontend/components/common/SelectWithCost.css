@@ -7,7 +7,7 @@
   margin-bottom: 6px;
   font-weight: 500;
   color: #555;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .select-with-cost .select-label .required {
@@ -17,7 +17,6 @@
 
 .select-with-cost .select-input {
   width: 100%;
-  padding: 0.75rem 1rem;
   border: 2px solid #ddd;
   border-radius: 8px;
   font-size: 1rem;
@@ -47,7 +46,7 @@
 }
 
 .select-with-cost .select-input option {
-  padding: 8px;
+  padding: 4px;
   line-height: 1.5;
   white-space: normal;
   word-wrap: break-word;
@@ -69,7 +68,6 @@
   }
 
   .select-with-cost .select-input {
-    padding: 0.625rem 0.875rem;
     font-size: 0.9375rem;
   }
 }

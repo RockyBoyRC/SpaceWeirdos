@@ -76,7 +76,7 @@
   gap: var(--spacing-1);
   padding: var(--spacing-1) var(--spacing-2);
   border-radius: var(--border-radius-sm);
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 600;
   transition: opacity var(--transition-normal) var(--easing-in-out),
               transform var(--transition-fast) var(--easing-out);
@@ -110,7 +110,7 @@
   border: 1px solid var(--color-border-default);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--color-text-primary);
   transition: background-color var(--transition-normal) var(--easing-in-out),
@@ -158,7 +158,7 @@
   display: flex;
   justify-content: space-between;
   padding: var(--spacing-2) 0;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--color-text-secondary);
   transition: background-color var(--transition-fast) var(--easing-in-out);
 }

@@ -1,46 +1,101 @@
-/* Card Component Base Styles */
+/* Card Component Base Styles - Vintage Space Monster Theme */
 
 .card {
-  background-color: var(--color-bg-base);
-  border: var(--border-width-thin) solid var(--color-border-default);
-  border-radius: var(--border-radius-lg);
+  background-color: var(--color-bg-elevated);
+  border: 2px solid var(--color-border-default);
+  border-radius: 0; /* Sharp corners for sci-fi aesthetic */
   padding: var(--spacing-4);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-normal) var(--easing-in-out);
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card-elevated {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-500);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--color-glow-red);
 }
 
 .card-elevated:hover {
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px var(--color-glow-red);
 }
 
 .card-header {
   padding-bottom: var(--spacing-3);
-  border-bottom: var(--border-width-thin) solid var(--color-border-default);
+  border-bottom: 2px solid var(--color-primary-500);
   margin-bottom: var(--spacing-3);
 }
 
 .card-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family-base);
   color: var(--color-text-primary);
   line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-normal);
+  text-transform: uppercase;
   margin: 0;
 }
 
 .card-body {
   padding: var(--spacing-3) 0;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .card-footer {
   padding-top: var(--spacing-3);
-  border-top: var(--border-width-thin) solid var(--color-border-default);
+  border-top: 1px solid var(--color-border-light);
   margin-top: var(--spacing-3);
+}
+
+/* Alert Card Variant */
+.card-alert {
+  border-color: var(--color-primary-500);
+  background-color: var(--color-bg-elevated);
+  box-shadow: 0 0 20px var(--color-glow-red);
+  animation: pulse-card 2s infinite;
+  position: relative;
+}
+
+.card-alert::before {
+  content: '⚠ WARNING ⚠';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  padding: 0.25rem 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+@keyframes pulse-card {
+  0%, 100% { 
+    box-shadow: 0 0 20px var(--color-glow-red); 
+  }
+  50% { 
+    box-shadow: 0 0 30px var(--color-glow-red-strong); 
+  }
+}
+
+/* Success Card Variant */
+.card-success {
+  border-color: var(--color-success);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+}
+
+/* Info Card Variant */
+.card-info {
+  border-color: var(--color-info);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }

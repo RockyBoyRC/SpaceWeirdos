@@ -329,7 +329,10 @@ describe('WarbandList Component', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/No warbands found. Create your first warband to get started!/)
+          screen.getByText(/No Active Warbands Detected/)
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText(/Initialize First Strike Force/)
         ).toBeInTheDocument();
       });
     });

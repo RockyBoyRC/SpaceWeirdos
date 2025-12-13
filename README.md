@@ -1,19 +1,33 @@
 # Space Weirdos Warband Builder
 
-**Version 1.2.0**
+**Version 1.5.0** - *Invasion Protocol Edition*
 
-A complete web application for creating and managing warbands for the [Space Weirdos](https://www.drivethrurpg.com/en/product/359157/space-weirdos) tabletop game. Built with TypeScript, React, and Express using spec-driven development with formal correctness guarantees. For more game info join the [Space/Sword Weirdos Facebook Group](https://www.facebook.com/groups/1168347074170965/)
+A complete web application for creating and managing warbands for the [Space Weirdos](https://www.drivethrurpg.com/en/product/359157/space-weirdos) tabletop game. Built with TypeScript, React, and Express using spec-driven development with formal correctness guarantees. Features a dramatic vintage sci-fi horror theme inspired by classic space monster movies. For more game info join the [Space/Sword Weirdos Facebook Group](https://www.facebook.com/groups/1168347074170965/)
 
 ## Features
 
-- **Complete Warband Management:** Create, edit, save, duplicate, load, and delete warbands
+### 🎨 Vintage Space Monster Theme (New in v1.5.0)
+- **Retro Sci-Fi Aesthetic:** Complete visual overhaul with dramatic vintage space horror styling
+- **High-Contrast Design:** Black/white/cream color palette with striking red accents
+- **Sci-Fi Typography:** Custom font system using Bebas Neue, Rubik Mono One, and Creepster
+- **Special Effects:** Scanline overlays, noise textures, animated elements, and pulsing alerts
+
+### 🔄 Warband & Weirdo Management
+- **Complete Warband Management:** Create, edit, save, clone, load, and delete warbands
+- **Warband Cloning:** Duplicate existing warbands with confirmation dialog for quick army variations
+- **Weirdo Duplication:** Clone individual weirdos within warbands for efficient army building
+- **Learn About Integration:** In-app "Learn About Space Weirdos" feature integrated to README content
+
+### ⚡ Real-Time Features
 - **Real-Time Cost Calculation:** Automatic point cost calculation with warband ability modifiers
 - **Context-Aware Validation:** Smart warning system that adapts to your warband composition
 - **Intelligent Warning System:** Warns when approaching point limits (within 3 points) with context-specific messaging
 - **25-Point Weirdo Management:** Automatic detection and appropriate limit enforcement for premium weirdos
+
+### 🛡️ Game Rule Enforcement
 - **Comprehensive Validation:** Enforces all game rules including point limits, equipment restrictions, and weapon requirements
 - **Persistent Storage:** In-memory database with JSON file persistence
-- **Intuitive UI:** Three main components for warband list, warband editing, and weirdo customization
+- **Intuitive UI:** Streamlined components for warband list, warband editing, and weirdo customization
 - **RESTful API:** Full Express backend with comprehensive endpoints
 
 ## Game Rules Implemented
