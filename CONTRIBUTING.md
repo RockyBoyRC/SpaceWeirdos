@@ -388,7 +388,10 @@ if (weapon.type === 'ranged') {
 
 **After:**
 ```typescript
-import { DISCOUNT_VALUES } from '../constants/costs';
+import { ConfigurationManager } from '../config/ConfigurationManager';
+
+const configManager = ConfigurationManager.getInstance();
+const costConfig = configManager.getCostConfig();
 
 if (weapon.type === 'ranged') {
   cost -= DISCOUNT_VALUES.HEAVILY_ARMED_DISCOUNT;
@@ -408,7 +411,10 @@ errors.push({
 
 **After:**
 ```typescript
-import { VALIDATION_MESSAGES, ValidationErrorCode } from '../constants/validationMessages';
+import { ConfigurationManager } from '../config/ConfigurationManager';
+
+const configManager = ConfigurationManager.getInstance();
+const validationConfig = configManager.getValidationConfig();
 
 errors.push({
   field: 'name',

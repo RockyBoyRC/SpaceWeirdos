@@ -10,7 +10,7 @@ import './PsychicPowerSelector.css';
  * Displays name, cost, and effect for each power.
  * No limit on selections.
  * 
- * Requirements: 5.5, 12.4, 1.6, 2.3, 5.3, 5.4
+ * Requirements: 5.5, 12.4, 1.6, 2.3
  */
 
 interface PsychicPowerSelectorProps {

@@ -12,6 +12,34 @@ Both test types complement each other for comprehensive coverage.
 
 ## Test Infrastructure
 
+### Configuration Manager Setup
+
+The project uses a centralized ConfigurationManager that must be properly initialized in tests. Most backend service tests require configuration setup:
+
+```typescript
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
+
+describe('MyService', () => {
+  let configManager: ConfigurationManager;
+  let configFactory: ConfigurationFactory;
+  let myService: MyService;
+
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create factory and services
+    configFactory = new ConfigurationFactory(configManager);
+    myService = configFactory.createMyService();
+  });
+});
+```
+
 ### Test Helper Utilities
 
 The project provides reusable test helpers in `tests/testHelpers.tsx` for consistent test setup.
@@ -218,15 +246,48 @@ describe('MyComponent interactions', () => {
 
 ### Testing Services
 
-**Service Unit Test:**
+**Service Unit Test with Configuration:**
 
 ```typescript
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeEach } from 'vitest';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
 import { MyService } from '../src/backend/services/MyService';
 
 describe('MyService', () => {
+  let configManager: ConfigurationManager;
+  let configFactory: ConfigurationFactory;
+  let myService: MyService;
+
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create factory and services
+    configFactory = new ConfigurationFactory(configManager);
+    myService = configFactory.createMyService();
+  });
+
   test('should perform calculation', () => {
-    const service = new MyService();
+    const result = myService.calculate(5, 10);
+    expect(result).toBe(15);
+  });
+});
+```
+
+**Simple Service Test (No Configuration Required):**
+
+```typescript
+import { describe, test, expect } from 'vitest';
+import { UtilityService } from '../src/backend/utils/UtilityService';
+
+describe('UtilityService', () => {
+  test('should perform calculation', () => {
+    const service = new UtilityService();
     const result = service.calculate(5, 10);
     expect(result).toBe(15);
   });
@@ -333,7 +394,36 @@ npm test -- tests/MyComponent.test.tsx --reporter=dot --silent
 
 ## Best Practices
 
-### 1. Always Use Test Helpers for Components
+### 1. Initialize ConfigurationManager for Backend Services
+
+❌ **Don't:**
+```typescript
+import { ValidationService } from '../src/backend/services/ValidationService';
+
+test('should validate', () => {
+  const service = new ValidationService(); // Missing configuration!
+});
+```
+
+✅ **Do:**
+```typescript
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
+
+let configManager: ConfigurationManager;
+let configFactory: ConfigurationFactory;
+let validationService: ValidationService;
+
+beforeEach(async () => {
+  (ConfigurationManager as any).instance = null;
+  configManager = ConfigurationManager.getInstance();
+  await configManager.initialize();
+  configFactory = new ConfigurationFactory(configManager);
+  validationService = configFactory.createValidationService();
+});
+```
+
+### 2. Always Use Test Helpers for Components
 
 ❌ **Don't:**
 ```typescript
@@ -353,7 +443,7 @@ test('should render', () => {
 });
 ```
 
-### 2. Use Mock Data Helpers for Consistency
+### 3. Use Mock Data Helpers for Consistency
 
 ❌ **Don't:**
 ```typescript
@@ -375,7 +465,7 @@ test('should work with warband', () => {
 });
 ```
 
-### 3. Tag Property-Based Tests
+### 4. Tag Property-Based Tests
 
 Always include a comment linking property tests to the design document:
 
@@ -389,7 +479,7 @@ test('property test name', () => {
 });
 ```
 
-### 4. Configure Sufficient Iterations
+### 5. Configure Sufficient Iterations
 
 Property-based tests should run at least 50 iterations:
 
@@ -400,7 +490,7 @@ fc.assert(
 );
 ```
 
-### 5. Use Descriptive Test Names
+### 6. Use Descriptive Test Names
 
 ❌ **Don't:**
 ```typescript
@@ -412,7 +502,7 @@ test('test 1', () => { /* ... */ });
 test('should calculate total cost including equipment modifiers', () => { /* ... */ });
 ```
 
-### 6. Test One Thing Per Test
+### 7. Test One Thing Per Test
 
 ❌ **Don't:**
 ```typescript
@@ -437,18 +527,36 @@ test('should calculate cost', () => { /* ... */ });
 ### Testing Validation
 
 ```typescript
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeEach } from 'vitest';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
 import { ValidationService } from '../src/backend/services/ValidationService';
 import { createMockWeirdo } from './testHelpers';
 
 describe('ValidationService', () => {
+  let configManager: ConfigurationManager;
+  let configFactory: ConfigurationFactory;
+  let validationService: ValidationService;
+
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create factory and services
+    configFactory = new ConfigurationFactory(configManager);
+    validationService = configFactory.createValidationService();
+  });
+
   test('should validate weirdo has close combat weapon', () => {
-    const service = new ValidationService();
     const weirdo = createMockWeirdo('trooper', {
       closeCombatWeapons: [] // Invalid: no weapons
     });
     
-    const result = service.validateWeirdo(weirdo);
+    const result = validationService.validateWeirdo(weirdo);
     
     expect(result.isValid).toBe(false);
     expect(result.errors).toContainEqual(
@@ -463,13 +571,31 @@ describe('ValidationService', () => {
 ### Testing Cost Calculations
 
 ```typescript
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeEach } from 'vitest';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
 import { CostEngine } from '../src/backend/services/CostEngine';
 import { createMockWeirdo } from './testHelpers';
 
 describe('CostEngine', () => {
+  let configManager: ConfigurationManager;
+  let configFactory: ConfigurationFactory;
+  let costEngine: CostEngine;
+
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create factory and services
+    configFactory = new ConfigurationFactory(configManager);
+    costEngine = configFactory.createCostEngine();
+  });
+
   test('should calculate weirdo total cost', () => {
-    const costEngine = new CostEngine();
     const weirdo = createMockWeirdo('trooper', {
       attributes: {
         speed: 2,
@@ -503,6 +629,55 @@ describe('WeirdoEditor', () => {
     renderWithProviders(<WeirdoEditor weirdo={weirdo} />);
     
     expect(screen.getByDisplayValue('Test Leader')).toBeInTheDocument();
+  });
+});
+```
+
+### Testing Configuration
+
+```typescript
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+
+describe('Configuration Tests', () => {
+  let originalEnv: NodeJS.ProcessEnv;
+
+  beforeEach(() => {
+    // Save original environment
+    originalEnv = { ...process.env };
+    
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+  });
+
+  afterEach(() => {
+    // Restore original environment
+    process.env = originalEnv;
+  });
+
+  test('should use environment variable overrides', async () => {
+    // Set test environment variables
+    process.env.POINT_LIMIT_STANDARD = '100';
+    process.env.CACHE_DEFAULT_MAX_SIZE = '200';
+    
+    const configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    const costConfig = configManager.getCostConfig();
+    const cacheConfig = configManager.getCacheConfig();
+    
+    expect(costConfig.pointLimits.standard).toBe(100);
+    expect(cacheConfig.defaultMaxSize).toBe(200);
+  });
+
+  test('should use defaults when environment variables not set', async () => {
+    const configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    const costConfig = configManager.getCostConfig();
+    
+    expect(costConfig.pointLimits.standard).toBe(75); // Default value
+    expect(costConfig.pointLimits.extended).toBe(125); // Default value
   });
 });
 ```
@@ -542,6 +717,41 @@ renderWithProviders(<MyComponent />);
 const weirdo = createMockWeirdo('leader', {
   // Add missing properties here
   leaderTrait: 'Bounty Hunter'
+});
+```
+
+### Configuration Manager Issues
+
+**Error:** "Configuration manager not initialized"
+
+**Solution:** Always initialize ConfigurationManager in beforeEach:
+
+```typescript
+beforeEach(async () => {
+  (ConfigurationManager as any).instance = null;
+  configManager = ConfigurationManager.getInstance();
+  await configManager.initialize();
+});
+```
+
+**Error:** "Environment variables not being used in tests"
+
+**Solution:** Set environment variables before initialization:
+
+```typescript
+beforeEach(async () => {
+  // Set test environment variables
+  process.env.POINT_LIMIT_STANDARD = '100';
+  
+  // Then initialize
+  (ConfigurationManager as any).instance = null;
+  configManager = ConfigurationManager.getInstance();
+  await configManager.initialize();
+});
+
+afterEach(() => {
+  // Restore original environment
+  process.env = originalEnv;
 });
 ```
 
@@ -712,17 +922,20 @@ test('property test', () => {
 
 When adding new tests:
 
-1. Use test helper utilities for consistency
-2. Follow the dual testing approach (unit + property tests)
-3. Tag property-based tests with design document references
-4. Configure at least 50 iterations for property tests
-5. Use descriptive test names
-6. Test one thing per test
-7. Keep tests maintainable and readable
-8. **Always wait for async context providers to initialize**
-9. **Use appropriate timeouts for async operations**
-10. **Constrain property test generators to valid input domains**
-11. **Clean up mocks between property test iterations**
+1. **Initialize ConfigurationManager for backend service tests**
+2. Use test helper utilities for consistency
+3. Follow the dual testing approach (unit + property tests)
+4. Tag property-based tests with design document references
+5. Configure at least 50 iterations for property tests
+6. Use descriptive test names
+7. Test one thing per test
+8. Keep tests maintainable and readable
+9. **Always wait for async context providers to initialize**
+10. **Use appropriate timeouts for async operations**
+11. **Constrain property test generators to valid input domains**
+12. **Clean up mocks between property test iterations**
+13. **Reset ConfigurationManager singleton between tests**
+14. **Save and restore environment variables in configuration tests**
 
 For more details, see:
 - [Core Project Info](.kiro/steering/core-project-info.md) - Technology stack and code style

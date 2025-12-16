@@ -11,8 +11,16 @@ import './WarbandCostDisplay.css';
  * Uses design system tokens for consistent styling.
  * Memoized for performance optimization.
  * 
+ * Note: Uses frontend-defined warning threshold for warband-level warnings,
+ * as the backend ValidationService only provides hard limit errors for warbands.
+ * Individual weirdo warnings use centralized backend logic via API.
+ * 
  * Requirements: 1.3, 2.3, 2.4, 2.5, 2.6, 3.2, 3.4, 3.5, 3.6
  */
+// Warband-level warning threshold (frontend-defined)
+// Backend ValidationService only provides hard limit errors for warbands
+const WARBAND_WARNING_THRESHOLD = 15;
+
 const WarbandCostDisplayComponent = () => {
   const { currentWarband, getWarbandCost } = useWarband();
 
@@ -29,7 +37,7 @@ const WarbandCostDisplayComponent = () => {
     const remaining = pointLimit - totalCost;
     return {
       remaining,
-      isApproachingLimit: remaining <= 15 && remaining > 0,
+      isApproachingLimit: remaining <= WARBAND_WARNING_THRESHOLD && remaining > 0,
       isOverLimit: remaining < 0
     };
   }, [pointLimit, totalCost]);

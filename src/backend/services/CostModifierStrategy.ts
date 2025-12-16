@@ -5,11 +5,7 @@ import {
   AttributeLevel,
   WarbandAbility
 } from '../models/types.js';
-import {
-  DISCOUNT_VALUES,
-  ABILITY_WEAPON_LISTS,
-  ABILITY_EQUIPMENT_LISTS
-} from '../constants/costs.js';
+import { CostConfig } from '../config/types.js';
 
 /**
  * Strategy interface for applying warband ability-based cost modifiers
@@ -35,6 +31,11 @@ export interface CostModifierStrategy {
  * Default strategy with no modifiers
  */
 export class DefaultCostStrategy implements CostModifierStrategy {
+  constructor(private config: CostConfig) {
+    // Config available for strategy implementations
+    void this.config; // Suppress unused warning
+  }
+
   applyWeaponDiscount(weapon: Weapon): number {
     return weapon.baseCost;
   }
@@ -50,17 +51,19 @@ export class DefaultCostStrategy implements CostModifierStrategy {
 
 /**
  * Mutants warband ability cost strategy
- * - Speed attribute costs reduced by 1
- * - Specific close combat weapons (Claws & Teeth, Horrible Claws & Teeth, Whip/Tail) cost reduced by 1
+ * - Speed attribute costs reduced by configured discount
+ * - Specific close combat weapons (from configuration) cost reduced by configured discount
  */
 export class MutantsCostStrategy implements CostModifierStrategy {
+  constructor(private config: CostConfig) {}
+
   applyWeaponDiscount(weapon: Weapon): number {
     let cost = weapon.baseCost;
 
     // Type assertion needed: weapon.name is string but includes() expects readonly tuple type
     // Safe because we're just checking if the string is in the list
-    if (weapon.type === 'close' && ABILITY_WEAPON_LISTS.MUTANT_WEAPONS.includes(weapon.name as any)) {
-      cost -= DISCOUNT_VALUES.MUTANT_DISCOUNT;
+    if (weapon.type === 'close' && this.config.abilityWeaponLists.mutantWeapons.includes(weapon.name as any)) {
+      cost -= this.config.discountValues.mutantDiscount;
     }
 
     return Math.max(0, cost);
@@ -72,7 +75,7 @@ export class MutantsCostStrategy implements CostModifierStrategy {
 
   applyAttributeDiscount(attribute: AttributeType, _level: AttributeLevel, baseCost: number): number {
     if (attribute === 'speed') {
-      return Math.max(0, baseCost - DISCOUNT_VALUES.MUTANT_DISCOUNT);
+      return Math.max(0, baseCost - this.config.discountValues.mutantDiscount);
     }
     return baseCost;
   }
@@ -80,14 +83,16 @@ export class MutantsCostStrategy implements CostModifierStrategy {
 
 /**
  * Heavily Armed warband ability cost strategy
- * - Ranged weapon costs reduced by 1
+ * - Ranged weapon costs reduced by configured discount
  */
 export class HeavilyArmedCostStrategy implements CostModifierStrategy {
+  constructor(private config: CostConfig) {}
+
   applyWeaponDiscount(weapon: Weapon): number {
     let cost = weapon.baseCost;
 
     if (weapon.type === 'ranged') {
-      cost -= DISCOUNT_VALUES.HEAVILY_ARMED_DISCOUNT;
+      cost -= this.config.discountValues.heavilyArmedDiscount;
     }
 
     return Math.max(0, cost);
@@ -104,9 +109,11 @@ export class HeavilyArmedCostStrategy implements CostModifierStrategy {
 
 /**
  * Soldiers warband ability cost strategy
- * - Specific equipment (Grenade, Heavy Armor, Medkit) costs set to 0
+ * - Specific equipment (from configuration) costs set to 0
  */
 export class SoldiersCostStrategy implements CostModifierStrategy {
+  constructor(private config: CostConfig) {}
+
   applyWeaponDiscount(weapon: Weapon): number {
     return weapon.baseCost;
   }
@@ -114,7 +121,7 @@ export class SoldiersCostStrategy implements CostModifierStrategy {
   applyEquipmentDiscount(equipment: Equipment): number {
     // Type assertion needed: equipment.name is string but includes() expects readonly tuple type
     // Safe because we're just checking if the string is in the list
-    if (ABILITY_EQUIPMENT_LISTS.SOLDIER_FREE_EQUIPMENT.includes(equipment.name as any)) {
+    if (this.config.abilityEquipmentLists.soldierFreeEquipment.includes(equipment.name as any)) {
       return 0;
     }
     return equipment.baseCost;
@@ -128,15 +135,15 @@ export class SoldiersCostStrategy implements CostModifierStrategy {
 /**
  * Factory function to create the appropriate cost modifier strategy
  */
-export function createCostModifierStrategy(ability: WarbandAbility | null): CostModifierStrategy {
+export function createCostModifierStrategy(ability: WarbandAbility | null, config: CostConfig): CostModifierStrategy {
   switch (ability) {
     case 'Mutants':
-      return new MutantsCostStrategy();
+      return new MutantsCostStrategy(config);
     case 'Heavily Armed':
-      return new HeavilyArmedCostStrategy();
+      return new HeavilyArmedCostStrategy(config);
     case 'Soldiers':
-      return new SoldiersCostStrategy();
+      return new SoldiersCostStrategy(config);
     default:
-      return new DefaultCostStrategy();
+      return new DefaultCostStrategy(config);
   }
 }

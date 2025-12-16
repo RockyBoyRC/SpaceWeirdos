@@ -6,9 +6,11 @@ Welcome to the documentation for the Space Weirdos Warband Builder! This directo
 
 ### For Users
 - **[Features Guide](FEATURES.md)** - Complete feature overview and capabilities
+- **[Import/Export Troubleshooting](IMPORT-EXPORT-TROUBLESHOOTING.md)** - Comprehensive troubleshooting guide for import/export issues
 - **[Warning System Guide](WARNING-SYSTEM.md)** - Understanding the context-aware warning system
 
 ### For Developers
+- **[Configuration Guide](CONFIGURATION.md)** - Comprehensive configuration management system guide
 - **[Architecture Overview](ARCHITECTURE.md)** - System design and architectural patterns
 - **[API Documentation](API-DOCUMENTATION.md)** - Backend API endpoints and usage
 - **[Frontend-Backend API Separation](FRONTEND-BACKEND-API-SEPARATION.md)** - API-based architecture guide
@@ -21,6 +23,8 @@ Welcome to the documentation for the Space Weirdos Warband Builder! This directo
 ### Project Information
 - **[Changelog](../CHANGELOG.md)** - Version history and recent updates
 - **[Release Notes](release-notes/)** - Detailed release notes by version
+  - **[v1.8.0 Release Notes](release-notes/v1.8.0.md)** - Centralized Configuration Management System
+  - **[v1.0.0 Release Notes](release-notes/v1.0.0.md)** - Initial major release
 - **[Main README](../README.md)** - Project overview and getting started
 - **[Specifications](../.kiro/specs/README.md)** - Detailed feature specifications
 
@@ -29,6 +33,7 @@ Welcome to the documentation for the Space Weirdos Warband Builder! This directo
 ### Features Guide
 Comprehensive overview of all features including:
 - Warband management and customization
+- Import/export system with comprehensive validation
 - Real-time cost calculation
 - Context-aware validation and warnings
 - User interface components
@@ -122,13 +127,15 @@ The UI provides immediate visual feedback:
 
 ## Project Status
 
-**Current Version**: 1.0.0
+**Current Version**: 1.8.0
 
 **Recent Updates**:
+- ✅ **v1.8.0**: Centralized Configuration Management System with environment-specific optimization
+- ✅ **v1.7.0**: Import/export system with comprehensive validation
 - ✅ Context-aware warning system implemented
 - ✅ Frontend-backend API separation complete
 - ✅ Real-time feedback polish complete
-- ✅ 140+ tests passing (100% success rate)
+- ✅ 160+ tests passing (100% success rate)
 - ✅ Comprehensive documentation complete
 
 ## Support and Contribution

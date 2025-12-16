@@ -19,11 +19,10 @@
 .warband-editor__actions {
   grid-column: 1 / -1;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: white;
-  border: 1px solid #ddd;
+  align-items: left;
+  padding: 2rem;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
   border-radius: 8px;
   margin-bottom: 0.5rem;
 }
@@ -33,59 +32,62 @@
   gap: 1rem;
 }
 
-.back-button {
-  padding: 0.5rem 1rem;
-  background: #f5f5f5;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.back-button,
+.save-button,
+.delete-button {
+  /* Use theme button base styles matching WarbandList */
+  padding: 2px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family-base);
+  letter-spacing: var(--letter-spacing-normal);
+  text-transform: uppercase;
+  border: 2px solid var(--color-border-default);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
   cursor: pointer;
-  font-size: 0.875rem;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  border-radius: 0;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.back-button {
+  /* Fixed width for back button */
+  flex: none;
+  padding: 0.5rem 1rem;
+}
+
+.save-button,
+.delete-button {
+  /* Flexible width for action buttons */
+  flex: 1;
 }
 
 .back-button:hover {
-  background: #e0e0e0;
+  background: var(--color-success);
 }
 
-.save-button {
-  padding: 0.5rem 1.5rem;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: background-color 0.2s;
-}
-
-.save-button:hover {
-  background: #45a049;
-}
-
-.save-button:focus {
-  outline: 2px solid #2e7d32;
+.back-button:focus {
+  outline: 2px solid var(--color-success);
   outline-offset: 2px;
 }
 
-.delete-button {
-  padding: 0.5rem 1.5rem;
-  background: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: background-color 0.2s;
+.save-button:hover {
+  background: var(--color-success);
+}
+
+.save-button:focus {
+  outline: 2px solid var(--color-success);
+  outline-offset: 2px;
 }
 
 .delete-button:hover {
-  background: #d32f2f;
+  background: var(--color-error);
 }
 
 .delete-button:focus {
-  outline: 2px solid #c62828;
+  outline: 2px solid var(--color-primary-700);
   outline-offset: 2px;
 }
 
@@ -94,28 +96,28 @@
   grid-column: 1 / -1;
   text-align: center;
   padding: 4rem 2rem;
-  background: #f5f5f5;
+  background: var(--color-neutral-100);
   border-radius: 8px;
-  border: 2px dashed #ccc;
+  border: 2px dashed var(--color-border-light);
 }
 
 .warband-editor__empty-state h2 {
   margin: 0 0 1rem 0;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 1.5rem;
 }
 
 .warband-editor__empty-state p {
   margin: 0;
-  color: #888;
+  color: var(--color-text-secondary);
   font-size: 1rem;
 }
 
 /* Section styling */
 .warband-editor__properties,
 .warband-editor__weirdos-list {
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
   border-radius: 8px;
   padding: 1.5rem;
   min-height: 400px;
@@ -125,8 +127,8 @@
 .warband-editor__weirdos-list h2 {
   margin: 0 0 1.5rem 0;
   font-size: 1.25rem;
-  color: #333;
-  border-bottom: 2px solid #e0e0e0;
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-border-light);
   padding-bottom: 0.75rem;
 }
 
@@ -157,17 +159,17 @@
 
 .warband-properties__field label {
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 0.875rem;
 }
 
 .warband-properties__field .required {
-  color: #d32f2f;
+  color: var(--color-error);
 }
 
 .warband-properties__field input[type="text"] {
   padding: 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
   font-size: 1rem;
   font-family: inherit;
@@ -175,16 +177,16 @@
 
 .warband-properties__field input[type="text"]:focus {
   outline: none;
-  border-color: #1976d2;
+  border-color: var(--color-border-focus);
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
 }
 
 .warband-properties__field input[type="text"][aria-invalid="true"] {
-  border-color: #d32f2f;
+  border-color: var(--color-error);
 }
 
 .warband-properties__error {
-  color: #d32f2f;
+  color: var(--color-error);
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
@@ -198,7 +200,7 @@
 
 .warband-properties__field legend {
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
 }
@@ -223,26 +225,26 @@
 /* Select dropdown */
 .warband-properties__field select {
   padding: 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
   font-size: 1rem;
   font-family: inherit;
-  background: white;
+  background: var(--color-bg-elevated);
   cursor: pointer;
 }
 
 .warband-properties__field select:focus {
   outline: none;
-  border-color: #1976d2;
+  border-color: var(--color-border-focus);
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
 }
 
 .warband-properties__ability-description {
   padding: 0.75rem;
-  background: #f5f5f5;
-  border-left: 3px solid #1976d2;
+  background: var(--color-neutral-100);
+  border-left: 3px solid var(--color-border-focus);
   border-radius: 4px;
   font-size: 0.875rem;
-  color: #555;
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }

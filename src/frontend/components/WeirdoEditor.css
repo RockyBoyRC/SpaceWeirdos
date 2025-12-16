@@ -24,11 +24,11 @@
   background: var(--color-neutral-50);
   border: var(--border-width-thin) solid var(--color-border-default);
   border-radius: var(--border-radius-md);
-  padding: var(--spacing-4);
+  padding: var(--spacing-2);
 }
 
 .weirdo-editor__section h3 {
-  margin: 0 0 var(--spacing-4) 0;
+  margin: 0 0 var(--spacing-2) 0;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
@@ -36,7 +36,7 @@
 
 .weirdo-editor__attributes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(20px, 1fr));
   gap: var(--spacing-4);
 }
 

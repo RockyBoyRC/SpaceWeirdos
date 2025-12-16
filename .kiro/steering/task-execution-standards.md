@@ -156,6 +156,35 @@ npm test -- tests/File.test.ts -t "test suite name" --reporter=dot
 npm test -- tests/File1.test.ts tests/File2.test.ts --reporter=dot
 ```
 
+## Configuration System Requirements
+
+### MANDATORY: Use ConfigurationManager for All Constants
+
+**All magic numbers, global variables, and configuration parameters MUST use the existing Configuration System:**
+
+```typescript
+// ✅ CORRECT - Use ConfigurationManager
+import { ConfigurationManager } from '../config/ConfigurationManager.js';
+
+const configManager = ConfigurationManager.getInstance();
+await configManager.initialize();
+
+const costConfig = configManager.getCostConfig();
+const pointLimit = costConfig.pointLimits.standard;
+```
+
+```typescript
+// ❌ WRONG - Direct magic numbers/constants (will be rejected)
+const POINT_LIMIT = 75;
+const MAX_RETRIES = 3;
+```
+
+**Removed files (DO NOT USE):**
+- `src/backend/constants/costs.ts` - REMOVED - Use `configManager.getCostConfig()` instead
+- `src/backend/constants/validationMessages.ts` - REMOVED - Use `configManager.getValidationConfig().messages` instead
+
+**For detailed configuration standards, use `#configuration-standards` in your request.**
+
 ## File Modification Limits
 
 - Maximum 3-4 file modifications per task

@@ -1,6 +1,8 @@
-import { describe, it } from 'vitest';
+import { describe, it, beforeEach } from 'vitest';
 import fc from 'fast-check';
 import { CostEngine } from '../src/backend/services/CostEngine';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
 import {
   SpeedLevel,
   DiceLevel,
@@ -102,7 +104,22 @@ const weirdoGen = (type: 'leader' | 'trooper', warbandAbility: WarbandAbility | 
   });
 
 describe('CostEngine Refactoring', () => {
-  const costEngine = new CostEngine();
+  let costEngine: CostEngine;
+  let configManager: ConfigurationManager;
+  let configFactory: ConfigurationFactory;
+
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create factory and services
+    configFactory = new ConfigurationFactory(configManager);
+    costEngine = configFactory.createCostEngine();
+  });
 
   describe('Property 2: Refactoring preserves cost calculation', () => {
     // **Feature: code-refactoring, Property 2: Refactoring preserves cost calculation**

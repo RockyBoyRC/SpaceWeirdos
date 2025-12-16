@@ -13,7 +13,7 @@ import type { Warband, Weirdo, WarbandAbility } from '../../backend/models/types
 // Backend services, repositories, or business logic
 import { CostEngine } from '../../backend/services/CostEngine';
 import { ValidationService } from '../../backend/services/ValidationService';
-import { TROOPER_LIMITS } from '../../backend/constants/costs';
+// import { TROOPER_LIMITS } from '../../backend/constants/costs'; // File removed
 ```
 
 ## Cost Calculation Hooks

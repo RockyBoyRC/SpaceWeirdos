@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { WarbandAbility } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
 import { CostCache } from '../services/CostCache';
+import { getFrontendConfigInstance } from '../config/frontendConfig';
 
 /**
  * Parameters for item cost calculation
@@ -24,7 +25,12 @@ export interface ItemCostResult {
 }
 
 // Shared cache instance for item costs
-const itemCostCache = new CostCache<number>(100, 5000);
+// Using centralized frontend configuration with factory function
+const frontendConfig = getFrontendConfigInstance();
+const itemCostCache = new CostCache<number>(
+  frontendConfig.cache.itemCostCacheSize,
+  frontendConfig.cache.itemCostCacheTtl
+);
 
 // Export for testing purposes
 export { itemCostCache };

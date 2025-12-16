@@ -1,6 +1,6 @@
 // Core type definitions for Space Weirdos Warband Builder
 
-import type { ValidationErrorCode } from '../constants/validationMessages.js';
+// Removed deprecated import - ValidationErrorCode is now defined locally
 
 export type SpeedLevel = 1 | 2 | 3;
 export type DiceLevel = '2d6' | '2d8' | '2d10';
@@ -85,6 +85,20 @@ export interface Warband {
   updatedAt: Date;
 }
 
+export type ValidationErrorCode = 
+  | 'WARBAND_NAME_REQUIRED'
+  | 'WEIRDO_NAME_REQUIRED'
+  | 'INVALID_POINT_LIMIT'
+  | 'ATTRIBUTES_INCOMPLETE'
+  | 'CLOSE_COMBAT_WEAPON_REQUIRED'
+  | 'RANGED_WEAPON_REQUIRED'
+  | 'FIREPOWER_REQUIRED_FOR_RANGED_WEAPON'
+  | 'EQUIPMENT_LIMIT_EXCEEDED'
+  | 'TROOPER_POINT_LIMIT_EXCEEDED'
+  | 'MULTIPLE_25_POINT_WEIRDOS'
+  | 'WARBAND_POINT_LIMIT_EXCEEDED'
+  | 'LEADER_TRAIT_INVALID';
+
 export interface ValidationError {
   field: string;
   message: string;
@@ -111,6 +125,16 @@ export interface WarbandSummary {
   totalCost: number;
   weirdoCount: number;
   updatedAt: Date;
+}
+
+export interface ReadmeContent {
+  title: string;
+  version: string;
+  description: string;
+  features: string[];
+  gameRules: string[];
+  recentUpdates: string[];
+  lastUpdated: Date;
 }
 
 // Error codes for persistence operations

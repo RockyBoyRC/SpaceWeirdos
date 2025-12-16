@@ -107,10 +107,11 @@ describe('Typography Token Definitions', () => {
       expect(baseSize).toBe('1rem');
     });
 
-    it('should have font sizes increase monotonically', () => {
+    it('should have font sizes increase monotonically from base upward', () => {
       const tokens = extractTokens(typographyTokens);
       
-      const fontSizes = ['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl'];
+      // Note: xs and sm are both 1rem in the vintage theme, so we start from base
+      const fontSizes = ['base', 'lg', 'xl', '2xl', '3xl', '4xl'];
       const values = fontSizes.map(size => {
         const tokenName = `--font-size-${size}`;
         const value = tokens.get(tokenName);
@@ -199,10 +200,10 @@ describe('Typography Token Definitions', () => {
       });
     });
 
-    it('should have line-height-normal equal to 1.5', () => {
+    it('should have line-height-normal equal to 1.4', () => {
       const tokens = extractTokens(typographyTokens);
       const normalHeight = tokens.get('--line-height-normal');
-      expect(normalHeight).toBe('1.5');
+      expect(normalHeight).toBe('1.4');
     });
 
     it('should have line heights increase monotonically', () => {
@@ -245,10 +246,10 @@ describe('Typography Token Definitions', () => {
       });
     });
 
-    it('should have letter-spacing-normal equal to 0', () => {
+    it('should have letter-spacing-normal equal to 0.5em', () => {
       const tokens = extractTokens(typographyTokens);
       const normalSpacing = tokens.get('--letter-spacing-normal');
-      expect(normalSpacing).toBe('0');
+      expect(normalSpacing).toBe('0.5em');
     });
   });
 

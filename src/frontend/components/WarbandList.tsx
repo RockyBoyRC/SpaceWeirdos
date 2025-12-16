@@ -2,6 +2,11 @@ import { useState, useEffect, memo } from 'react';
 import type { Warband, WarbandSummary } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
+import { FileOperationStatus, FileOperationState } from './FileOperationStatus';
+import { FileUtils, FileOperationError } from '../services/FileUtils';
+import { ImportExportErrorDisplay } from './ImportExportErrorDisplay';
+import { NameConflictDialog } from './NameConflictDialog';
+import { ImportExportError } from '../services/ImportExportErrorHandler';
 import './WarbandList.css';
 
 /**
@@ -19,13 +24,27 @@ interface WarbandListProps {
   onLoadWarband: (id: string) => void;
   onDeleteSuccess: () => void;
   onDeleteError: (error: Error) => void;
+  onDuplicateSuccess: () => void;
+  onDuplicateError: (error: Error) => void;
+  onImportSuccess: () => void;
+  onImportError: (error: Error) => void;
+  onLearnAboutClick: () => void;
+  onExportSuccess?: (warbandName: string) => void;
+  onExportError?: (error: Error) => void;
 }
 
 export function WarbandList({ 
   onCreateWarband, 
   onLoadWarband,
   onDeleteSuccess,
-  onDeleteError
+  onDeleteError,
+  onDuplicateSuccess,
+  onDuplicateError,
+  onImportSuccess,
+  onImportError,
+  onLearnAboutClick,
+  onExportSuccess,
+  onExportError
 }: WarbandListProps) {
   const [warbands, setWarbands] = useState<Warband[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -33,6 +52,23 @@ export function WarbandList({
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     id: string;
     name: string;
+  } | null>(null);
+  const [exportState, setExportState] = useState<{
+    warbandId: string;
+    warbandName: string;
+    state: FileOperationState;
+    message?: string;
+  } | null>(null);
+  const [importState, setImportState] = useState<{
+    state: FileOperationState;
+    message?: string;
+    fileName?: string;
+  } | null>(null);
+  const [importError, setImportError] = useState<ImportExportError | null>(null);
+  const [nameConflict, setNameConflict] = useState<{
+    existingName: string;
+    importedName: string;
+    importedData: unknown;
   } | null>(null);
 
   /**
@@ -101,6 +137,380 @@ export function WarbandList({
     setDeleteConfirmation(null);
   };
 
+  /**
+   * Handle warband export
+   * Requirements: 1.1, 1.2, 1.5
+   */
+  const handleExportWarband = async (id: string, name: string) => {
+    try {
+      // Set initial export state
+      setExportState({
+        warbandId: id,
+        warbandName: name,
+        state: 'processing',
+        message: `Preparing ${name} for export...`
+      });
+
+      // Export the warband via API
+      const exportedData = await apiClient.exportWarband(id);
+
+      // Update state to downloading
+      setExportState(prev => prev ? {
+        ...prev,
+        state: 'downloading',
+        message: `Downloading ${name}...`
+      } : null);
+
+      // Use FileUtils to download the warband
+      FileUtils.downloadWarbandAsJson(exportedData, `${name}.json`);
+
+      // Update state to complete
+      setExportState(prev => prev ? {
+        ...prev,
+        state: 'complete',
+        message: `${name} exported successfully`
+      } : null);
+
+      // Clear export state after a delay
+      setTimeout(() => {
+        setExportState(null);
+      }, 2000);
+
+      // Notify parent component of success
+      if (onExportSuccess) {
+        onExportSuccess(name);
+      }
+
+    } catch (error) {
+      // Update state to error
+      setExportState(prev => prev ? {
+        ...prev,
+        state: 'error',
+        message: `Failed to export ${name}`
+      } : null);
+
+      // Clear export state after a delay
+      setTimeout(() => {
+        setExportState(null);
+      }, 3000);
+
+      // Notify parent component of error
+      if (onExportError) {
+        const exportError = error instanceof FileOperationError 
+          ? new Error(`Export failed: ${error.message}`)
+          : error instanceof Error 
+            ? error 
+            : new Error('Unknown export error');
+        onExportError(exportError);
+      }
+    }
+  };
+
+  /**
+   * Cancel export operation
+   * Requirements: 4.2
+   */
+  const handleCancelExport = () => {
+    setExportState(null);
+  };
+
+  /**
+   * Handle warband import
+   * Requirements: 2.1, 2.2, 2.3, 2.4, 2.5
+   */
+  const handleImportWarband = async () => {
+    try {
+      // Clear any previous errors
+      setImportError(null);
+
+      // Set initial import state
+      setImportState({
+        state: 'selecting',
+        message: 'Select a warband file to import...'
+      });
+
+      // Open file selection dialog
+      const file = await FileUtils.selectJsonFile();
+
+      // Update state to reading
+      setImportState({
+        state: 'reading',
+        message: 'Reading file...',
+        fileName: file.name
+      });
+
+      // Read and parse the JSON file
+      const importedData = await FileUtils.readJsonFile(file);
+
+      // Update state to validating
+      setImportState(prev => prev ? {
+        ...prev,
+        state: 'validating',
+        message: 'Validating warband data...'
+      } : null);
+
+      // Validate the imported data via API
+      const validation = await apiClient.validateImport({ warbandData: importedData });
+
+      if (!validation.valid) {
+        // Show validation errors
+        setImportError({
+          type: 'VALIDATION_ERROR',
+          message: 'Warband data validation failed',
+          details: validation.errors.map(e => e.message).join(', '),
+          validationErrors: validation.errors,
+          retryable: false,
+          severity: 'high',
+          suggestions: [],
+          code: 'VALIDATION_FAILED'
+        });
+        setImportState(null);
+        return;
+      }
+
+      // Check for name conflicts
+      if (validation.nameConflict) {
+        // Show name conflict dialog
+        setImportState(null);
+        setNameConflict({
+          existingName: validation.nameConflict.existingName,
+          importedName: validation.nameConflict.conflictsWith,
+          importedData: importedData
+        });
+        return;
+      }
+
+      // No conflict, proceed with import
+      await performImport(importedData, file.name);
+
+    } catch (error) {
+      // Handle different types of errors
+      if (error instanceof FileOperationError) {
+        setImportError({
+          type: error.type === 'FILE_READ_ERROR' ? 'FILE_READ_ERROR' : 'VALIDATION_ERROR',
+          message: error.message,
+          details: error.details,
+          retryable: error.type !== 'INVALID_JSON',
+          severity: 'high',
+          suggestions: [],
+          code: error.type
+        });
+      } else if (error instanceof Error) {
+        // Check if it's a user cancellation
+        if (error.message.includes('cancelled') || error.message.includes('No file selected')) {
+          // User cancelled, just clear the state
+          setImportState(null);
+          return;
+        }
+
+        setImportError({
+          type: 'VALIDATION_ERROR',
+          message: error.message,
+          retryable: true,
+          severity: 'high',
+          suggestions: [],
+          code: 'IMPORT_FAILED'
+        });
+      } else {
+        setImportError({
+          type: 'UNKNOWN_ERROR',
+          message: 'An unexpected error occurred during import',
+          retryable: true,
+          severity: 'high',
+          suggestions: [],
+          code: 'UNKNOWN'
+        });
+      }
+
+      setImportState(null);
+
+      // Notify parent component of error
+      if (onImportError) {
+        const importError = error instanceof Error ? error : new Error('Unknown import error');
+        onImportError(importError);
+      }
+    }
+  };
+
+  /**
+   * Perform the actual import operation
+   * Requirements: 2.3
+   */
+  const performImport = async (warbandData: any, fileName: string) => {
+    try {
+      // Update state to processing
+      setImportState({
+        state: 'processing',
+        message: `Importing ${(warbandData as any)?.name || 'warband'}...`,
+        fileName
+      });
+
+      // Import the warband via API
+      const createdWarband = await apiClient.importWarband({
+        warbandData: warbandData
+      });
+
+      // Update state to complete
+      setImportState(prev => prev ? {
+        ...prev,
+        state: 'complete',
+        message: `${createdWarband.name} imported successfully`
+      } : null);
+
+      // Clear import state after a delay
+      setTimeout(() => {
+        setImportState(null);
+      }, 2000);
+
+      // Reload the warband list to show the new warband
+      await loadWarbands();
+
+      // Notify parent component of success
+      if (onImportSuccess) {
+        onImportSuccess(createdWarband.name);
+      }
+
+    } catch (error) {
+      throw error; // Re-throw to be handled by the caller
+    }
+  };
+
+  /**
+   * Handle name conflict resolution - rename
+   * Requirements: 5.1, 5.2
+   */
+  const handleNameConflictRename = async (newName: string) => {
+    if (!nameConflict) return;
+
+    try {
+      const warbandData = nameConflict.importedData;
+      setNameConflict(null);
+      
+      setImportState({
+        state: 'processing',
+        message: `Importing as ${newName}...`,
+        fileName: `${newName}.json`
+      });
+
+      const createdWarband = await apiClient.importWarband({
+        warbandData: warbandData,
+        options: { newName: newName }
+      });
+
+      // Update state to complete
+      setImportState(prev => prev ? {
+        ...prev,
+        state: 'complete',
+        message: `${createdWarband.name} imported successfully`
+      } : null);
+
+      // Clear import state after a delay
+      setTimeout(() => {
+        setImportState(null);
+      }, 2000);
+
+      // Reload the warband list
+      await loadWarbands();
+
+      // Notify parent component of success
+      if (onImportSuccess) {
+        onImportSuccess(createdWarband.name);
+      }
+    } catch (error) {
+      setNameConflict(null);
+      setImportState(null);
+      if (onImportError) {
+        const importError = error instanceof Error ? error : new Error('Failed to import with new name');
+        onImportError(importError);
+      }
+    }
+  };
+
+  /**
+   * Handle name conflict resolution - replace
+   * Requirements: 5.1, 5.3
+   */
+  const handleNameConflictReplace = async () => {
+    if (!nameConflict) return;
+
+    try {
+      // Import with replace option
+      const warbandData = nameConflict.importedData;
+      setNameConflict(null);
+      
+      setImportState({
+        state: 'processing',
+        message: `Replacing ${nameConflict.existingName}...`,
+        fileName: `${nameConflict.importedName}.json`
+      });
+
+      const createdWarband = await apiClient.importWarband({
+        warbandData: warbandData,
+        options: { replaceExisting: true }
+      });
+
+      // Update state to complete
+      setImportState(prev => prev ? {
+        ...prev,
+        state: 'complete',
+        message: `${createdWarband.name} imported successfully (replaced existing)`
+      } : null);
+
+      // Clear import state after a delay
+      setTimeout(() => {
+        setImportState(null);
+      }, 2000);
+
+      // Reload the warband list
+      await loadWarbands();
+
+      // Notify parent component of success
+      if (onImportSuccess) {
+        onImportSuccess(createdWarband.name);
+      }
+    } catch (error) {
+      setNameConflict(null);
+      setImportState(null);
+      if (onImportError) {
+        const importError = error instanceof Error ? error : new Error('Failed to replace existing warband');
+        onImportError(importError);
+      }
+    }
+  };
+
+  /**
+   * Handle name conflict resolution - cancel
+   * Requirements: 5.3
+   */
+  const handleNameConflictCancel = () => {
+    setNameConflict(null);
+  };
+
+  /**
+   * Cancel import operation
+   * Requirements: 4.2
+   */
+  const handleCancelImport = () => {
+    setImportState(null);
+  };
+
+  /**
+   * Retry import operation
+   * Requirements: 4.4, 7.2
+   */
+  const handleRetryImport = () => {
+    setImportError(null);
+    handleImportWarband();
+  };
+
+  /**
+   * Dismiss import error
+   * Requirements: 4.4
+   */
+  const handleDismissImportError = () => {
+    setImportError(null);
+  };
+
   // Load warbands on component mount
   useEffect(() => {
     loadWarbands();
@@ -110,7 +520,7 @@ export function WarbandList({
   if (loading) {
     return (
       <div className="warband-list">
-        <h1>My Warbands</h1>
+        <h1>Space Weirdos Warbands</h1>
         <div className="loading" role="status" aria-live="polite">
           <div className="spinner spinner-large" aria-hidden="true"></div>
           <span>Loading warbands...</span>
@@ -123,7 +533,7 @@ export function WarbandList({
   if (error) {
     return (
       <div className="warband-list">
-        <h1>My Warbands</h1>
+        <h1>Space Weirdos Warbands</h1>
         <div className="error" role="alert" aria-live="assertive">
           <p>{error}</p>
           <button onClick={loadWarbands} aria-label="Retry loading warbands">
@@ -138,16 +548,33 @@ export function WarbandList({
   if (warbands.length === 0) {
     return (
       <div className="warband-list">
-        <h1>My Warbands</h1>
+        <h1>Space Weirdos Warbands</h1>
         <div className="empty-state" role="status">
           <p>No warbands found. Create your first warband to get started!</p>
-          <button 
-            onClick={onCreateWarband}
-            className="create-button"
-            aria-label="Create your first warband"
-          >
-            Create New Warband
-          </button>
+          <div className="button-container">
+            <button 
+              onClick={onLearnAboutClick}
+              className="btn btn-secondary"
+              aria-label="Learn about Space Weirdos game and warband builder"
+            >
+              About Space Weirdos
+            </button>
+            <button 
+              onClick={handleImportWarband}
+              className="btn btn-secondary"
+              disabled={!!importState}
+              aria-label="Import warband from JSON file"
+            >
+              {importState ? 'Importing...' : 'Import Warband'}
+            </button>
+            <button 
+              onClick={onCreateWarband}
+              className="btn btn-primary"
+              aria-label="Create your first warband"
+            >
+              Create New Warband
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -156,14 +583,31 @@ export function WarbandList({
   // Display warband list - Requirement 7.1
   return (
     <div className="warband-list">
-      <h1>My Warbands</h1>
-      <button 
-        onClick={onCreateWarband}
-        className="create-button"
-        aria-label="Create a new warband"
-      >
-        Create New Warband
-      </button>
+      <h1>Space Weirdos Warbands</h1>
+      <div className="warband-list-actions">
+        <button 
+          onClick={onLearnAboutClick}
+          className="btn btn-secondary"
+          aria-label="Learn about Space Weirdos game and warband builder"
+        >
+          About Space Weirdos
+        </button>
+        <button 
+          onClick={handleImportWarband}
+          className="btn btn-secondary"
+          aria-label="Import warband from JSON file"
+          disabled={!!importState}
+        >
+          {importState ? 'Importing...' : 'Import Warband'}
+        </button>
+        <button 
+          onClick={onCreateWarband}
+          className="btn btn-primary"
+          aria-label="Create a new warband"
+        >
+          Create New Warband
+        </button>
+      </div>
       
       <div className="warband-grid" role="list" aria-label="Saved warbands">
         {warbands.map((warband) => {
@@ -184,11 +628,51 @@ export function WarbandList({
               key={warband.id}
               warband={summary}
               onSelect={() => handleSelectWarband(warband.id)}
+              onExport={() => handleExportWarband(warband.id, warband.name)}
               onDelete={() => handleDeleteRequest(warband.id, warband.name)}
             />
           );
         })}
       </div>
+
+      {exportState && (
+        <FileOperationStatus
+          operation="export"
+          state={exportState.state}
+          message={exportState.message}
+          fileName={`${exportState.warbandName}.json`}
+          onCancel={exportState.state !== 'complete' && exportState.state !== 'error' ? handleCancelExport : undefined}
+        />
+      )}
+
+      {importState && (
+        <FileOperationStatus
+          operation="import"
+          state={importState.state}
+          message={importState.message}
+          fileName={importState.fileName}
+          onCancel={importState.state !== 'complete' && importState.state !== 'error' ? handleCancelImport : undefined}
+        />
+      )}
+
+      {importError && (
+        <ImportExportErrorDisplay
+          error={importError}
+          operation="import"
+          onRetry={importError.retryable ? handleRetryImport : undefined}
+          onDismiss={handleDismissImportError}
+        />
+      )}
+
+      {nameConflict && (
+        <NameConflictDialog
+          existingWarbandName={nameConflict.existingName}
+          importedWarbandName={nameConflict.importedName}
+          onRename={handleNameConflictRename}
+          onReplace={handleNameConflictReplace}
+          onCancel={handleNameConflictCancel}
+        />
+      )}
 
       {deleteConfirmation && (
         <DeleteConfirmationDialog
@@ -215,9 +699,10 @@ interface WarbandListItemProps {
   warband: WarbandSummary;
   onSelect: () => void;
   onDelete: () => void;
+  onExport: () => void;
 }
 
-const WarbandListItemComponent = ({ warband, onSelect, onDelete }: WarbandListItemProps) => {
+const WarbandListItemComponent = ({ warband, onSelect, onDelete, onExport }: WarbandListItemProps) => {
   return (
     <article 
       className="warband-card fade-in"
@@ -259,6 +744,13 @@ const WarbandListItemComponent = ({ warband, onSelect, onDelete }: WarbandListIt
           aria-label={`Load ${warband.name} for editing`}
         >
           Load
+        </button>
+        <button 
+          onClick={onExport}
+          className="export-button"
+          aria-label={`Export ${warband.name} as JSON file`}
+        >
+          Export
         </button>
         <button 
           onClick={onDelete}

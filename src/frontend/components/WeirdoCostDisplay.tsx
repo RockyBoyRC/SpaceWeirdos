@@ -7,21 +7,15 @@ import './WeirdoCostDisplay.css';
  * WeirdoCostDisplay Component
  * 
  * Shows individual weirdo cost with sticky positioning at top of weirdo editor.
- * Provides expandable cost breakdown fetched from API via useCostCalculation hook.
+ * Uses centralized API-driven cost calculation and warning system.
+ * Provides expandable cost breakdown with real-time updates.
+ * Displays context-aware warning indicators based on backend ValidationService.
+ * Displays error indicators when exceeding limits.
+ * Uses design system tokens for consistent styling.
+ * Animates breakdown expand/collapse with smooth transitions.
+ * Memoized for performance optimization.
  * 
- * Context-Aware Warning System:
- * - Displays warnings when approaching limits (within 3 points of applicable limit)
- * - Warning logic handled by backend ValidationService for consistency with game rules
- * - Adapts to warband composition (considers existing 25-point weirdos)
- * - Shows appropriate messaging for 20-point vs 25-point limits
- * 
- * Features:
- * - Displays error indicators when exceeding limits
- * - Uses design system tokens for consistent styling
- * - Animates breakdown expand/collapse with smooth transitions
- * - Memoized for performance optimization
- * 
- * Requirements: 1.1, 2.1, 2.2, 2.10, 3.1, 3.2, 3.3
+ * Requirements: 1.1, 1.3, 2.1, 2.2, 2.5, 2.6, 3.1, 3.3, 3.5, 3.6, 5.1-5.5, 9.2, 9.6
  */
 
 interface WeirdoCostDisplayProps {
@@ -35,7 +29,7 @@ const WeirdoCostDisplayComponent = ({
 }: WeirdoCostDisplayProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Use useCostCalculation hook for real-time cost updates
+  // Use centralized cost calculation hook with API-driven warnings
   const costResult = useCostCalculation({
     weirdoType: weirdo.type,
     attributes: weirdo.attributes,
@@ -46,24 +40,15 @@ const WeirdoCostDisplayComponent = ({
     equipment: weirdo.equipment.map(e => e.name),
     psychicPowers: weirdo.psychicPowers.map(p => p.name),
     warbandAbility: warbandAbility,
-  });
+  }, weirdo.totalCost);
 
-  // Extract values from hook result
+  // Use API-driven cost and warning states (Requirements 2.1, 2.2, 2.10)
   const totalCost = costResult.totalCost;
-  const breakdown = costResult.breakdown;
+  const isApproachingLimit = costResult.isApproachingLimit;
+  const isOverLimit = costResult.isOverLimit;
   const warnings = costResult.warnings;
-  const isLoading = costResult.isLoading;
-  const error = costResult.error;
 
-  // Determine warning/error state (Requirements 2.1, 2.2, 2.10)
-  // Use backend ValidationService warnings (within 3 points of applicable limit)
-  // Leaders have 25 point limit, troopers have 20 point limit
-  const weirdoLimit = weirdo.type === 'leader' ? 25 : 20;
-  const remaining = weirdoLimit - totalCost;
-  const isApproachingLimit = costResult.isApproachingLimit; // From backend warnings
-  const isOverLimit = remaining < 0;
-
-  // Build CSS classes based on state
+  // Build CSS classes based on API-driven state
   const displayClasses = [
     'weirdo-cost-display',
     isApproachingLimit && 'weirdo-cost-display--warning',
@@ -72,14 +57,17 @@ const WeirdoCostDisplayComponent = ({
     .filter(Boolean)
     .join(' ');
 
-  // Build ARIA label for accessibility
-  let ariaLabel = `Weirdo cost: ${totalCost} of ${weirdoLimit} points`;
+  // Build ARIA label for accessibility using API-driven warnings
+  let ariaLabel = `Weirdo cost: ${totalCost} points`;
   if (isOverLimit) {
-    ariaLabel += `, over limit by ${Math.abs(remaining)} points`;
+    ariaLabel += `, over limit`;
   } else if (isApproachingLimit) {
-    ariaLabel += `, warning: only ${remaining} points remaining`;
-  } else {
-    ariaLabel += `, ${remaining} points remaining`;
+    ariaLabel += `, warning: approaching limit`;
+  }
+  
+  // Add specific warning messages from API
+  if (warnings.length > 0) {
+    ariaLabel += `. ${warnings.join('. ')}`;
   }
 
   return (
@@ -93,7 +81,7 @@ const WeirdoCostDisplayComponent = ({
         <div className="weirdo-cost-display__main">
           <span className="weirdo-cost-display__label">Weirdo Cost:</span>
           <span className="weirdo-cost-display__value">
-            {totalCost} / {weirdoLimit} pts
+            {totalCost} pts
           </span>
           {isApproachingLimit && (
             <span className="weirdo-cost-display__indicator weirdo-cost-display__indicator--warning">
@@ -116,39 +104,40 @@ const WeirdoCostDisplayComponent = ({
         </button>
       </div>
 
-      {/* Expandable cost breakdown with loading and error states */}
+      {/* Expandable cost breakdown (Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 9.2) */}
       {isExpanded && (
         <div className="weirdo-cost-display__breakdown">
-          {error ? (
-            <div className="weirdo-cost-display__breakdown-item weirdo-cost-display__breakdown-item--error">
-              <span>Error: {error}</span>
-            </div>
-          ) : isLoading ? (
+          {costResult.isLoading ? (
             <div className="weirdo-cost-display__breakdown-item">
               <span>Loading breakdown...</span>
+            </div>
+          ) : costResult.error ? (
+            <div className="weirdo-cost-display__breakdown-item">
+              <span>Error loading breakdown: {costResult.error}</span>
             </div>
           ) : (
             <>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Attributes:</span>
-                <span>{breakdown.attributes} pts</span>
+                <span>{costResult.breakdown.attributes} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Weapons:</span>
-                <span>{breakdown.weapons} pts</span>
+                <span>{costResult.breakdown.weapons} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Equipment:</span>
-                <span>{breakdown.equipment} pts</span>
+                <span>{costResult.breakdown.equipment} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item">
                 <span>Psychic Powers:</span>
-                <span>{breakdown.psychicPowers} pts</span>
+                <span>{costResult.breakdown.psychicPowers} pts</span>
               </div>
               <div className="weirdo-cost-display__breakdown-item weirdo-cost-display__breakdown-item--total">
                 <span>Total:</span>
                 <span>{totalCost} pts</span>
               </div>
+              {/* Display API-driven warnings */}
               {warnings.length > 0 && (
                 <div className="weirdo-cost-display__warnings">
                   {warnings.map((warning, index) => (

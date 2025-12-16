@@ -7,12 +7,29 @@
  * Requirements: 7.5, 7.6, 7.7, 7.8, 7.9
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ValidationService } from '../src/backend/services/ValidationService';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
 import type { Weirdo, Warband } from '../src/backend/models/types';
 
 describe('Warning Logic with 25-Point Weirdo Context', () => {
-  const validationService = new ValidationService();
+  let validationService: ValidationService;
+  let configManager: ConfigurationManager;
+  let configFactory: ConfigurationFactory;
+
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create factory and services
+    configFactory = new ConfigurationFactory(configManager);
+    validationService = configFactory.createValidationService();
+  });
 
   const createWeirdo = (id: string, name: string, cost: number): Weirdo => {
     // Create a weirdo with attributes that sum to the desired cost

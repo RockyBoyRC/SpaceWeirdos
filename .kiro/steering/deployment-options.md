@@ -148,7 +148,21 @@ This file is stored in your repository and applies only to this project. If you 
 }
 ```
 
-#### Step 3: Deploy
+#### Step 3: Configure Environment Variables (Optional)
+
+The application uses a centralized ConfigurationManager that supports comprehensive environment variable configuration. You can set these in the Vercel dashboard or via CLI:
+
+```bash
+# Set environment variables via Vercel CLI
+vercel env add VITE_API_URL production
+vercel env add POINT_LIMIT_STANDARD production
+vercel env add CACHE_DEFAULT_MAX_SIZE production
+# ... add other variables as needed
+```
+
+For a complete list of supported environment variables, see the Render section below.
+
+#### Step 4: Deploy
 
 ```bash
 # Login to Vercel
@@ -335,6 +349,59 @@ Start Command: npm run start:production
 **Environment Variables:**
 ```
 NODE_ENV=production
+
+# Server Configuration
+PORT=3001
+HOST=localhost
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+STATIC_PATH=dist
+DATA_PATH=data
+WARBAND_DATA_PATH=data/warbands.json
+ENABLE_AUTO_SAVE=true
+
+# API Configuration
+VITE_API_URL=http://localhost:3001/api
+API_MAX_RETRIES=3
+API_RETRY_DELAY_MS=1000
+API_TIMEOUT_MS=10000
+
+# Cache Configuration
+CACHE_DEFAULT_MAX_SIZE=100
+CACHE_DEFAULT_TTL_MS=5000
+CACHE_ITEM_COST_SIZE=200
+CACHE_ITEM_COST_TTL=10000
+CACHE_COST_CALC_SIZE=100
+CACHE_COST_CALC_TTL=5000
+CACHE_VALIDATION_SIZE=50
+CACHE_VALIDATION_TTL=30000
+CACHE_API_RESPONSE_SIZE=100
+CACHE_API_RESPONSE_TTL=60000
+
+# Cost Configuration
+POINT_LIMIT_STANDARD=75
+POINT_LIMIT_EXTENDED=125
+POINT_LIMIT_WARNING_THRESHOLD=0.9
+TROOPER_LIMIT_STANDARD=20
+TROOPER_LIMIT_MAXIMUM=25
+TROOPER_SPECIAL_SLOT_MIN=21
+TROOPER_SPECIAL_SLOT_MAX=25
+EQUIPMENT_LIMIT_LEADER_STANDARD=2
+EQUIPMENT_LIMIT_LEADER_CYBORGS=3
+EQUIPMENT_LIMIT_TROOPER_STANDARD=1
+EQUIPMENT_LIMIT_TROOPER_CYBORGS=2
+DISCOUNT_MUTANT=1
+DISCOUNT_HEAVILY_ARMED=1
+
+# Validation Configuration
+VALIDATION_COST_WARNING_THRESHOLD=0.9
+VALIDATION_CONTEXT_AWARE_WARNINGS=true
+VALIDATION_STRICT_MODE=false
+
+# Environment Configuration
+LOG_LEVEL=info
+DEBUG_ENABLED=false
+ENABLE_PERFORMANCE_MONITORING=true
+ENABLE_DETAILED_ERRORS=false
 ```
 
 **Note:** Do NOT set a custom PORT variable. Render automatically assigns a port and sets the PORT environment variable. Your application reads `process.env.PORT` which is already configured in the code.
@@ -433,10 +500,71 @@ Render automatically monitors:
 
 ### Environment Variables
 
-Add environment variables in dashboard:
+Add environment variables in dashboard. The application uses a centralized ConfigurationManager that supports comprehensive environment variable configuration:
+
 ```
 NODE_ENV=production
+
+# Server Configuration
+PORT=3001                                    # Server port (0 for any available port)
+HOST=localhost                               # Server hostname
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173  # Comma-separated CORS origins
+STATIC_PATH=dist                             # Static files directory
+DATA_PATH=data                               # Data files directory
+WARBAND_DATA_PATH=data/warbands.json         # Warband data file path
+ENABLE_AUTO_SAVE=true                        # Enable automatic saving
+
+# API Configuration
+VITE_API_URL=http://localhost:3001/api       # API base URL (required for production)
+API_MAX_RETRIES=3                            # Maximum API retry attempts
+API_RETRY_DELAY_MS=1000                      # Delay between retries (milliseconds)
+API_TIMEOUT_MS=10000                         # API request timeout (milliseconds)
+
+# Cache Configuration
+CACHE_DEFAULT_MAX_SIZE=100                   # Default cache size
+CACHE_DEFAULT_TTL_MS=5000                    # Default cache TTL (milliseconds)
+CACHE_ITEM_COST_SIZE=200                     # Item cost cache size
+CACHE_ITEM_COST_TTL=10000                    # Item cost cache TTL
+CACHE_COST_CALC_SIZE=100                     # Cost calculation cache size
+CACHE_COST_CALC_TTL=5000                     # Cost calculation cache TTL
+CACHE_VALIDATION_SIZE=50                     # Validation cache size
+CACHE_VALIDATION_TTL=30000                   # Validation cache TTL
+CACHE_API_RESPONSE_SIZE=100                  # API response cache size
+CACHE_API_RESPONSE_TTL=60000                 # API response cache TTL
+
+# Cost Configuration
+POINT_LIMIT_STANDARD=75                      # Standard point limit
+POINT_LIMIT_EXTENDED=125                     # Extended point limit
+POINT_LIMIT_WARNING_THRESHOLD=0.9            # Warning threshold (0-1)
+TROOPER_LIMIT_STANDARD=20                    # Standard trooper limit
+TROOPER_LIMIT_MAXIMUM=25                     # Maximum trooper limit
+TROOPER_SPECIAL_SLOT_MIN=21                  # Special slot minimum
+TROOPER_SPECIAL_SLOT_MAX=25                  # Special slot maximum
+EQUIPMENT_LIMIT_LEADER_STANDARD=2            # Leader equipment limit (standard)
+EQUIPMENT_LIMIT_LEADER_CYBORGS=3             # Leader equipment limit (cyborgs)
+EQUIPMENT_LIMIT_TROOPER_STANDARD=1           # Trooper equipment limit (standard)
+EQUIPMENT_LIMIT_TROOPER_CYBORGS=2            # Trooper equipment limit (cyborgs)
+DISCOUNT_MUTANT=1                            # Mutant discount value
+DISCOUNT_HEAVILY_ARMED=1                     # Heavily armed discount value
+
+# Validation Configuration
+VALIDATION_COST_WARNING_THRESHOLD=0.9        # Cost warning threshold (0-1)
+VALIDATION_CONTEXT_AWARE_WARNINGS=true      # Enable context-aware warnings
+VALIDATION_STRICT_MODE=false                 # Enable strict validation mode
+
+# Environment Configuration
+LOG_LEVEL=info                               # Log level (error, warn, info, debug)
+DEBUG_ENABLED=false                          # Enable debug mode
+ENABLE_PERFORMANCE_MONITORING=true           # Enable performance monitoring
+ENABLE_DETAILED_ERRORS=false                 # Enable detailed error messages
 ```
+
+**Configuration Features:**
+- **Centralized Management**: All configuration is managed through ConfigurationManager
+- **Environment-Specific Defaults**: Different defaults for development, production, and test
+- **Validation**: Comprehensive validation with helpful error messages
+- **Fallback Recovery**: Graceful fallback when configuration issues occur
+- **Migration Support**: Automatic migration from legacy configuration formats
 
 **Important:** Do NOT manually set the PORT variable. Render automatically assigns a unique port to each service and injects it as an environment variable. Your code already uses `process.env.PORT || 3001`, which will use Render's assigned port in production and 3001 for local development.
 
@@ -493,6 +621,8 @@ Each service is completely independent and won't interfere with others.
 - Verify build command succeeded
 - Check start command is correct
 - Ensure you're NOT setting a custom PORT variable
+- Check for configuration validation errors in logs
+- Verify environment variables are properly set
 
 **Cold starts too slow:**
 - Upgrade to paid tier ($7/month)
@@ -507,6 +637,56 @@ Each service is completely independent and won't interfere with others.
 - Render manages ports automatically
 - If you see port errors, remove any custom PORT environment variable
 - Verify your code uses `process.env.PORT` not a hardcoded port
+
+---
+
+## Configuration System
+
+The Space Weirdos Warband Builder uses a centralized ConfigurationManager that provides:
+
+### Key Features
+
+- **Centralized Management**: All configuration values are managed through a single ConfigurationManager class
+- **Environment Variable Support**: Every configuration value can be overridden via environment variables
+- **Environment-Specific Defaults**: Different default values for development, production, and test environments
+- **Comprehensive Validation**: Type checking, range validation, and logical consistency checks
+- **Fallback Recovery**: Graceful handling of configuration errors with fallback behavior
+- **Migration Support**: Automatic migration from legacy configuration formats
+
+### Environment-Specific Behavior
+
+**Development Environment:**
+- Debug logging enabled
+- Shorter cache TTLs for faster development iteration
+- Detailed error messages
+- Auto-save enabled
+
+**Production Environment:**
+- Optimized cache settings with longer TTLs
+- Performance monitoring enabled
+- Reduced logging for better performance
+- Error messages without sensitive details
+
+**Test Environment:**
+- Minimal cache TTLs for predictable behavior
+- No API retries for faster test execution
+- Error-level logging only
+- Auto-save disabled
+
+### Configuration Validation
+
+The system provides comprehensive validation with helpful error messages:
+- Type checking for all configuration values
+- Range validation for numeric values (ports, timeouts, etc.)
+- Logical consistency checks (e.g., extended limit > standard limit)
+- Environment-specific warnings (e.g., debug mode in production)
+
+### Legacy Migration
+
+The ConfigurationManager automatically migrates from legacy formats:
+- Legacy constants files (`costs.ts`, `validationMessages.ts`)
+- Early configuration formats
+- Provides detailed migration logs and error handling
 
 ---
 
@@ -595,6 +775,8 @@ For application issues:
 - Check browser console (F12)
 - Check network tab for API errors
 - Verify backend is running and accessible
+- Check for configuration validation warnings in server logs
+- Verify environment variables match expected values
 
 ---
 

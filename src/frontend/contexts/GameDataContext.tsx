@@ -61,6 +61,19 @@ export interface WarbandAbility {
 }
 
 /**
+ * Loading progress interface for granular loading states
+ */
+interface LoadingProgress {
+  attributes: 'pending' | 'loading' | 'success' | 'error';
+  closeCombatWeapons: 'pending' | 'loading' | 'success' | 'error';
+  rangedWeapons: 'pending' | 'loading' | 'success' | 'error';
+  equipment: 'pending' | 'loading' | 'success' | 'error';
+  psychicPowers: 'pending' | 'loading' | 'success' | 'error';
+  leaderTraits: 'pending' | 'loading' | 'success' | 'error';
+  warbandAbilities: 'pending' | 'loading' | 'success' | 'error';
+}
+
+/**
  * Context value interface
  */
 interface GameDataContextValue {
@@ -76,9 +89,11 @@ interface GameDataContextValue {
   // Loading and error states
   isLoading: boolean;
   error: string | null;
+  loadingProgress: LoadingProgress;
   
-  // Retry function
+  // Retry functions
   refetch: () => Promise<void>;
+  retryFailedRequests: () => Promise<void>;
 }
 
 /**
@@ -103,9 +118,9 @@ const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost
  * GameDataProvider component
  * 
  * Fetches all game data on mount and provides it to child components.
- * Handles loading and error states.
+ * Handles loading and error states with enhanced logging and retry mechanisms.
  * 
- * Requirements: 9.1, 9.5, 9.6
+ * Requirements: 4.1, 4.3, 5.1, 5.2, 5.3, 5.5, 9.1, 9.5, 9.6
  */
 export function GameDataProvider({ children }: GameDataProviderProps) {
   const [attributes, setAttributes] = useState<AttributeCosts | null>(null);
@@ -117,85 +132,208 @@ export function GameDataProvider({ children }: GameDataProviderProps) {
   const [warbandAbilities, setWarbandAbilities] = useState<WarbandAbility[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Granular loading states for each data type (Requirements: 5.5)
+  const [loadingProgress, setLoadingProgress] = useState<LoadingProgress>({
+    attributes: 'pending',
+    closeCombatWeapons: 'pending',
+    rangedWeapons: 'pending',
+    equipment: 'pending',
+    psychicPowers: 'pending',
+    leaderTraits: 'pending',
+    warbandAbilities: 'pending',
+  });
 
   /**
-   * Fetch all game data from API
-   * Requirements: 9.1, 9.5
+   * Log API base URL during initialization (Requirements: 5.1)
+   */
+  const logApiInitialization = () => {
+    console.log('[GameDataContext] Initializing with API base URL:', API_BASE_URL);
+    console.log('[GameDataContext] Environment VITE_API_URL:', (import.meta as any).env?.VITE_API_URL || 'not set');
+  };
+
+  /**
+   * Log request details (Requirements: 5.2)
+   */
+  const logRequest = (url: string, dataType: string) => {
+    console.log(`[GameDataContext] Making API request for ${dataType}:`, url);
+  };
+
+  /**
+   * Log response details (Requirements: 5.2)
+   */
+  const logResponse = (url: string, dataType: string, status: number, success: boolean) => {
+    if (success) {
+      console.log(`[GameDataContext] Successfully loaded ${dataType} from:`, url, `(Status: ${status})`);
+    } else {
+      console.error(`[GameDataContext] Failed to load ${dataType} from:`, url, `(Status: ${status})`);
+    }
+  };
+
+  /**
+   * Log state changes for debugging (Requirements: 5.5)
+   */
+  const logStateChange = (dataType: string, newState: string, additionalInfo?: string) => {
+    const info = additionalInfo ? ` - ${additionalInfo}` : '';
+    console.log(`[GameDataContext] State change: ${dataType} -> ${newState}${info}`);
+  };
+
+  /**
+   * Update loading progress for a specific data type
+   */
+  const updateLoadingProgress = (dataType: keyof LoadingProgress, state: LoadingProgress[keyof LoadingProgress]) => {
+    setLoadingProgress(prev => {
+      const newProgress = { ...prev, [dataType]: state };
+      logStateChange(dataType, state);
+      return newProgress;
+    });
+  };
+
+  /**
+   * Fetch individual data type with retry mechanism (Requirements: 4.3)
+   */
+  const fetchDataType = async (
+    url: string,
+    dataType: keyof LoadingProgress,
+    setter: (data: any) => void,
+    maxRetries: number = 3
+  ): Promise<void> => {
+    updateLoadingProgress(dataType, 'loading');
+    logRequest(url, dataType);
+
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(url);
+        logResponse(url, dataType, response.status, response.ok);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: Failed to fetch ${dataType}`);
+        }
+
+        const data = await response.json();
+        setter(data);
+        updateLoadingProgress(dataType, 'success');
+        return;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(`Unknown error fetching ${dataType}`);
+        console.error(`[GameDataContext] Attempt ${attempt}/${maxRetries} failed for ${dataType}:`, lastError.message);
+        
+        if (attempt < maxRetries) {
+          // Use shorter delays for testing, longer for production
+          const baseDelay = process.env.NODE_ENV === 'test' ? 10 : 1000;
+          const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), 5000);
+          console.log(`[GameDataContext] Retrying ${dataType} in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    // All retries failed
+    updateLoadingProgress(dataType, 'error');
+    console.error(`[GameDataContext] All ${maxRetries} attempts failed for ${dataType}:`, lastError?.message);
+    throw lastError;
+  };
+
+  /**
+   * Fetch all game data from API with enhanced error handling and logging
+   * Requirements: 4.1, 4.3, 5.1, 5.2, 5.3, 5.5, 9.1, 9.5
    */
   const fetchGameData = async (): Promise<void> => {
+    logApiInitialization();
     setIsLoading(true);
     setError(null);
+    logStateChange('GameDataContext', 'loading started');
+
+    // Reset all loading states to pending
+    setLoadingProgress({
+      attributes: 'pending',
+      closeCombatWeapons: 'pending',
+      rangedWeapons: 'pending',
+      equipment: 'pending',
+      psychicPowers: 'pending',
+      leaderTraits: 'pending',
+      warbandAbilities: 'pending',
+    });
+
+    const fetchPromises = [
+      fetchDataType(`${API_BASE_URL}/game-data/attributes`, 'attributes', setAttributes),
+      fetchDataType(`${API_BASE_URL}/game-data/weapons/close`, 'closeCombatWeapons', setCloseCombatWeapons),
+      fetchDataType(`${API_BASE_URL}/game-data/weapons/ranged`, 'rangedWeapons', setRangedWeapons),
+      fetchDataType(`${API_BASE_URL}/game-data/equipment`, 'equipment', setEquipment),
+      fetchDataType(`${API_BASE_URL}/game-data/psychic-powers`, 'psychicPowers', setPsychicPowers),
+      fetchDataType(`${API_BASE_URL}/game-data/leader-traits`, 'leaderTraits', setLeaderTraits),
+      fetchDataType(`${API_BASE_URL}/game-data/warband-abilities`, 'warbandAbilities', setWarbandAbilities),
+    ];
+
+    // Wait for all promises to settle (either resolve or reject)
+    const results = await Promise.allSettled(fetchPromises);
+    
+    // Check if any promises were rejected
+    const failures = results.filter(result => result.status === 'rejected') as PromiseRejectedResult[];
+    
+    setIsLoading(false);
+    
+    if (failures.length > 0) {
+      // At least one request failed
+      const firstError = failures[0].reason;
+      const errorMessage = firstError instanceof Error ? firstError.message : 'Failed to load game data';
+      setError(errorMessage);
+      console.error('[GameDataContext] Error fetching game data:', firstError);
+      logStateChange('GameDataContext', 'loading failed', errorMessage);
+    } else {
+      // All requests succeeded
+      logStateChange('GameDataContext', 'loading completed successfully');
+    }
+  };
+
+  /**
+   * Retry only failed requests (Requirements: 4.3)
+   */
+  const retryFailedRequests = async (): Promise<void> => {
+    console.log('[GameDataContext] Retrying failed requests...');
+    const failedRequests: Promise<void>[] = [];
+
+    // Check each data type and retry only failed ones
+    if (loadingProgress.attributes === 'error') {
+      failedRequests.push(fetchDataType(`${API_BASE_URL}/game-data/attributes`, 'attributes', setAttributes));
+    }
+    if (loadingProgress.closeCombatWeapons === 'error') {
+      failedRequests.push(fetchDataType(`${API_BASE_URL}/game-data/weapons/close`, 'closeCombatWeapons', setCloseCombatWeapons));
+    }
+    if (loadingProgress.rangedWeapons === 'error') {
+      failedRequests.push(fetchDataType(`${API_BASE_URL}/game-data/weapons/ranged`, 'rangedWeapons', setRangedWeapons));
+    }
+    if (loadingProgress.equipment === 'error') {
+      failedRequests.push(fetchDataType(`${API_BASE_URL}/game-data/equipment`, 'equipment', setEquipment));
+    }
+    if (loadingProgress.psychicPowers === 'error') {
+      failedRequests.push(fetchDataType(`${API_BASE_URL}/game-data/psychic-powers`, 'psychicPowers', setPsychicPowers));
+    }
+    if (loadingProgress.leaderTraits === 'error') {
+      failedRequests.push(fetchDataType(`${API_BASE_URL}/game-data/leader-traits`, 'leaderTraits', setLeaderTraits));
+    }
+    if (loadingProgress.warbandAbilities === 'error') {
+      failedRequests.push(fetchDataType(`${API_BASE_URL}/game-data/warband-abilities`, 'warbandAbilities', setWarbandAbilities));
+    }
+
+    if (failedRequests.length === 0) {
+      console.log('[GameDataContext] No failed requests to retry');
+      return;
+    }
 
     try {
-      // Fetch all game data in parallel for better performance
-      const [
-        attributesRes,
-        closeCombatRes,
-        rangedRes,
-        equipmentRes,
-        powersRes,
-        traitsRes,
-        abilitiesRes,
-      ] = await Promise.all([
-        fetch(`${API_BASE_URL}/game-data/attributes`),
-        fetch(`${API_BASE_URL}/game-data/weapons/close`),
-        fetch(`${API_BASE_URL}/game-data/weapons/ranged`),
-        fetch(`${API_BASE_URL}/game-data/equipment`),
-        fetch(`${API_BASE_URL}/game-data/psychic-powers`),
-        fetch(`${API_BASE_URL}/game-data/leader-traits`),
-        fetch(`${API_BASE_URL}/game-data/warband-abilities`),
-      ]);
-
-      // Check for HTTP errors
-      if (!attributesRes.ok) throw new Error('Failed to fetch attributes');
-      if (!closeCombatRes.ok) throw new Error('Failed to fetch close combat weapons');
-      if (!rangedRes.ok) throw new Error('Failed to fetch ranged weapons');
-      if (!equipmentRes.ok) throw new Error('Failed to fetch equipment');
-      if (!powersRes.ok) throw new Error('Failed to fetch psychic powers');
-      if (!traitsRes.ok) throw new Error('Failed to fetch leader traits');
-      if (!abilitiesRes.ok) throw new Error('Failed to fetch warband abilities');
-
-      // Parse JSON responses
-      const [
-        attributesData,
-        closeCombatData,
-        rangedData,
-        equipmentData,
-        powersData,
-        traitsData,
-        abilitiesData,
-      ] = await Promise.all([
-        attributesRes.json(),
-        closeCombatRes.json(),
-        rangedRes.json(),
-        equipmentRes.json(),
-        powersRes.json(),
-        traitsRes.json(),
-        abilitiesRes.json(),
-      ]);
-
-      // Update state with fetched data (Requirements 9.1, 9.6)
-      // Type assertions safe: API responses are validated to match type definitions by backend
-      setAttributes(attributesData as AttributeCosts);
-      setCloseCombatWeapons(closeCombatData as Weapon[]);
-      // Type assertion safe: API response validated by backend to match Weapon[] type
-      setRangedWeapons(rangedData as Weapon[]);
-      // Type assertion safe: API response validated by backend to match Equipment[] type
-      setEquipment(equipmentData as Equipment[]);
-      // Type assertion safe: API response validated by backend to match PsychicPower[] type
-      setPsychicPowers(powersData as PsychicPower[]);
-      // Type assertion safe: API response validated by backend to match LeaderTrait[] type
-      setLeaderTraits(traitsData as LeaderTrait[]);
-      // Type assertion safe: API response validated by backend to match WarbandAbility[] type
-      setWarbandAbilities(abilitiesData as WarbandAbility[]);
+      await Promise.all(failedRequests);
       
-      setIsLoading(false);
-    } catch (error: unknown) {
-      // Handle errors (Requirement 9.5)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load game data';
-      setError(errorMessage);
-      setIsLoading(false);
-      console.error('Error fetching game data:', error);
+      // Check if all requests are now successful
+      const allSuccessful = Object.values(loadingProgress).every(status => status === 'success');
+      if (allSuccessful) {
+        setError(null);
+        logStateChange('GameDataContext', 'all retries successful');
+      }
+    } catch (error) {
+      console.error('[GameDataContext] Some retry attempts failed:', error);
     }
   };
 
@@ -217,7 +355,9 @@ export function GameDataProvider({ children }: GameDataProviderProps) {
     warbandAbilities,
     isLoading,
     error,
+    loadingProgress,
     refetch: fetchGameData,
+    retryFailedRequests,
   };
 
   return (

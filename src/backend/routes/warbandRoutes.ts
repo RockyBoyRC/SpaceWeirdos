@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
-import { WarbandService } from '../services/WarbandService.js';
 import { DataRepository } from '../services/DataRepository.js';
-import { CostEngine } from '../services/CostEngine.js';
-import { ValidationService } from '../services/ValidationService.js';
-import { Weirdo, Weapon, Equipment, PsychicPower } from '../models/types.js';
+import { ConfigurationManager } from '../config/ConfigurationManager.js';
+import { ConfigurationFactory } from '../config/ConfigurationFactory.js';
+import { Warband, Weirdo, Weapon, Equipment, PsychicPower } from '../models/types.js';
 import { AppError, ValidationError, NotFoundError } from '../errors/AppError.js';
+import { ReadmeContentService } from '../services/ReadmeContentService.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -59,9 +59,15 @@ function handleError(error: unknown, res: Response): void {
  */
 export function createWarbandRouter(repository: DataRepository): Router {
   const router = Router();
-  const warbandService = new WarbandService(repository);
-  const costEngine = new CostEngine();
-  const validationService = new ValidationService();
+  
+  // Use ConfigurationFactory to create properly configured services
+  const configManager = ConfigurationManager.getInstance();
+  const configFactory = new ConfigurationFactory(configManager);
+  
+  const warbandService = configFactory.createWarbandService(repository);
+  const costEngine = configFactory.createCostEngine();
+  const validationService = configFactory.createValidationService();
+  const readmeContentService = ReadmeContentService.getInstance();
 
   /**
    * POST /api/warbands
@@ -706,11 +712,8 @@ export function createWarbandRouter(repository: DataRepository): Router {
         // Validate weirdo (with or without warband context)
         if (warband) {
           // Full validation with warband context
-          const errors = validationService.validateWeirdo(weirdo, warband);
-          return res.json({
-            valid: errors.length === 0,
-            errors
-          });
+          const result = validationService.validateWeirdo(weirdo, warband);
+          return res.json(result);
         } else {
           // Partial validation without warband context
           // Create a minimal warband context for validation
@@ -726,11 +729,8 @@ export function createWarbandRouter(repository: DataRepository): Router {
             createdAt: new Date(),
             updatedAt: new Date()
           };
-          const errors = validationService.validateWeirdo(weirdo, minimalWarband);
-          return res.json({
-            valid: errors.length === 0,
-            errors
-          });
+          const result = validationService.validateWeirdo(weirdo, minimalWarband);
+          return res.json(result);
         }
       }
 
@@ -747,6 +747,27 @@ export function createWarbandRouter(repository: DataRepository): Router {
       );
     } catch (error: unknown) {
       handleError(error, res);
+    }
+  });
+
+  /**
+   * GET /api/readme-content
+   * Get README content for the Learn About popup
+   */
+  router.get('/readme-content', async (_req: Request, res: Response) => {
+    try {
+      const content = await readmeContentService.getContent();
+      res.json({
+        success: true,
+        data: content
+      });
+    } catch (error: unknown) {
+      // Return error response when README content cannot be loaded
+      console.error('README content not available:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Server loading error'
+      });
     }
   });
 

@@ -6,6 +6,7 @@
 - **Create Warbands**: Start new warbands with customizable names and settings
 - **Save & Load**: Persistent storage with JSON file persistence
 - **Delete Warbands**: Remove unwanted warbands with confirmation
+- **Download & Import**: Export warbands as JSON files for sharing and backup
 - **Point Limits**: Support for 75-point and 125-point games
 - **Warband Abilities**: Heavily Armed, Mutants, Soldiers, Cyborgs with cost modifiers
 
@@ -70,6 +71,7 @@ The warband builder features a smart warning system that adapts to your warband 
 - **Overview**: See all saved warbands at a glance
 - **Summary Info**: Name, point limit, total cost, weirdo count
 - **Quick Actions**: Load, delete, or create new warbands
+- **Import/Export Actions**: Download warbands as JSON files or import from files
 - **Empty State**: Helpful guidance when no warbands exist
 
 #### Warband Editor
@@ -118,8 +120,9 @@ The warband builder features a smart warning system that adapts to your warband 
 ### Data Management
 - **In-Memory Database**: Fast access with JavaScript objects, Maps, and Sets
 - **JSON Persistence**: Automatic saving to local filesystem
+- **Data Portability**: Export/import functionality for warband sharing and backup
 - **Type-Safe Models**: Shared TypeScript types between frontend and backend
-- **Validation**: All data validated before persistence
+- **Validation**: All data validated before persistence and import
 
 ## Game Rules Implemented
 
@@ -154,17 +157,157 @@ The warband builder features a smart warning system that adapts to your warband 
 - **Soldiers**: Prowess upgrades cost -1 point (minimum 0)
 - **Cyborgs**: +1 equipment slot for all weirdos
 
-## Future Enhancements
+## Import/Export System
 
-Potential features for future development:
-- Export/import warbands as JSON
-- Print-friendly warband sheets
-- Campaign tracking and progression
-- Custom equipment and weapons
-- Multiplayer warband sharing
-- Mobile app version
-- Dark mode theme
-- Undo/redo functionality
-- Warband templates and presets
+### Warband Sharing & Backup
+
+The Space Weirdos Warband Builder includes comprehensive import/export functionality for sharing warbands and creating backups.
+
+#### Exporting Warbands
+
+**How to Export:**
+1. Navigate to the warband list
+2. Find the warband you want to export
+3. Click the "Export" button next to the warband name
+4. Your browser will automatically download a JSON file
+
+**Export Features:**
+- **Automatic Download**: Files download immediately with sanitized filenames
+- **Complete Data**: Includes all warband data, weirdos, equipment, and metadata
+- **Metadata Included**: Export timestamp, version information, and source application
+- **Safe Filenames**: Automatically sanitizes filenames for cross-platform compatibility
+- **JSON Format**: Human-readable format that can be shared easily
+
+**Export File Structure:**
+```json
+{
+  "name": "My Warband",
+  "ability": "Heavily Armed",
+  "pointLimit": 75,
+  "totalCost": 65,
+  "weirdos": [...],
+  "exportVersion": "1.0",
+  "exportedAt": "2023-12-15T10:30:00.000Z",
+  "exportedBy": "Space Weirdos Warband Builder"
+}
+```
+
+#### Importing Warbands
+
+**How to Import:**
+1. Navigate to the warband list
+2. Click the "Import" button
+3. Select a JSON warband file from your computer
+4. The system will validate the file and show any issues
+5. Resolve any name conflicts if they occur
+6. Your warband will be added to your collection
+
+**Import Features:**
+- **Comprehensive Validation**: Checks file structure, game data references, and business rules
+- **Error Reporting**: Clear, categorized error messages with specific field information
+- **Name Conflict Resolution**: Handles duplicate warband names gracefully
+- **Data Sanitization**: Cleans imported data for security and compatibility
+- **Unique ID Generation**: Assigns new IDs to prevent conflicts with existing warbands
+
+#### Validation System
+
+**Validation Categories:**
+
+1. **Structure Validation**
+   - Checks for required fields (name, weirdos, point limit)
+   - Validates data types and formats
+   - Ensures JSON structure matches expected schema
+
+2. **Game Data Validation**
+   - Verifies all weapons exist in current game data
+   - Checks equipment and psychic power references
+   - Validates warband abilities and leader traits
+
+3. **Business Rule Validation**
+   - Enforces point limits (20/25 per weirdo, 75/125 per warband)
+   - Validates weapon requirements based on Firepower
+   - Checks equipment limits and warband ability effects
+
+**Error Handling:**
+- **Clear Messages**: User-friendly error descriptions with specific field references
+- **Categorized Issues**: Errors grouped by type for easier understanding
+- **Actionable Suggestions**: Specific recommendations for fixing validation issues
+- **Retry Support**: Automatic retry for recoverable errors like network issues
+
+#### Name Conflict Resolution
+
+When importing a warband with a name that already exists:
+
+**Options Available:**
+1. **Rename**: Choose a new name for the imported warband
+2. **Replace**: Overwrite the existing warband (with confirmation)
+3. **Cancel**: Abort the import operation
+
+**Automatic Suggestions:**
+- System suggests unique names based on the original
+- Validates new names to ensure uniqueness
+- Preserves original naming intent when possible
+
+#### Troubleshooting Common Issues
+
+**File Format Issues:**
+- **Problem**: "Invalid JSON data" error
+- **Solution**: Ensure file is a valid JSON warband export, not corrupted or modified
+- **Prevention**: Only import files exported from the Space Weirdos Warband Builder
+
+**Missing Game Data:**
+- **Problem**: "Missing weapon/equipment reference" warnings
+- **Solution**: Update your game data or remove invalid references
+- **Note**: Warnings don't prevent import but may affect warband functionality
+
+**Point Limit Violations:**
+- **Problem**: "Cost exceeded" validation errors
+- **Solution**: Edit the warband to comply with current point limits
+- **Note**: Game rules may have changed since the warband was exported
+
+**Name Conflicts:**
+- **Problem**: "Warband name already exists" error
+- **Solution**: Choose rename option or replace existing warband
+- **Tip**: Use descriptive names to avoid conflicts
+
+**Large File Issues:**
+- **Problem**: Import fails with timeout or size errors
+- **Solution**: Check file size (max 10MB) and network connection
+- **Alternative**: Try importing on a faster network connection
+
+#### Best Practices
+
+**For Sharing:**
+- Export warbands with descriptive names
+- Include version information in shared files
+- Test imported warbands before sharing with others
+- Document any custom rules or modifications
+
+**For Backup:**
+- Export warbands regularly to prevent data loss
+- Store backup files in multiple locations
+- Include export date in filename for version tracking
+- Test restore process periodically
+
+**File Management:**
+- Use consistent naming conventions for exported files
+- Organize exports by date, campaign, or warband type
+- Keep original exports separate from modified versions
+- Document any manual changes made to exported files
+
+### Additional Future Enhancements
+
+Potential features for continued development:
+- Print-friendly warband sheets with formatted layouts
+- Campaign tracking and progression systems
+- Custom equipment and weapons creation
+- Multiplayer warband sharing platform
+- Mobile app version for iOS and Android
+- Dark mode theme option
+- Undo/redo functionality for editing actions
+- Warband templates and presets for quick setup
+- Advanced search and filtering for large warband collections
+- Warband comparison tools
+- Integration with online gaming platforms
 
 This feature set provides a complete, polished experience for building Space Weirdos warbands with intelligent validation and real-time feedback!

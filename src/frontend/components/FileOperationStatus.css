@@ -1,0 +1,364 @@
+/**
+ * FileOperationStatus Styles
+ * 
+ * Styles for file operation progress tracking component with vintage space monster theme.
+ * Supports both determinate and indeterminate progress indicators,
+ * state-based styling, and accessibility features.
+ * 
+ * Requirements: 4.1, 4.2, 4.3
+ */
+
+.file-operation-status {
+  background: var(--color-surface-primary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  max-width: 500px;
+  animation: slideIn var(--transition-normal) ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.file-operation-status__content {
+  flex: 1;
+  min-width: 0; /* Allow text truncation */
+}
+
+.file-operation-status__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.file-operation-status__icon {
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: var(--spacing-xs);
+}
+
+.file-operation-status__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-operation-status__message {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  margin-bottom: var(--spacing-xs);
+}
+
+.file-operation-status__filename {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+  word-break: break-all;
+  line-height: 1.3;
+}
+
+.file-operation-status__progress-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.file-operation-status__progress {
+  flex: 1;
+  height: 8px;
+  background-color: var(--color-surface-secondary);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.file-operation-status__progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--border-radius-sm);
+  transition: width var(--transition-normal);
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.1) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 20px 20px;
+  animation: progressStripes 1s linear infinite;
+}
+
+@keyframes progressStripes {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 0;
+  }
+}
+
+.file-operation-status__progress--indeterminate {
+  background: var(--color-surface-secondary);
+}
+
+.file-operation-status__progress--indeterminate::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-primary-alpha-60) 50%,
+    transparent 100%
+  );
+  animation: indeterminateShimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes indeterminateShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.file-operation-status__progress-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  min-width: 3rem;
+  text-align: right;
+}
+
+.file-operation-status__cancel {
+  background: var(--color-error);
+  color: var(--color-text-on-primary);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.file-operation-status__cancel:hover {
+  background: var(--color-error-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.file-operation-status__cancel:focus {
+  outline: 3px solid var(--color-error);
+  outline-offset: 2px;
+}
+
+.file-operation-status__cancel:active {
+  transform: translateY(0);
+}
+
+/* State-specific styling */
+.file-operation-status--complete {
+  border-color: var(--color-success);
+  background: var(--color-surface-success);
+}
+
+.file-operation-status--complete .file-operation-status__icon {
+  color: var(--color-success);
+}
+
+.file-operation-status--complete .file-operation-status__message {
+  color: var(--color-success);
+}
+
+.file-operation-status--error {
+  border-color: var(--color-error);
+  background: var(--color-surface-error);
+}
+
+.file-operation-status--error .file-operation-status__icon {
+  color: var(--color-error);
+}
+
+.file-operation-status--error .file-operation-status__message {
+  color: var(--color-error);
+}
+
+.file-operation-status--cancelled {
+  border-color: var(--color-warning);
+  background: var(--color-surface-warning);
+}
+
+.file-operation-status--cancelled .file-operation-status__icon {
+  color: var(--color-warning);
+}
+
+.file-operation-status--cancelled .file-operation-status__message {
+  color: var(--color-warning);
+}
+
+/* Operation-specific styling */
+.file-operation-status--import .file-operation-status__progress-fill {
+  background: var(--color-info);
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.1) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 20px 20px;
+  animation: progressStripes 1s linear infinite;
+}
+
+.file-operation-status--import .file-operation-status__progress--indeterminate::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-info-alpha-60) 50%,
+    transparent 100%
+  );
+}
+
+.file-operation-status--export .file-operation-status__progress-fill {
+  background: var(--color-warning);
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.1) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 20px 20px;
+  animation: progressStripes 1s linear infinite;
+}
+
+.file-operation-status--export .file-operation-status__progress--indeterminate::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-warning-alpha-60) 50%,
+    transparent 100%
+  );
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .file-operation-status {
+    padding: var(--spacing-md);
+    flex-direction: column;
+    align-items: stretch;
+    margin: var(--spacing-sm);
+    max-width: none;
+  }
+  
+  .file-operation-status__header {
+    margin-bottom: var(--spacing-sm);
+    gap: var(--spacing-xs);
+  }
+  
+  .file-operation-status__cancel {
+    align-self: flex-end;
+    margin-top: var(--spacing-sm);
+  }
+  
+  .file-operation-status__progress-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-xs);
+  }
+  
+  .file-operation-status__progress-text {
+    text-align: center;
+    min-width: auto;
+  }
+}
+
+/* State-specific icon animations */
+.file-operation-status--selecting .file-operation-status__icon,
+.file-operation-status--reading .file-operation-status__icon,
+.file-operation-status--validating .file-operation-status__icon,
+.file-operation-status--uploading .file-operation-status__icon,
+.file-operation-status--downloading .file-operation-status__icon,
+.file-operation-status--processing .file-operation-status__icon {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .file-operation-status {
+    border-width: 2px;
+  }
+  
+  .file-operation-status__progress {
+    border: 1px solid var(--color-border-primary);
+  }
+  
+  .file-operation-status__cancel {
+    border: 2px solid var(--color-border-primary);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .file-operation-status {
+    animation: none;
+  }
+  
+  .file-operation-status__progress-fill {
+    transition: none;
+    animation: none;
+    background-image: none;
+  }
+  
+  .file-operation-status__progress--indeterminate::after {
+    animation: none;
+  }
+  
+  .file-operation-status__cancel {
+    transition: none;
+  }
+  
+  .file-operation-status__icon {
+    animation: none;
+  }
+}

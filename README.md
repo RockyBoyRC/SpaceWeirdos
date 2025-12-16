@@ -1,12 +1,13 @@
 # Space Weirdos Warband Builder
 
-**Version 1.0.0**
+**Version 1.8.0**
 
 A complete web application for creating and managing warbands for the Space Weirdos tabletop game. Built with TypeScript, React, and Express using spec-driven development with formal correctness guarantees.
 
 ## Features
 
 - **Complete Warband Management:** Create, edit, save, load, and delete warbands
+- **Import/Export System:** Export warbands as JSON files for backup and sharing, import warbands with comprehensive validation
 - **Real-Time Cost Calculation:** Automatic point cost calculation with warband ability modifiers
 - **Context-Aware Validation:** Smart warning system that adapts to your warband composition
 - **Intelligent Warning System:** Warns when approaching point limits (within 3 points) with context-specific messaging
@@ -15,6 +16,32 @@ A complete web application for creating and managing warbands for the Space Weir
 - **Persistent Storage:** In-memory database with JSON file persistence
 - **Intuitive UI:** Three main components for warband list, warband editing, and weirdo customization
 - **RESTful API:** Full Express backend with comprehensive endpoints
+
+## Import/Export System
+
+### Quick Start
+
+**Exporting Warbands:**
+1. Navigate to the warband list
+2. Click "Export" next to any warband
+3. JSON file downloads automatically with sanitized filename
+
+**Importing Warbands:**
+1. Click "Import" in the warband list
+2. Select a JSON warband file
+3. Resolve any name conflicts if they occur
+4. Warband is added to your collection
+
+### Features
+
+- **Complete Data Export:** All warband data, weirdos, equipment, and metadata included
+- **Comprehensive Validation:** Checks file structure, game data references, and business rules
+- **Error Categorization:** Clear error messages grouped by type (structure, game data, business logic)
+- **Name Conflict Resolution:** Automatic handling with rename and replace options
+- **Security:** Input sanitization and file validation for safe imports
+- **Cross-Platform:** Sanitized filenames work across different operating systems
+
+For detailed troubleshooting, see [Import/Export Troubleshooting Guide](docs/IMPORT-EXPORT-TROUBLESHOOTING.md).
 
 ## Game Rules Implemented
 
@@ -29,12 +56,11 @@ A complete web application for creating and managing warbands for the Space Weir
 
 ## Testing
 
-**140 tests passing (100% success rate)**
-
-- 25 property-based tests validating correctness properties
-- Unit tests for all services and components
-- Integration tests for API endpoints
-- Frontend component tests with React Testing Library
+- **160+ Tests:** Comprehensive test coverage including unit, integration, and property-based tests
+- **Import/Export Testing:** Full test coverage for import/export functionality with validation
+- **Property-Based Testing:** 25+ correctness properties with minimum 50 iterations each
+- **Unit Tests:** All services, components, and API endpoints
+- **Integration Tests:** Complete workflows and error handling scenarios
 
 TypeScript/React/Express application with property-based testing and spec-driven development.
 
@@ -46,6 +72,7 @@ TypeScript/React/Express application with property-based testing and spec-driven
 - **Backend:** Express + TypeScript + Node.js
 - **Testing:** Vitest + fast-check
 - **Data:** In-memory database with JSON file persistence
+- **Configuration:** Centralized configuration system with environment-specific settings
 
 ## Project Structure
 
@@ -59,19 +86,49 @@ TypeScript/React/Express application with property-based testing and spec-driven
 └── .kiro/               # Kiro specs and steering
 ```
 
+## Configuration
+
+The application uses a centralized configuration system that supports environment-specific settings and can be customized via environment variables.
+
+### Environment Variables
+
+| Variable | Description | Default | Environments |
+|----------|-------------|---------|--------------|
+| `NODE_ENV` | Environment type | `development` | `development`, `production`, `test` |
+| `PORT` | Server port | `3001` | All |
+| `HOST` | Server host | `localhost` | All |
+| `VITE_API_URL` | API base URL | `http://localhost:3001/api` | All |
+| `CORS_ORIGINS` | Allowed CORS origins | `*` | All |
+| `CACHE_DEFAULT_MAX_SIZE` | Default cache size | `100` | All |
+| `CACHE_DEFAULT_TTL_MS` | Default cache TTL | `5000` | All |
+| `POINT_LIMIT_STANDARD` | Standard point limit | `75` | All |
+| `POINT_LIMIT_EXTENDED` | Extended point limit | `125` | All |
+| `VALIDATION_COST_WARNING_THRESHOLD` | Cost warning threshold | `0.9` | All |
+| `FILE_MAX_SIZE_BYTES` | Maximum import file size | `10485760` (10MB) | All |
+| `FILE_ALLOWED_TYPES` | Allowed import file types | `application/json,.json` | All |
+| `FILE_MAX_FILENAME_LENGTH` | Maximum filename length | `255` | All |
+
+### Environment-Specific Behavior
+
+- **Development**: Debug logging enabled, shorter cache TTLs
+- **Production**: Performance optimizations, longer cache TTLs, error logging only
+- **Test**: Minimal logging, very short cache TTLs, random ports
+
+### Configuration Files
+
+Example configuration files are provided in `docs/examples/configuration/`:
+- `development.env.example`
+- `production.env.example`
+- `test.env.example`
+
 ## Getting Started
 
-### Install Dependencies
+### Quick Start (Local Development)
 
 ```bash
+# Install dependencies
 npm install
-```
 
-### Development
-
-Run backend and frontend in separate terminals:
-
-```bash
 # Terminal 1 - Backend
 npm run dev:backend
 
@@ -81,6 +138,19 @@ npm run dev:frontend
 
 - Backend: http://localhost:3001
 - Frontend: http://localhost:3000
+
+### Deployment Options
+
+For comprehensive deployment instructions including local development, cloud deployment (Vercel, Render), and configuration options, see:
+
+**[Deployment Options Guide](.kiro/steering/deployment-options.md)**
+
+This guide covers:
+- **Local Development:** Detailed setup with troubleshooting
+- **Vercel Deployment:** Serverless deployment with database integration options
+- **Render Deployment:** Full-stack deployment with persistent storage
+- **Configuration System:** Complete environment variable reference
+- **Multi-App Deployment:** Best practices for multiple applications
 
 ### Testing
 
@@ -103,6 +173,7 @@ npm run build
 
 ## API Endpoints
 
+### Warband Management
 - `POST /api/warbands` - Create new warband
 - `GET /api/warbands` - Get all warbands
 - `GET /api/warbands/:id` - Get specific warband
@@ -111,6 +182,13 @@ npm run build
 - `POST /api/warbands/:id/weirdos` - Add weirdo to warband
 - `PUT /api/warbands/:id/weirdos/:weirdoId` - Update weirdo
 - `DELETE /api/warbands/:id/weirdos/:weirdoId` - Remove weirdo
+
+### Import/Export Operations
+- `GET /api/warbands/:id/export` - Export warband as JSON file
+- `POST /api/warbands/import` - Import warband from JSON data
+- `POST /api/warbands/validate-import` - Validate import data without importing
+
+### Calculation & Validation
 - `POST /api/calculate-cost` - Calculate cost for weirdo/warband
 - `POST /api/validate` - Validate weirdo/warband
 
@@ -142,7 +220,10 @@ This project was built using spec-driven development methodology with formal cor
 
 For detailed information about the project:
 
+- **Configuration Guide:** [docs/CONFIGURATION.md](docs/CONFIGURATION.md) - Comprehensive configuration management system guide
+- **Features Guide:** [docs/FEATURES.md](docs/FEATURES.md) - Complete feature overview including import/export system
 - **API Documentation:** [docs/API-DOCUMENTATION.md](docs/API-DOCUMENTATION.md) - Backend API endpoints and data structures
+- **Import/Export Troubleshooting:** [docs/IMPORT-EXPORT-TROUBLESHOOTING.md](docs/IMPORT-EXPORT-TROUBLESHOOTING.md) - Comprehensive troubleshooting guide
 - **Architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture and design patterns
 - **Warning System:** [docs/WARNING-SYSTEM.md](docs/WARNING-SYSTEM.md) - Context-aware warning system guide
 - **Testing:** [TESTING.md](TESTING.md) - Testing guidelines and strategies
@@ -223,10 +304,10 @@ This codebase has undergone comprehensive refactoring to improve maintainability
 
 ### Backend Improvements
 
-**Centralized Constants:**
-- All magic numbers extracted to `src/backend/constants/costs.ts`
-- Validation messages centralized in `src/backend/constants/validationMessages.ts`
-- Type-safe error codes derived from constant keys
+**Centralized Configuration:**
+- All configuration values managed by ConfigurationManager
+- Environment variable support for all settings
+- Type-safe configuration access with validation
 
 **Strategy Pattern for Cost Calculation:**
 - `CostModifierStrategy` interface for warband ability modifiers
@@ -281,14 +362,35 @@ This codebase has undergone comprehensive refactoring to improve maintainability
 
 ## Recent Updates
 
-### Context-Aware Warning System
+### Version 1.8.0 - Centralized Configuration Management System
 
-Implemented intelligent warning system that adapts to warband composition:
-- Warnings trigger within 3 points of applicable limits (down from 10 points)
-- Context-aware logic: warnings change based on whether a 25-point weirdo exists
-- Backend ValidationService generates warnings for consistency with game rules
-- Clear messaging distinguishes between 20-point and 25-point limits
-- "Premium weirdo slot" messaging helps users understand the 25-point option
+**Major Architectural Improvement:**
+- **ConfigurationManager:** Complete centralized configuration management for the entire application
+- **Environment-Specific Configuration:** Automatic environment detection with optimized settings for development, production, and test
+- **Comprehensive Validation:** Type-safe configuration with detailed error messages and fallback recovery
+- **Environment Variable Support:** All configuration values can be overridden via environment variables
+- **Migration from Legacy Constants:** Replaced hardcoded constants with centralized configuration system
+
+**Configuration Features:**
+- Server, API, Cache, Cost, Validation, Environment, and File Operations configuration sections
+- Environment-specific performance optimizations (cache TTLs, logging levels, debug settings)
+- Comprehensive validation with detailed error messages and actionable suggestions
+- Graceful degradation with fallback recovery for critical failures
+- Configuration examples for all environments (development, production, test)
+
+### Previous Major Updates
+
+**Version 1.7.0 - Import/Export System:**
+- Warband import/export with JSON files for backup and sharing
+- Comprehensive validation with categorized error reporting
+- Name conflict resolution and security features
+- Cross-platform filename sanitization
+
+**Context-Aware Warning System:**
+- Intelligent warnings that adapt to warband composition
+- Warnings trigger within 3 points of applicable limits
+- Context-aware logic based on 25-point weirdo existence
+- Backend ValidationService integration for consistency
 
 See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 

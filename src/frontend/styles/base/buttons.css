@@ -1,19 +1,25 @@
-/* Button Base Styles */
+/* Button Base Styles - Vintage Space Monster Theme */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-2) var(--spacing-4);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
+  padding: var(--spacing-3) var(--spacing-6);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family-base);
   line-height: var(--line-height-tight);
-  border-radius: var(--border-radius-md);
-  border: var(--border-width-thin) solid transparent;
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  border: 3px solid var(--color-border-default);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
   cursor: pointer;
-  transition: all var(--transition-fast) var(--easing-in-out);
+  transition: all 0.3s ease;
   text-decoration: none;
   user-select: none;
+  position: relative;
+  border-radius: 0; /* Sharp corners for sci-fi aesthetic */
 }
 
 .btn:focus {
@@ -39,19 +45,22 @@
 /* Button Variants */
 
 .btn-primary {
-  background-color: var(--color-primary-500);
-  color: var(--color-text-inverse);
-  border-color: var(--color-primary-500);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-default);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-600);
-  border-color: var(--color-primary-600);
+  background-color: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  box-shadow: 0 0 20px var(--color-glow-red);
+  transform: scale(1.05);
 }
 
 .btn-primary:active:not(:disabled) {
-  background-color: var(--color-primary-700);
-  border-color: var(--color-primary-700);
+  transform: scale(0.98);
+  box-shadow: 0 0 30px var(--color-glow-red-strong);
 }
 
 .btn-secondary {
@@ -61,25 +70,70 @@
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-primary-50);
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  box-shadow: 0 0 15px var(--color-glow-red);
+  transform: scale(1.02);
 }
 
 .btn-secondary:active:not(:disabled) {
-  background-color: var(--color-primary-100);
+  transform: scale(0.98);
 }
 
 .btn-danger {
-  background-color: var(--color-error);
+  background-color: var(--color-primary-500);
   color: var(--color-text-inverse);
-  border-color: var(--color-error);
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 10px var(--color-glow-red);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: #b91c1c;
-  border-color: #b91c1c;
+  background-color: var(--color-primary-700);
+  border-color: var(--color-primary-700);
+  box-shadow: 0 0 25px var(--color-glow-red-strong);
+  transform: scale(1.05);
 }
 
 .btn-danger:active:not(:disabled) {
-  background-color: #991b1b;
-  border-color: #991b1b;
+  background-color: var(--color-primary-800);
+  border-color: var(--color-primary-800);
+  transform: scale(0.98);
+}
+
+/* Alert/Warning Button Style */
+.btn-alert {
+  background-color: var(--color-warning);
+  color: var(--color-neutral-900);
+  border-color: var(--color-warning);
+  animation: pulse-warning 2s infinite;
+}
+
+.btn-alert:hover:not(:disabled) {
+  background-color: var(--color-warning);
+  border-color: var(--color-warning);
+  animation: none;
+  transform: scale(1.05);
+}
+
+@keyframes pulse-warning {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(255, 255, 0, 0.3); 
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.6); 
+  }
+}
+
+/* Success Button Style */
+.btn-success {
+  background-color: var(--color-success);
+  color: var(--color-neutral-900);
+  border-color: var(--color-success);
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+  transform: scale(1.05);
 }

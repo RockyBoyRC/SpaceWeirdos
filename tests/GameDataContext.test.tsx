@@ -280,7 +280,8 @@ describe('GameDataContext', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     expect(() => {
-      render(<TestComponent />);
+      const TestWrapper = () => <TestComponent />;
+      render(<TestWrapper />);
     }).toThrow('useGameData must be used within a GameDataProvider');
 
     consoleError.mockRestore();

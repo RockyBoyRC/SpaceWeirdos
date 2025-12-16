@@ -48,8 +48,8 @@ import { DataRepository } from '../../backend/services/DataRepository';
 // ❌ WRONG: Importing business logic
 import { CostModifierStrategy } from '../../backend/services/CostModifierStrategy';
 
-// ❌ WRONG: Importing constants (use API instead)
-import { TROOPER_LIMITS } from '../../backend/constants/costs';
+// ❌ WRONG: Importing constants (files removed - use API instead)
+// import { TROOPER_LIMITS } from '../../backend/constants/costs';
 ```
 
 **Why prohibited:** These imports duplicate business logic in the frontend, creating maintenance burden and potential inconsistencies.

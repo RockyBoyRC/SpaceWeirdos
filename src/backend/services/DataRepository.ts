@@ -2,7 +2,7 @@ import { Warband, ValidationResult, ValidationError, Weirdo, WarbandSummary, Per
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { getValidationMessage } from '../constants/validationMessages.js';
+// Removed deprecated import - using direct messages for basic data validation
 import { CostEngine } from './CostEngine.js';
 
 // Storage file path constant
@@ -41,11 +41,13 @@ export class DataRepository {
   private cache: Map<string, Warband>;
   private filePath: string;
   private persistenceEnabled: boolean;
+  private costEngine: CostEngine | null;
 
-  constructor(filePath: string = STORAGE_PATH, enablePersistence: boolean = true) {
+  constructor(filePath: string = STORAGE_PATH, enablePersistence: boolean = true, costEngine: CostEngine | null = null) {
     this.cache = new Map();
     this.filePath = filePath;
     this.persistenceEnabled = enablePersistence;
+    this.costEngine = costEngine;
   }
 
   /**
@@ -70,7 +72,7 @@ export class DataRepository {
     if (!warband.name || warband.name.trim() === '') {
       errors.push({
         field: 'name',
-        message: getValidationMessage('WARBAND_NAME_REQUIRED'),
+        message: 'Warband name is required',
         code: 'WARBAND_NAME_REQUIRED'
       });
     }
@@ -88,7 +90,7 @@ export class DataRepository {
     if (warband.pointLimit !== 75 && warband.pointLimit !== 125) {
       errors.push({
         field: 'pointLimit',
-        message: getValidationMessage('INVALID_POINT_LIMIT'),
+        message: 'Point limit must be 75 or 125',
         code: 'INVALID_POINT_LIMIT'
       });
     }
@@ -103,7 +105,8 @@ export class DataRepository {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
+      warnings: []
     };
   }
 
@@ -121,7 +124,7 @@ export class DataRepository {
     if (!weirdo.name || weirdo.name.trim() === '') {
       errors.push({
         field: `weirdos[${index}].name`,
-        message: getValidationMessage('WEIRDO_NAME_REQUIRED'),
+        message: 'Weirdo name is required',
         code: 'WEIRDO_NAME_REQUIRED'
       });
     }
@@ -139,7 +142,7 @@ export class DataRepository {
     if (!weirdo.attributes) {
       errors.push({
         field: `weirdos[${index}].attributes`,
-        message: getValidationMessage('ATTRIBUTES_INCOMPLETE'),
+        message: 'All attributes must be selected',
         code: 'ATTRIBUTES_INCOMPLETE'
       });
     } else {
@@ -149,7 +152,7 @@ export class DataRepository {
         if (!(attr in weirdo.attributes)) {
           errors.push({
             field: `weirdos[${index}].attributes.${attr}`,
-            message: getValidationMessage('ATTRIBUTES_INCOMPLETE'),
+            message: 'All attributes must be selected',
             code: 'ATTRIBUTES_INCOMPLETE'
           });
         }
@@ -234,11 +237,10 @@ export class DataRepository {
    * @returns Array of warband summaries (empty array if none exist)
    */
   getAllWarbands(): WarbandSummary[] {
-    const costEngine = new CostEngine();
     const summaries: WarbandSummary[] = [];
 
     for (const warband of this.cache.values()) {
-      const totalCost = costEngine.calculateWarbandCost(warband);
+      const totalCost = this.costEngine ? this.costEngine.calculateWarbandCost(warband) : 0;
       const weirdoCount = warband.weirdos.length;
 
       summaries.push({

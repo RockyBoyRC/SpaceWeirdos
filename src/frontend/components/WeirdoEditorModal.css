@@ -12,7 +12,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-bg-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,7 +32,7 @@
 
 /* Modal content container */
 .weirdo-editor-modal__content {
-  background-color: var(--color-background, #ffffff);
+  background-color: var(--color-bg-elevated);
   border-radius: var(--border-radius-lg, 8px);
   box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04));
   max-width: 800px;
@@ -61,7 +61,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-4, 1rem) var(--spacing-6, 1.5rem);
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
 
@@ -69,7 +69,7 @@
   margin: 0;
   font-size: var(--font-size-xl, 1.25rem);
   font-weight: var(--font-weight-semibold, 600);
-  color: var(--color-text-primary, #111827);
+  color: var(--color-text-primary);
 }
 
 .weirdo-editor-modal__header-actions {
@@ -89,7 +89,7 @@
   border: none;
   font-size: 2rem;
   line-height: 1;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary);
   cursor: pointer;
   padding: 0;
   width: 2rem;
@@ -102,12 +102,12 @@
 }
 
 .weirdo-editor-modal__close-button:hover {
-  background-color: var(--color-background-hover, #f3f4f6);
-  color: var(--color-text-primary, #111827);
+  background-color: var(--color-neutral-100);
+  color: var(--color-text-primary);
 }
 
 .weirdo-editor-modal__close-button:focus {
-  outline: 2px solid var(--color-primary, #3b82f6);
+  outline: 2px solid var(--color-border-focus);
   outline-offset: 2px;
 }
 

@@ -1,57 +1,67 @@
 /**
- * Color Tokens
+ * Color Tokens - Vintage Space Monster Theme
  * 
  * Defines the color palette for the Space Weirdos Warband Builder.
- * All colors use semantic naming (purpose-based) rather than literal color names.
- * Color contrast ratios meet WCAG AA standards for accessibility.
+ * Inspired by vintage sci-fi horror aesthetics with high contrast
+ * and dramatic red accents. All colors meet WCAG AA standards.
  */
 
 :root {
-  /* Primary Colors - Blue palette for interactive elements */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;  /* Main primary color */
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
+  /* Primary Colors - Red palette for dramatic sci-fi horror theme */
+  --color-primary-50: #fef2f2;
+  --color-primary-100: #fee2e2;
+  --color-primary-200: #fecaca;
+  --color-primary-300: #fca5a5;
+  --color-primary-400: #f87171;
+  --color-primary-500: #ff0000;  /* Main primary color - Pure red */
+  --color-primary-600: #dc2626;
+  --color-primary-700: #b91c1c;
+  --color-primary-800: #991b1b;
+  --color-primary-900: #7f1d1d;
 
-  /* Neutral Colors - Gray palette for text, borders, and backgrounds */
-  --color-neutral-50: #f9fafb;
-  --color-neutral-100: #f3f4f6;
-  --color-neutral-200: #e5e7eb;
-  --color-neutral-300: #d1d5db;
-  --color-neutral-400: #9ca3af;
-  --color-neutral-500: #6b7280;
-  --color-neutral-600: #4b5563;
-  --color-neutral-700: #374151;
-  --color-neutral-800: #1f2937;
-  --color-neutral-900: #111827;
+  /* Neutral Colors - High contrast black/white/cream palette */
+  --color-neutral-50: #f5f5f0;   /* Cream background */
+  --color-neutral-100: #e8e8e0;
+  --color-neutral-200: #d4d4c8;
+  --color-neutral-300: #a8a89c;
+  --color-neutral-400: #888880;
+  --color-neutral-500: #666660;
+  --color-neutral-600: #444440;
+  --color-neutral-700: #2a2a28;
+  --color-neutral-800: #1a1a1a;  /* Deep black */
+  --color-neutral-900: #000000;  /* Pure black */
 
-  /* Semantic Colors - State and feedback colors */
-  --color-success: #16a34a;
-  --color-success-light: #dcfce7;
-  --color-warning: #f59e0b;
-  --color-warning-light: #fef3c7;
-  --color-error: #dc2626;
-  --color-error-light: #fee2e2;
-  --color-info: #0ea5e9;
-  --color-info-light: #e0f2fe;
+  /* Semantic Colors - Vintage sci-fi themed feedback colors */
+  --color-success: #52d552;      /* Bright green for "systems online" */
+  --color-success-light: #e6ffe6;
+  --color-warning: #df9e06;      /* Bright yellow for "caution" */
+  --color-warning-light: #fffde6;
+  --color-error: #ff0000;        /* Pure red for "critical alert" */
+  --color-error-light: #ffe6e6;
+  --color-info: #33c3e4;         /* Cyan for "information" */
+  --color-info-light: #e6ffff;
 
-  /* Text Colors - Semantic text color tokens */
+  /* Text Colors - High contrast for readability */
   --color-text-primary: var(--color-neutral-900);
-  --color-text-secondary: var(--color-neutral-500);
-  --color-text-disabled: var(--color-neutral-300);
-  --color-text-inverse: #ffffff;
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-disabled: var(--color-neutral-400);
+  --color-text-inverse: var(--color-neutral-50);
+  --color-text-accent: var(--color-primary-500);
 
-  /* Background Colors - Surface colors for different elevation levels */
-  --color-bg-base: #ffffff;
-  --color-bg-elevated: var(--color-neutral-50);
-  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+  /* Background Colors - Vintage sci-fi surfaces */
+  --color-bg-base: var(--color-neutral-50);      /* Cream base */
+  --color-bg-elevated: #ffffff;                   /* Pure white for cards */
+  --color-bg-dark: var(--color-neutral-800);     /* Dark sections */
+  --color-bg-overlay: rgba(0, 0, 0, 0.8);        /* Strong overlay */
 
-  /* Border Colors - Semantic border color tokens */
-  --color-border-default: var(--color-neutral-200);
-  --color-border-hover: var(--color-neutral-300);
+  /* Border Colors - High contrast borders */
+  --color-border-default: var(--color-neutral-800);
+  --color-border-hover: var(--color-primary-500);
   --color-border-focus: var(--color-primary-500);
+  --color-border-light: var(--color-neutral-300);
+
+  /* Special Effect Colors */
+  --color-glow-red: rgba(255, 0, 0, 0.3);
+  --color-glow-red-strong: rgba(255, 0, 0, 0.6);
+  --color-scanline: rgba(0, 0, 0, 0.03);
 }

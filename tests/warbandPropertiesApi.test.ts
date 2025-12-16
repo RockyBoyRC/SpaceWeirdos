@@ -1,16 +1,30 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { DataRepository } from '../src/backend/services/DataRepository';
 import { ValidationService } from '../src/backend/services/ValidationService';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
 import { Warband } from '../src/backend/models/types';
 
 describe('Warband Properties API Integration', () => {
   let repository: DataRepository;
   let validationService: ValidationService;
+  let configManager: ConfigurationManager;
+  let configFactory: ConfigurationFactory;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create factory and services
+    configFactory = new ConfigurationFactory(configManager);
+    validationService = configFactory.createValidationService();
+    
     repository = new DataRepository('test-warbands.json', false);
     repository.clear();
-    validationService = new ValidationService();
   });
 
   describe('Warband Validation', () => {

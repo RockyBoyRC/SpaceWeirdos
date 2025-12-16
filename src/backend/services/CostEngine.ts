@@ -12,12 +12,16 @@ import {
   FirepowerLevel
 } from '../models/types.js';
 import { createCostModifierStrategy } from './CostModifierStrategy.js';
+import { CostConfig } from '../config/types.js';
 
 /**
  * Cost Engine Service
  * Calculates point costs for weirdos and warbands with warband ability modifiers
+ * Uses centralized configuration for all cost calculation constants
  */
 export class CostEngine {
+  private config: CostConfig;
+
   /**
    * Attribute cost lookup table
    */
@@ -48,6 +52,14 @@ export class CostEngine {
       '2d10': 6
     }
   };
+
+  /**
+   * Creates a new CostEngine instance with the provided configuration
+   * @param config - Cost calculation configuration
+   */
+  constructor(config: CostConfig) {
+    this.config = config;
+  }
 
   /**
    * Calculates the point cost of a single attribute with warband ability modifiers applied.
@@ -85,7 +97,7 @@ export class CostEngine {
     }
 
     // Apply warband ability modifiers using strategy pattern
-    const strategy = createCostModifierStrategy(warbandAbility);
+    const strategy = createCostModifierStrategy(warbandAbility, this.config);
     return strategy.applyAttributeDiscount(attribute, level, baseCost);
   }
 
@@ -99,7 +111,7 @@ export class CostEngine {
    */
   getWeaponCost(weapon: Weapon, warbandAbility: WarbandAbility | null): number {
     // Apply warband ability modifiers using strategy pattern
-    const strategy = createCostModifierStrategy(warbandAbility);
+    const strategy = createCostModifierStrategy(warbandAbility, this.config);
     return strategy.applyWeaponDiscount(weapon);
   }
 
@@ -113,7 +125,7 @@ export class CostEngine {
    */
   getEquipmentCost(equipment: Equipment, warbandAbility: WarbandAbility | null): number {
     // Apply warband ability modifiers using strategy pattern
-    const strategy = createCostModifierStrategy(warbandAbility);
+    const strategy = createCostModifierStrategy(warbandAbility, this.config);
     return strategy.applyEquipmentDiscount(equipment);
   }
 

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Indicators Manual Test</title>
+    <style>
+        /* Import the actual CSS from the design system */
+        @import url('../src/frontend/styles/tokens/colors.css');
+        @import url('../src/frontend/styles/base/buttons.css');
+        @import url('../src/frontend/styles/base/forms.css');
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background-color: var(--color-bg-base, #f5f5f0);
+            color: var(--color-text-primary, #000);
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid var(--color-border-default, #1a1a1a);
+            background-color: var(--color-bg-elevated, #fff);
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: var(--color-primary-500, #ff0000);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .instructions {
+            background-color: var(--color-info-light, #e6ffff);
+            padding: 1rem;
+            border-left: 4px solid var(--color-info, #33c3e4);
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Focus Indicators Manual Test</h1>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <p>Use the <strong>Tab</strong> key to navigate through the interactive elements below. Each element should show a visible focus indicator when focused.</p>
+        <p>The focus indicators should use the vintage space monster theme colors (red glow effects).</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Buttons</h2>
+        <div class="test-grid">
+            <button class="btn btn-primary">Primary Button</button>
+            <button class="btn btn-secondary">Secondary Button</button>
+            <button class="btn btn-danger">Danger Button</button>
+            <button class="btn btn-success">Success Button</button>
+            <button class="btn btn-alert">Alert Button</button>
+            <button class="btn" disabled>Disabled Button</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Form Elements</h2>
+        <div class="test-grid">
+            <div>
+                <label for="text-input">Text Input:</label>
+                <input type="text" id="text-input" class="input" placeholder="Enter text">
+            </div>
+            <div>
+                <label for="select-input">Select:</label>
+                <select id="select-input" class="select">
+                    <option>Option 1</option>
+                    <option>Option 2</option>
+                    <option>Option 3</option>
+                </select>
+            </div>
+            <div>
+                <label for="textarea-input">Textarea:</label>
+                <textarea id="textarea-input" class="textarea" placeholder="Enter text"></textarea>
+            </div>
+            <div>
+                <label>
+                    <input type="checkbox" class="checkbox"> Checkbox
+                </label>
+            </div>
+            <div>
+                <label>
+                    <input type="radio" name="radio-group" class="radio"> Radio 1
+                </label>
+                <label>
+                    <input type="radio" name="radio-group" class="radio"> Radio 2
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Interactive Cards</h2>
+        <div class="test-grid">
+            <div class="weirdo-card" role="button" tabindex="0" style="border: 2px solid var(--color-border-default); padding: 1rem; cursor: pointer;">
+                <div>Interactive Card 1</div>
+                <div>Click or tab to focus</div>
+            </div>
+            <div class="weirdo-card" role="button" tabindex="0" style="border: 2px solid var(--color-border-default); padding: 1rem; cursor: pointer;">
+                <div>Interactive Card 2</div>
+                <div>Click or tab to focus</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Focus Indicator Test Results</h2>
+        <div id="test-results">
+            <p>Tab through the elements above and verify:</p>
+            <ul>
+                <li>✓ All interactive elements show a visible focus indicator</li>
+                <li>✓ Focus indicators use the vintage theme colors (red/primary color)</li>
+                <li>✓ Focus indicators have sufficient contrast against backgrounds</li>
+                <li>✓ Disabled elements are skipped during tab navigation</li>
+                <li>✓ Focus indicators disappear when element loses focus</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactivity to test keyboard events
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const focused = document.activeElement;
+                if (focused && focused.role === 'button') {
+                    console.log('Activated:', focused.textContent);
+                    focused.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        focused.style.transform = '';
+                    }, 150);
+                }
+            }
+        });
+
+        // Log focus events for debugging
+        document.addEventListener('focusin', function(e) {
+            console.log('Focus in:', e.target.tagName, e.target.className);
+        });
+
+        document.addEventListener('focusout', function(e) {
+            console.log('Focus out:', e.target.tagName, e.target.className);
+        });
+    </script>
+</body>
+</html>

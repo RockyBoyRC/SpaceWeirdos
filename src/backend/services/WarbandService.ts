@@ -13,10 +13,18 @@ export class WarbandService {
   private costEngine: CostEngine;
   private validationService: ValidationService;
 
-  constructor(repository: DataRepository) {
+  constructor(
+    repository: DataRepository, 
+    costEngine?: CostEngine, 
+    validationService?: ValidationService
+  ) {
     this.repository = repository;
-    this.costEngine = new CostEngine();
-    this.validationService = new ValidationService();
+    // Services must be provided - no fallback to avoid configuration issues
+    if (!costEngine || !validationService) {
+      throw new Error('WarbandService requires configured CostEngine and ValidationService. Use ConfigurationFactory.createWarbandService() instead.');
+    }
+    this.costEngine = costEngine;
+    this.validationService = validationService;
   }
 
   /**

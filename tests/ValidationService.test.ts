@@ -1,7 +1,10 @@
-import { describe, it } from 'vitest';
+import { describe, it, beforeEach } from 'vitest';
 import fc from 'fast-check';
 import { ValidationService } from '../src/backend/services/ValidationService';
 import { CostEngine } from '../src/backend/services/CostEngine';
+import { CostConfig, ValidationConfig } from '../src/backend/config/types';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
 import {
   SpeedLevel,
   DiceLevel,
@@ -16,6 +19,75 @@ import {
 } from '../src/backend/models/types';
 
 const testConfig = { numRuns: 50 };
+
+describe('ValidationService', () => {
+  let validationService: ValidationService;
+  let configManager: ConfigurationManager;
+  let configFactory: ConfigurationFactory;
+
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create factory and services
+    configFactory = new ConfigurationFactory(configManager);
+    validationService = configFactory.createValidationService();
+  });
+
+// Legacy test configurations kept for reference but not used
+const testCostConfig: CostConfig = {
+  pointLimits: {
+    standard: 75,
+    extended: 125,
+    warningThreshold: 0.9
+  },
+  trooperLimits: {
+    standardLimit: 20,
+    maximumLimit: 25,
+    specialSlotMin: 21,
+    specialSlotMax: 25
+  },
+  equipmentLimits: {
+    leaderStandard: 2,
+    leaderCyborgs: 3,
+    trooperStandard: 1,
+    trooperCyborgs: 2
+  },
+  discountValues: {
+    mutantDiscount: 1,
+    heavilyArmedDiscount: 1
+  },
+  abilityWeaponLists: {
+    mutantWeapons: ['Claws & Teeth', 'Horrible Claws & Teeth', 'Whip/Tail'] as const
+  },
+  abilityEquipmentLists: {
+    soldierFreeEquipment: ['Grenade', 'Heavy Armor', 'Medkit'] as const
+  }
+};
+
+const testValidationConfig: ValidationConfig = {
+  costWarningThreshold: 0.9,
+  enableContextAwareWarnings: true,
+  strictValidation: false,
+  messages: {
+    warbandNameRequired: 'Warband name is required',
+    weirdoNameRequired: 'Weirdo name is required',
+    invalidPointLimit: 'Point limit must be 75 or 125',
+    attributesIncomplete: 'All five attributes must be selected',
+    closeCombatWeaponRequired: 'At least one close combat weapon is required',
+    rangedWeaponRequired: 'Ranged weapon required when Firepower is 2d8 or 2d10',
+    firepowerRequiredForRangedWeapon: 'Firepower level 2d8 or 2d10 required to use ranged weapons',
+    equipmentLimitExceeded: 'Equipment limit exceeded: {type} can have {limit} items',
+    trooperPointLimitExceeded: 'Trooper cost ({cost}) exceeds {limit}-point limit',
+    multiple25PointWeirdos: 'Only one weirdo may cost {min}-{max} points',
+    warbandPointLimitExceeded: 'Warband total cost ({totalCost}) exceeds point limit ({pointLimit})',
+    leaderTraitInvalid: 'Leader trait can only be assigned to leaders'
+  }
+};
 
 // Generators (reused from CostEngine tests)
 const speedLevelGen = fc.constantFrom<SpeedLevel>(1, 2, 3);
@@ -73,8 +145,7 @@ const psychicPowerGen = fc.record<PsychicPower>({
   effect: fc.string()
 });
 
-describe('ValidationService', () => {
-  const validationService = new ValidationService();
+// ValidationService tests now use properly configured instance from beforeEach
 
   describe('Property 1: Warband creation requires all mandatory fields', () => {
     // **Feature: space-weirdos-warband, Property 1: Warband creation requires all mandatory fields**
@@ -1469,7 +1540,7 @@ describe('ValidationService', () => {
     // **Feature: space-weirdos-warband, Property 14: Trooper point limit is enforced**
     // **Validates: Requirements 9.1, 9.3, 9.4**
     it('should reject trooper exceeding 20 points when no 25-point weirdo exists', () => {
-      const costEngine = new CostEngine();
+      const costEngine = new CostEngine(testCostConfig);
       
       fc.assert(
         fc.property(
@@ -1543,7 +1614,7 @@ describe('ValidationService', () => {
     // **Feature: space-weirdos-warband, Property 15: Exactly one weirdo may cost 21-25 points**
     // **Validates: Requirements 9.2, 9.3**
     it('should reject warband with multiple weirdos costing 21-25 points', () => {
-      const costEngine = new CostEngine();
+      const costEngine = new CostEngine(testCostConfig);
       
       fc.assert(
         fc.property(
@@ -1649,7 +1720,7 @@ describe('ValidationService', () => {
     // **Feature: space-weirdos-warband, Property 17: Warband point limit is enforced**
     // **Validates: Requirements 10.2, 10.3, 10.4**
     it('should reject warband exceeding point limit', () => {
-      const costEngine = new CostEngine();
+      const costEngine = new CostEngine(testCostConfig);
       
       fc.assert(
         fc.property(

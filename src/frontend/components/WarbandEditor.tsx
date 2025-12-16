@@ -151,7 +151,7 @@ export function WarbandEditor({
             className="save-button"
             aria-label="Save warband"
           >
-            Save Warband
+            Save
           </button>
           {currentWarband.id && (
             <button 

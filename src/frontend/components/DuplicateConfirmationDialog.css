@@ -1,0 +1,131 @@
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dialog-content {
+  background: var(--color-bg-elevated);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.dialog-content h2 {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+}
+
+.dialog-content p {
+  margin: 0 0 1.5rem 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.dialog-content strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.cancel-button,
+.duplicate-confirm-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.cancel-button {
+  background-color: var(--color-neutral-200);
+  color: var(--color-text-primary);
+}
+
+.cancel-button:hover {
+  background-color: var(--color-neutral-300);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cancel-button:focus {
+  outline: 3px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.duplicate-confirm-button {
+  background: linear-gradient(135deg, var(--color-info) 0%, var(--color-primary-200) 100%);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+.duplicate-confirm-button:hover {
+  background: linear-gradient(135deg, var(--color-primary-200) 0%, var(--color-primary-700) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+}
+
+.duplicate-confirm-button:focus {
+  outline: 3px solid var(--color-info);
+  outline-offset: 2px;
+}
+
+.cancel-button:active,
+.duplicate-confirm-button:active {
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .dialog-content {
+    padding: 1.5rem;
+  }
+  
+  .dialog-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .cancel-button,
+  .duplicate-confirm-button {
+    width: 100%;
+  }
+}

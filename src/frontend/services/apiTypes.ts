@@ -139,6 +139,72 @@ export interface BatchCostResponse {
 }
 
 /**
+ * Response from GET /api/warbands/:id/export (export warband)
+ */
+export interface ExportWarbandResponse {
+  success: boolean;
+  data: {
+    warband: unknown; // The exported warband data
+    filename: string;
+  };
+}
+
+/**
+ * Request for POST /api/warbands/import (import warband)
+ */
+export interface ImportWarbandRequest {
+  warbandData: unknown; // The warband data to import
+  options?: {
+    replaceExisting?: boolean;
+    newName?: string;
+  };
+}
+
+/**
+ * Response from POST /api/warbands/import (import warband)
+ */
+export interface ImportWarbandResponse {
+  success: boolean;
+  data: {
+    warband: Warband;
+    warnings?: string[];
+  };
+}
+
+/**
+ * Request for POST /api/warbands/validate-import (validate import data)
+ */
+export interface ValidateImportRequest {
+  warbandData: unknown; // The warband data to validate
+}
+
+/**
+ * Response from POST /api/warbands/validate-import (validate import data)
+ */
+export interface ValidateImportResponse {
+  success: boolean;
+  data: {
+    valid: boolean;
+    errors: Array<{
+      field: string;
+      message: string;
+      code: string;
+      expected?: string;
+      received?: unknown;
+    }>;
+    warnings: Array<{
+      field: string;
+      message: string;
+      code: string;
+    }>;
+    nameConflict?: {
+      existingName: string;
+      conflictsWith: string;
+    };
+  };
+}
+
+/**
  * Generic JSON response type for parsing
  * Used internally before casting to specific response types
  */

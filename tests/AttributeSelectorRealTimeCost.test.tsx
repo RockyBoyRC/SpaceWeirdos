@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import fc from 'fast-check';
 import { CostEngine } from '../src/backend/services/CostEngine';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
 import { 
   Weirdo,
   SpeedLevel, 
@@ -20,7 +21,13 @@ import {
  */
 
 describe('AttributeSelector Real-Time Cost Updates', () => {
-  const costEngine = new CostEngine();
+  let costEngine: CostEngine;
+
+  beforeAll(async () => {
+    const configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    costEngine = new CostEngine(configManager.getCostConfig());
+  });
 
   /**
    * Property 3: Real-time cost synchronization

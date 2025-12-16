@@ -80,13 +80,13 @@
 .weapon-selector__name {
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
 }
 
 .weapon-selector__cost {
   font-weight: var(--font-weight-semibold);
   color: var(--color-primary-500);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   white-space: nowrap;
 }
 
@@ -95,7 +95,7 @@
 }
 
 .weapon-selector__notes {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   line-height: var(--line-height-normal);
 }

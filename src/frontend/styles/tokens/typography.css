@@ -1,25 +1,31 @@
 /**
- * Typography Tokens
+ * Typography Tokens - Vintage Space Monster Theme
  * 
- * Defines the typography system including font families, sizes, weights, line heights,
- * and letter spacing for consistent text styling throughout the application.
+ * Defines the typography system with sci-fi horror aesthetic.
+ * Uses bold, condensed fonts with wide letter spacing for dramatic effect.
  * Font sizes are in rem units for accessibility and scalability.
  */
 
-:root {
-  /* Font Families */
-  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Rubik+Mono+One&family=Bebas+Neue:wght@400;700&display=swap');
 
-  /* Font Sizes - Modular scale from xs to 4xl */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
+:root {
+  /* Font Families - Vintage sci-fi themed fonts */
+  --font-family-base: 'Bebas Neue', 'Arial Black', Arial, sans-serif;
+  --font-family-display: 'Rubik Mono One', 'Courier New', monospace;
+  --font-family-horror: 'Creepster', cursive;
+  --font-family-mono: 'Courier New', 'SF Mono', Monaco, monospace;
+
+  /* Font Sizes - Dramatic scale for sci-fi impact */
+  --font-size-xs: 1rem;    /* 12px */
+  --font-size-sm: 1rem;   /* 14px */
   --font-size-base: 1rem;     /* 16px */
   --font-size-lg: 1.125rem;   /* 18px */
   --font-size-xl: 1.25rem;    /* 20px */
   --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-3xl: 2rem;      /* 32px */
+  --font-size-4xl: 2.5rem;    /* 40px */
+  --font-size-5xl: 3rem;      /* 48px */
+  --font-size-6xl: 4rem;      /* 64px */
 
   /* Font Weights */
   --font-weight-normal: 400;
@@ -27,13 +33,21 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  /* Line Heights - Optimized for readability */
-  --line-height-tight: 1.25;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
+  /* Line Heights - Tight for dramatic effect */
+  --line-height-tight: 1.1;
+  --line-height-normal: 1.4;
+  --line-height-relaxed: 1.6;
 
-  /* Letter Spacing */
-  --letter-spacing-tight: -0.025em;
-  --letter-spacing-normal: 0;
-  --letter-spacing-wide: 0.025em;
+  /* Letter Spacing - Wider spacing for better legibility */
+  --letter-spacing-tight: 0.4em;
+  --letter-spacing-normal: 0.5em;
+  --letter-spacing-wide: 0.6em;
+  --letter-spacing-wider: 0.7em;
+
+  /* Text Shadows - Removed glow effects for better legibility */
+  --text-shadow-glow: none;
+  --text-shadow-glow-strong: 
+    0 0 10px var(--color-primary-500),
+    0 0 20px var(--color-primary-500),
+    0 0 30px var(--color-primary-500);
 }

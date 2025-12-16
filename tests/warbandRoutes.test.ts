@@ -4,6 +4,7 @@ import request from 'supertest';
 import { DataRepository } from '../src/backend/services/DataRepository';
 import { createWarbandRouter } from '../src/backend/routes/warbandRoutes';
 import { Warband, Weirdo } from '../src/backend/models/types';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
 
 /**
  * Integration tests for Warband API endpoints
@@ -13,7 +14,11 @@ describe('Warband API Routes', () => {
   let app: Express;
   let repository: DataRepository;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Initialize configuration manager for tests
+    const configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
     // Create fresh app and repository for each test
     app = express();
     app.use(express.json());

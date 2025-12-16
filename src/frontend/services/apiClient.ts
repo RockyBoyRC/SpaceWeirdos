@@ -22,16 +22,23 @@ import {
   JsonResponse,
   BatchCostRequest,
   BatchCostResponse,
+  ExportWarbandResponse,
+  ImportWarbandRequest,
+  ImportWarbandResponse,
+  ValidateImportRequest,
+  ValidateImportResponse,
 } from './apiTypes';
+
+import { getFrontendConfigInstance } from '../config/frontendConfig';
 
 /**
  * API Client Configuration
  */
-// Type assertion needed: Vite's import.meta.env is not fully typed in the TypeScript environment
-// This is safe because we provide a fallback value if the environment variable is undefined
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api';
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 1000;
+// Get configuration from centralized frontend config
+const frontendConfig = getFrontendConfigInstance();
+const API_BASE_URL = frontendConfig.api.baseUrl;
+const MAX_RETRIES = frontendConfig.api.maxRetries;
+const RETRY_DELAY_MS = frontendConfig.api.retryDelayMs;
 
 /**
  * API Error class for structured error handling
@@ -65,7 +72,96 @@ const sleep = (ms: number): Promise<void> =>
   new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Generic fetch wrapper with error handling and retry logic
+ * Enhanced retry strategy interface
+ * Requirements: 7.2, 7.5
+ */
+interface RetryStrategy {
+  shouldRetry: boolean;
+  maxAttempts: number;
+  delayMs: number;
+  useExponentialBackoff: boolean;
+  reason: string;
+}
+
+/**
+ * Determine retry strategy based on error type
+ * Requirements: 7.2, 7.5
+ */
+function determineRetryStrategy(error: unknown, attempt: number): RetryStrategy {
+  if (error instanceof ApiError) {
+    const statusCode = error.statusCode;
+    
+    // Client errors (4xx) - generally don't retry except specific cases
+    if (statusCode && statusCode >= 400 && statusCode < 500) {
+      if (statusCode === 408 || statusCode === 429) {
+        return {
+          shouldRetry: true,
+          maxAttempts: MAX_RETRIES,
+          delayMs: RETRY_DELAY_MS * (statusCode === 429 ? 2 : 1), // Longer delay for rate limits
+          useExponentialBackoff: true,
+          reason: statusCode === 408 ? 'Request timeout - retrying' : 'Rate limited - retrying with backoff'
+        };
+      }
+      return {
+        shouldRetry: false,
+        maxAttempts: 0,
+        delayMs: 0,
+        useExponentialBackoff: false,
+        reason: 'Client error - no retry'
+      };
+    }
+    
+    // Server errors (5xx) - retry with exponential backoff
+    if (statusCode && statusCode >= 500) {
+      return {
+        shouldRetry: true,
+        maxAttempts: MAX_RETRIES,
+        delayMs: RETRY_DELAY_MS * 1.5, // Slightly longer for server errors
+        useExponentialBackoff: true,
+        reason: 'Server error - retrying with backoff'
+      };
+    }
+  }
+  
+  // Network errors, timeouts, etc. - retry with standard backoff
+  if (error instanceof TypeError && error.message.includes('fetch')) {
+    return {
+      shouldRetry: true,
+      maxAttempts: MAX_RETRIES,
+      delayMs: RETRY_DELAY_MS,
+      useExponentialBackoff: true,
+      reason: 'Network error - retrying'
+    };
+  }
+  
+  // Timeout errors - retry with longer delays
+  if (error instanceof Error && (
+    error.message.includes('timeout') || 
+    error.message.includes('timed out') ||
+    error.name === 'TimeoutError'
+  )) {
+    return {
+      shouldRetry: true,
+      maxAttempts: Math.max(2, Math.floor(MAX_RETRIES / 2)), // Fewer attempts for timeouts
+      delayMs: RETRY_DELAY_MS * 2, // Longer delays for timeouts
+      useExponentialBackoff: true,
+      reason: 'Timeout error - retrying with longer delays'
+    };
+  }
+  
+  // Unknown errors - limited retry
+  return {
+    shouldRetry: true,
+    maxAttempts: 1,
+    delayMs: RETRY_DELAY_MS,
+    useExponentialBackoff: false,
+    reason: 'Unknown error - single retry attempt'
+  };
+}
+
+/**
+ * Generic fetch wrapper with enhanced error handling and retry logic
+ * Requirements: 7.2, 7.5
  */
 async function fetchWithRetry<T>(
   endpoint: string,
@@ -109,20 +205,14 @@ async function fetchWithRetry<T>(
       // This is safe because the API contract guarantees the response structure matches T
       return data as T;
     } catch (error: unknown) {
-      // Don't retry on client errors (4xx) except 408 (timeout) and 429 (rate limit)
-      if (error instanceof ApiError) {
-        const shouldRetry = 
-          error.statusCode === 408 || 
-          error.statusCode === 429 || 
-          (error.statusCode && error.statusCode >= 500);
-        
-        if (!shouldRetry || attempt === retries) {
+      // Determine retry strategy based on error type
+      const retryStrategy = determineRetryStrategy(error, attempt);
+      
+      if (!retryStrategy.shouldRetry || attempt >= retryStrategy.maxAttempts) {
+        // Add context to error for better user feedback
+        if (error instanceof ApiError) {
           throw error;
         }
-      }
-
-      // Network errors or server errors - retry
-      if (attempt === retries) {
         throw new ApiError(
           'Network request failed after retries',
           undefined,
@@ -130,8 +220,14 @@ async function fetchWithRetry<T>(
         );
       }
 
-      // Wait before retrying (exponential backoff)
-      await sleep(RETRY_DELAY_MS * Math.pow(2, attempt));
+      // Calculate delay with optional exponential backoff
+      let delay = retryStrategy.delayMs;
+      if (retryStrategy.useExponentialBackoff) {
+        delay = retryStrategy.delayMs * Math.pow(2, attempt);
+      }
+      
+      // Wait before retrying
+      await sleep(delay);
     }
   }
 
@@ -316,6 +412,7 @@ export const apiClient = {
     return {
       valid: response.data.valid,
       errors: response.data.errors,
+      warnings: [],
     };
   },
 
@@ -331,6 +428,7 @@ export const apiClient = {
     return {
       valid: response.data.valid,
       errors: response.data.errors,
+      warnings: [],
     };
   },
 
@@ -346,6 +444,60 @@ export const apiClient = {
     return fetchWithRetry('/game-data/warband-abilities', {
       method: 'GET',
     });
+  },
+
+  /**
+   * Export a warband as JSON data
+   * Requirements: 6.1, 7.2, 7.5
+   */
+  async exportWarband(id: string): Promise<unknown> {
+    // The backend sends the warband data directly, not wrapped in a response structure
+    const response = await fetchWithRetry<unknown>(`/warbands/${id}/export`, {
+      method: 'GET',
+    });
+    return response;
+  },
+
+  /**
+   * Import a warband from JSON data
+   * Requirements: 6.1, 7.2, 7.5
+   */
+  async importWarband(request: ImportWarbandRequest): Promise<Warband> {
+    const response = await fetchWithRetry<ImportWarbandResponse>('/warbands/import', {
+      method: 'POST',
+      body: request,
+    });
+    return response.data.warband;
+  },
+
+  /**
+   * Validate warband data for import
+   * Requirements: 6.1, 7.2, 7.5
+   */
+  async validateImport(request: ValidateImportRequest): Promise<{
+    valid: boolean;
+    errors: Array<{
+      field: string;
+      message: string;
+      code: string;
+      expected?: string;
+      received?: unknown;
+    }>;
+    warnings: Array<{
+      field: string;
+      message: string;
+      code: string;
+    }>;
+    nameConflict?: {
+      existingName: string;
+      conflictsWith: string;
+    };
+  }> {
+    const response = await fetchWithRetry<ValidateImportResponse>('/warbands/validate-import', {
+      method: 'POST',
+      body: request,
+    });
+    return response.data;
   },
 };
 

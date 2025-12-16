@@ -129,7 +129,17 @@ const WeaponSelectorComponent = ({
       onChange(selectedWeapons.filter(w => w.id !== weapon.id));
     } else {
       // Add weapon
-      onChange([...selectedWeapons, weapon]);
+      let newWeapons = [...selectedWeapons, weapon];
+      
+      // Automatic Unarmed deselection for close combat weapons
+      // Requirements 4.9: When any close combat weapon other than Unarmed is selected,
+      // automatically unselect the Unarmed option
+      if (type === 'close-combat' && weapon.id !== 'unarmed') {
+        // Remove Unarmed if it's currently selected and we're adding a non-Unarmed weapon
+        newWeapons = newWeapons.filter(w => w.id !== 'unarmed');
+      }
+      
+      onChange(newWeapons);
     }
   };
 

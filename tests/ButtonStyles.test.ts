@@ -69,7 +69,7 @@ describe('Button Styles', () => {
       expect(primaryStyles!.has('background-color'), '.btn-primary should have background-color').toBe(true);
       
       const bgColor = primaryStyles!.get('background-color');
-      expect(bgColor).toContain('--color-primary');
+      expect(bgColor).toContain('--color-bg-elevated');
     });
 
     it('should apply correct text color to .btn-primary', () => {
@@ -80,7 +80,7 @@ describe('Button Styles', () => {
       expect(primaryStyles!.has('color'), '.btn-primary should have color').toBe(true);
       
       const textColor = primaryStyles!.get('color');
-      expect(textColor).toContain('--color-text-inverse');
+      expect(textColor).toContain('--color-text-primary');
     });
 
     it('should apply correct colors to .btn-secondary', () => {
@@ -112,7 +112,7 @@ describe('Button Styles', () => {
       const bgColor = dangerStyles!.get('background-color');
       const textColor = dangerStyles!.get('color');
       
-      expect(bgColor).toContain('--color-error');
+      expect(bgColor).toContain('--color-primary-500');
       expect(textColor).toContain('--color-text-inverse');
     });
   });
@@ -241,7 +241,7 @@ describe('Button Styles', () => {
       const activeStyles = rules.get('.btn-primary:active:not(:disabled)');
       
       expect(activeStyles, '.btn-primary:active:not(:disabled) should have styles').toBeDefined();
-      expect(activeStyles!.has('background-color'), 'active should change background-color').toBe(true);
+      expect(activeStyles!.has('transform'), 'active should change transform').toBe(true);
     });
 
     it('should have active styles for .btn-secondary', () => {
@@ -249,7 +249,7 @@ describe('Button Styles', () => {
       const activeStyles = rules.get('.btn-secondary:active:not(:disabled)');
       
       expect(activeStyles, '.btn-secondary:active:not(:disabled) should have styles').toBeDefined();
-      expect(activeStyles!.has('background-color'), 'active should change background-color').toBe(true);
+      expect(activeStyles!.has('transform'), 'active should change transform').toBe(true);
     });
 
     it('should have active styles for .btn-danger', () => {

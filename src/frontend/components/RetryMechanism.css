@@ -1,0 +1,206 @@
+/**
+ * RetryMechanism Styles
+ * 
+ * Provides styling for retry mechanism component.
+ * Uses design system tokens for consistency.
+ */
+
+.retry-mechanism {
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.retry-mechanism__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.retry-mechanism__count {
+  font-weight: var(--font-weight-medium);
+}
+
+.retry-mechanism__countdown {
+  font-family: var(--font-family-mono);
+  color: var(--color-warning);
+  font-weight: var(--font-weight-medium);
+}
+
+.retry-mechanism__suggestion {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+  font-style: italic;
+}
+
+.retry-mechanism__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.retry-mechanism__manual-retry {
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 80px;
+}
+
+.retry-mechanism__manual-retry:hover:not(:disabled),
+.retry-mechanism__manual-retry:focus:not(:disabled) {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+
+.retry-mechanism__manual-retry:disabled {
+  background: var(--color-surface-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.retry-mechanism__auto-retry {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.retry-mechanism__auto-retry input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.retry-mechanism__auto-retry:hover {
+  color: var(--color-text-primary);
+}
+
+.retry-mechanism__exhausted {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+}
+
+.retry-mechanism__reset {
+  background: var(--color-surface-tertiary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.retry-mechanism__reset:hover,
+.retry-mechanism__reset:focus {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-primary);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.retry-mechanism__progress {
+  margin-top: var(--spacing-sm);
+  height: 3px;
+  background: var(--color-surface-tertiary);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.retry-mechanism__progress-bar {
+  height: 100%;
+  background: var(--color-warning);
+  border-radius: var(--border-radius-sm);
+  transition: width var(--transition-normal);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .retry-mechanism__info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+  
+  .retry-mechanism__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .retry-mechanism__manual-retry {
+    width: 100%;
+  }
+  
+  .retry-mechanism__exhausted {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-xs);
+  }
+  
+  .retry-mechanism__reset {
+    width: 100%;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .retry-mechanism {
+    border-width: 2px;
+  }
+  
+  .retry-mechanism__progress {
+    border: 1px solid var(--color-border-primary);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .retry-mechanism__manual-retry:hover:not(:disabled) {
+    transform: none;
+  }
+  
+  .retry-mechanism__progress-bar {
+    animation: none;
+    background-image: none;
+  }
+}

@@ -20,7 +20,7 @@ inclusion: always
 ### Data Storage
 - **In-Memory Database:** JavaScript objects, Maps, and Sets
 - **Persistence:** JSON files on local filesystem
-- **Configuration:** JSON files for user settings and application parameters
+- **Configuration:** Centralized Configuration System (ConfigurationManager)
 
 ### Testing
 - **Unit Testing:** Vitest
@@ -31,6 +31,155 @@ inclusion: always
 - **File I/O:** Node.js `fs` module (promises API)
 - **JSON Handling:** Native `JSON.parse()` and `JSON.stringify()`
 - **HTTP Server:** Express.js
+- **Configuration Management:** Custom ConfigurationManager with environment variable support
+- **UI Design System:** CSS custom properties for design tokens (colors, spacing, typography)
+
+## Configuration System Requirements
+
+### MANDATORY: Use ConfigurationManager for Backend Constants
+
+**All backend magic numbers, global variables, and business logic configuration parameters MUST use the existing Configuration System:**
+
+**Note:** UI design tokens (colors, spacing, typography) are managed separately through CSS custom properties in the UI Design System (`src/frontend/styles/tokens/`).
+
+```typescript
+// ✅ CORRECT - Use ConfigurationManager
+import { ConfigurationManager } from '../config/ConfigurationManager.js';
+
+const configManager = ConfigurationManager.getInstance();
+await configManager.initialize();
+
+const costConfig = configManager.getCostConfig();
+const pointLimit = costConfig.pointLimits.standard; // 75
+const maxRetries = configManager.getApiConfig().maxRetries; // 3
+```
+
+```typescript
+// ❌ WRONG - Direct backend constants/magic numbers
+const POINT_LIMIT = 75;
+const MAX_RETRIES = 3;
+const CACHE_SIZE = 100;
+```
+
+**For UI design tokens, use CSS custom properties:**
+```css
+/* ✅ CORRECT - UI design tokens in CSS */
+:root {
+  --color-primary: #3b82f6;
+  --spacing-md: 1rem;
+  --font-size-lg: 1.125rem;
+}
+```
+
+### Configuration vs UI Design Tokens
+
+**Backend Configuration (Use ConfigurationManager):**
+- Business logic constants (point limits, equipment limits)
+- API settings (URLs, timeouts, retries)
+- Cache configuration (sizes, TTL values)
+- Validation rules and messages
+- Environment-specific behavior
+
+**UI Design Tokens (Use CSS Custom Properties):**
+- Visual design constants (colors, spacing, typography)
+- Layout tokens (breakpoints, grid systems)
+- Animation timing and easing functions
+- Shadows, borders, and visual effects
+
+### Configuration Categories
+
+**Server Configuration:**
+- Ports, hosts, CORS origins
+- File paths (static, data, warband data)
+- Auto-save settings
+
+**API Configuration:**
+- Base URLs, timeouts, retry policies
+- Request/response settings
+
+**Cache Configuration:**
+- Cache sizes and TTL values
+- Purpose-specific cache settings
+
+**Cost Configuration:**
+- Point limits, trooper limits
+- Equipment limits, discount values
+- Ability-specific weapon/equipment lists
+
+**Validation Configuration:**
+- Warning thresholds, validation flags
+- All validation error messages
+
+**Environment Configuration:**
+- Environment detection, debug settings
+- Logging levels, performance monitoring
+
+### Environment Variable Support
+
+All configuration values can be overridden via environment variables:
+
+```bash
+# Server configuration
+PORT=3001
+HOST=localhost
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+
+# API configuration
+VITE_API_URL=http://localhost:3001/api
+API_MAX_RETRIES=3
+API_TIMEOUT_MS=10000
+
+# Cache configuration
+CACHE_DEFAULT_MAX_SIZE=100
+CACHE_DEFAULT_TTL_MS=5000
+
+# Cost configuration
+POINT_LIMIT_STANDARD=75
+POINT_LIMIT_EXTENDED=125
+TROOPER_LIMIT_STANDARD=20
+
+# Validation configuration
+VALIDATION_COST_WARNING_THRESHOLD=0.9
+VALIDATION_CONTEXT_AWARE_WARNINGS=true
+```
+
+### Migration from Legacy Constants
+
+**Removed files (DO NOT USE):**
+- `src/backend/constants/costs.ts` - REMOVED - Use `configManager.getCostConfig()` instead
+- `src/backend/constants/validationMessages.ts` - REMOVED - Use `configManager.getValidationConfig().messages` instead
+
+**Migration examples:**
+```typescript
+// ❌ OLD - Deprecated constants
+import { POINT_LIMITS } from '../constants/costs.js';
+const limit = POINT_LIMITS.STANDARD_LIMIT;
+
+// ✅ NEW - Configuration system
+const costConfig = configManager.getCostConfig();
+const limit = costConfig.pointLimits.standard;
+```
+
+### Configuration Validation
+
+The system provides comprehensive validation:
+- Type checking for all configuration values
+- Range validation for numeric values
+- Environment-specific overrides
+- Fallback behavior for missing values
+- Detailed error messages with suggestions
+
+### Cache Factory Integration
+
+Use the configuration system for cache creation:
+
+```typescript
+// ✅ CORRECT - Use configuration-managed cache
+const cache = configManager.createCacheInstance<ItemCost>('item-cost');
+
+// ❌ WRONG - Manual cache configuration
+const cache = new SimpleCache<ItemCost>(200, 10000);
+```
 
 ## Code Style
 
@@ -42,111 +191,5 @@ inclusion: always
 - Prefer functional programming patterns where appropriate
 - Use proper TypeScript types (avoid `any`)
 - Follow ESLint and Prettier configurations
-
-## Documentation Structure
-
-### Central Documentation Location
-
-All documentation files (except core spec documents) MUST be located in the `docs/` directory:
-
-**Required in docs/ folder:**
-- Implementation summaries (in `docs/implementation-notes/` subdirectory)
-- Architecture documentation
-- API documentation
-- Feature guides
-- System design documents
-- Technical guides
-- User guides
-- Release notes (in `docs/release-notes/` subdirectory)
-- Any other detailed documentation
-
-**Allowed outside docs/ folder:**
-- Core spec files: `requirements.md`, `design.md`, `tasks.md` (in `.kiro/specs/[feature-name]/`)
-- README.md files (in root, `.kiro/specs/`, `.kiro/steering/`, and other directories)
-- CHANGELOG.md (in root)
-- CONTRIBUTING.md (in root)
-- TESTING.md (in root)
-- LICENSE (in root)
-
-### Documentation Organization
-
-**docs/ Structure:**
-```
-docs/
-├── README.md                    # Documentation hub with navigation
-├── FEATURES.md                  # Feature overview and capabilities
-├── ARCHITECTURE.md              # System architecture and patterns
-├── API-DOCUMENTATION.md         # API reference
-├── WARNING-SYSTEM.md            # Context-aware warning system guide
-├── implementation-notes/        # Implementation summaries directory
-│   ├── context-aware-warnings.md    # Context-aware warning system implementation
-│   ├── api-separation.md            # API separation implementation notes
-│   └── ...                          # Additional implementation notes
-├── release-notes/               # Release notes directory
-│   ├── v1.0.0.md               # Version 1.0.0 release notes
-│   ├── v1.1.0.md               # Version 1.1.0 release notes
-│   └── ...                     # Additional version release notes
-├── samples/                     # Example templates and samples
-│   ├── README.md               # Samples directory overview
-│   └── example-spec/           # Example spec template files
-└── [other-guides].md           # Additional guides as needed
-```
-
-**Spec Directory Structure:**
-```
-.kiro/specs/[feature-name]/
-├── requirements.md              # EARS-compliant requirements (CORE)
-├── design.md                    # Design with correctness properties (CORE)
-├── tasks.md                     # Implementation task list (CORE)
-└── README.md                    # Feature overview with links to docs/
-```
-
-**Steering Directory Structure:**
-```
-.kiro/steering/
-├── README.md                    # Steering overview
-├── core-project-info.md         # This file
-├── task-execution-standards.md  # Task execution guidelines
-└── [other-standards].md         # Additional standards
-```
-
-### Documentation Linking
-
-**From Spec READMEs:**
-- Link to detailed documentation in `docs/` folder
-- Example: "See [docs/IMPLEMENTATION-SUMMARY.md](../../docs/IMPLEMENTATION-SUMMARY.md) for implementation details"
-
-**From Steering READMEs:**
-- Link to relevant documentation in `docs/` folder
-- Example: "See [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) for system architecture"
-
-**From Root README:**
-- Link to `docs/README.md` as the documentation hub
-- Provide quick links to key documentation files
-
-### Documentation Standards
-
-- Document public APIs and interfaces
-- Keep README files up to date with links to detailed docs
-- Include examples where helpful
-- Use consistent formatting and structure
-- Cross-reference related documentation
-- Update CHANGELOG.md for significant changes
-- Maintain documentation hub (docs/README.md) with current links
-
-### Release Notes Standards
-
-- **Location**: All release notes MUST be in `docs/release-notes/` directory
-- **Naming**: Use version number format: `v{major}.{minor}.{patch}.md` (e.g., `v1.0.0.md`)
-- **Content**: Include features, bug fixes, breaking changes, and upgrade instructions
-- **Linking**: Link from CHANGELOG.md to detailed release notes in docs/release-notes/
-- **Organization**: One file per version for easy navigation and reference
-
-### Implementation Notes Standards
-
-- **Location**: All implementation summaries MUST be in `docs/implementation-notes/` directory
-- **Naming**: Use descriptive kebab-case names: `feature-name.md` (e.g., `context-aware-warnings.md`)
-- **Content**: Include implementation details, design decisions, technical approach, and lessons learned
-- **Purpose**: Document how features were implemented, not just what they do
-- **Linking**: Link from feature guides and architecture docs to relevant implementation notes
-- **Organization**: One file per major feature or implementation effort
+- **MANDATORY:** Use ConfigurationManager for backend constants and business logic values
+- **MANDATORY:** Use CSS custom properties for UI design tokens (colors, spacing, typography)

@@ -3,15 +3,28 @@ import fc from 'fast-check';
 import { WarbandService } from '../src/backend/services/WarbandService';
 import { DataRepository } from '../src/backend/services/DataRepository';
 import { WarbandAbility, LeaderTrait } from '../src/backend/models/types';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
 
 describe('WarbandService', () => {
   let service: WarbandService;
   let repository: DataRepository;
+  let configManager: ConfigurationManager;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
     // Create repository with persistence disabled for testing
     repository = new DataRepository(':memory:', false);
-    service = new WarbandService(repository);
+    
+    // Create factory and configured service
+    const configFactory = new ConfigurationFactory(configManager);
+    service = configFactory.createWarbandService(repository);
   });
 
   describe('Property 2: New warbands initialize with zero cost', () => {

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { WarbandAbility } from '../../backend/models/types';
 import { apiClient } from '../services/apiClient';
 import { CostCache } from '../services/CostCache';
+import { getFrontendConfigInstance } from '../config/frontendConfig';
 import type { RealTimeCostResponse } from '../services/apiTypes';
 
 /**
@@ -44,7 +45,12 @@ export interface CostCalculationResult {
 }
 
 // Shared cache instance across all hook instances
-const costCache = new CostCache<RealTimeCostResponse>(100, 5000);
+// Using centralized frontend configuration with factory function
+const frontendConfig = getFrontendConfigInstance();
+const costCache = new CostCache<RealTimeCostResponse>(
+  frontendConfig.cache.costCalculationCacheSize,
+  frontendConfig.cache.costCalculationCacheTtl
+);
 
 // Export for testing purposes
 export { costCache };

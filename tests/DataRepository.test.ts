@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fc from 'fast-check';
 import { DataRepository } from '../src/backend/services/DataRepository';
 import { CostEngine } from '../src/backend/services/CostEngine';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
 import {
   SpeedLevel,
   DiceLevel,
@@ -129,11 +130,22 @@ const warbandGen = fc.record<Warband>({
 describe('DataRepository', () => {
   let repository: DataRepository;
   let testFilePath: string;
+  let configManager: ConfigurationManager;
+  let costEngine: CostEngine;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Initialize configuration manager
+    (ConfigurationManager as any).instance = null;
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create cost engine with configuration
+    const costConfig = configManager.getCostConfig();
+    costEngine = new CostEngine(costConfig);
+    
     // Use a test-specific file path
     testFilePath = path.join(process.cwd(), 'data', 'test-warbands.json');
-    repository = new DataRepository(testFilePath, false); // Disable auto-persistence for tests
+    repository = new DataRepository(testFilePath, false, costEngine); // Disable auto-persistence for tests
   });
 
   afterEach(async () => {
@@ -144,6 +156,9 @@ describe('DataRepository', () => {
       // Ignore if file doesn't exist
     }
     repository.clear();
+    
+    // Clean up configuration manager
+    (ConfigurationManager as any).instance = null;
   });
 
   describe('Property 18: Warband persistence preserves all data', () => {
@@ -238,7 +253,7 @@ describe('DataRepository', () => {
     // **Feature: space-weirdos-warband, Property 20: Loaded warbands recalculate costs correctly**
     // **Validates: Requirements 12.3**
     it('should recalculate costs correctly when loading warbands', async () => {
-      const costEngine = new CostEngine();
+      // Use the configured cost engine from beforeEach
 
       await fc.assert(
         fc.asyncProperty(warbandGen, async (warband) => {
@@ -760,7 +775,7 @@ describe('DataRepository', () => {
     // **Feature: space-weirdos-data-persistence, Property 10: Cost calculations are consistent**
     // **Validates: Requirements 5.6**
     it('should calculate totalCost in summary equal to sum of weirdo costs', () => {
-      const costEngine = new CostEngine();
+      // Use the configured cost engine from beforeEach
 
       fc.assert(
         fc.property(

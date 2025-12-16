@@ -1,6 +1,9 @@
-import { describe, it } from 'vitest';
+import { describe, it, beforeEach } from 'vitest';
 import fc from 'fast-check';
 import { CostEngine } from '../src/backend/services/CostEngine';
+import { CostConfig } from '../src/backend/config/types';
+import { ConfigurationManager } from '../src/backend/config/ConfigurationManager';
+import { ConfigurationFactory } from '../src/backend/config/ConfigurationFactory';
 import {
   SpeedLevel,
   DiceLevel,
@@ -15,6 +18,37 @@ import {
 } from '../src/backend/models/types';
 
 const testConfig = { numRuns: 50 };
+
+// Test configuration for CostEngine
+const testCostConfig: CostConfig = {
+  pointLimits: {
+    standard: 75,
+    extended: 125,
+    warningThreshold: 0.9
+  },
+  trooperLimits: {
+    standardLimit: 20,
+    maximumLimit: 25,
+    specialSlotMin: 21,
+    specialSlotMax: 25
+  },
+  equipmentLimits: {
+    leaderStandard: 2,
+    leaderCyborgs: 3,
+    trooperStandard: 1,
+    trooperCyborgs: 2
+  },
+  discountValues: {
+    mutantDiscount: 1,
+    heavilyArmedDiscount: 1
+  },
+  abilityWeaponLists: {
+    mutantWeapons: ['Claws & Teeth', 'Horrible Claws & Teeth', 'Whip/Tail'] as const
+  },
+  abilityEquipmentLists: {
+    soldierFreeEquipment: ['Grenade', 'Heavy Armor', 'Medkit'] as const
+  }
+};
 
 // Generators
 const speedLevelGen = fc.constantFrom<SpeedLevel>(1, 2, 3);
@@ -103,7 +137,22 @@ const weirdoGen = (type: 'leader' | 'trooper', warbandAbility: WarbandAbility | 
   });
 
 describe('CostEngine', () => {
-  const costEngine = new CostEngine();
+  let costEngine: CostEngine;
+  let configManager: ConfigurationManager;
+  let configFactory: ConfigurationFactory;
+
+  beforeEach(async () => {
+    // Reset singleton instance for each test
+    (ConfigurationManager as any).instance = null;
+    
+    // Initialize configuration manager
+    configManager = ConfigurationManager.getInstance();
+    await configManager.initialize();
+    
+    // Create factory and services
+    configFactory = new ConfigurationFactory(configManager);
+    costEngine = configFactory.createCostEngine();
+  });
 
   describe('Property 4: Attribute costs are calculated correctly', () => {
     // **Feature: space-weirdos-warband, Property 4: Attribute costs are calculated correctly**
